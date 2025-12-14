@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { SURVEY_DATA } from './constants';
-import { Answer, Question } from './types';
+import { Answer, LocalizedCategoryData, Language } from './types';
 import { QuestionCard } from './components/QuestionCard';
 import { Results } from './components/Results';
-import { BrainCircuit, ChevronRight, ChevronLeft, CheckCircle, Upload } from 'lucide-react';
+import { UI_TRANSLATIONS } from './translations';
+import { BrainCircuit, ChevronRight, ChevronLeft, CheckCircle, Upload, Globe } from 'lucide-react';
 
 enum AppState {
   INTRO = 'INTRO',
@@ -15,9 +16,33 @@ const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.INTRO);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
+  const [language, setLanguage] = useState<Language>('uk');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const activeCategory = SURVEY_DATA[currentCategoryIndex];
+  // Derive Localized Data
+  const localizedCategories: LocalizedCategoryData[] = useMemo(() => {
+    return SURVEY_DATA.map(cat => ({
+      id: cat.id,
+      title: cat.title[language],
+      description: cat.description[language],
+      questions: cat.questions.map(q => ({
+        id: q.id,
+        category: q.category,
+        type: q.type,
+        text: q.text[language],
+        placeholder: q.placeholder ? q.placeholder[language] : undefined,
+        subCategory: q.subCategory ? q.subCategory[language] : undefined,
+        hint: q.hint ? q.hint[language] : undefined,
+        options: q.options?.map(opt => ({
+          value: opt.value,
+          label: opt.label[language]
+        }))
+      }))
+    }));
+  }, [language]);
+
+  const ui = UI_TRANSLATIONS[language];
+  const activeCategory = localizedCategories[currentCategoryIndex];
   
   // Progress Calculation
   const totalQuestions = useMemo(() => SURVEY_DATA.reduce((acc, cat) => acc + cat.questions.length, 0), []);
@@ -33,7 +58,7 @@ const App: React.FC = () => {
 
   const nextCategory = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (currentCategoryIndex < SURVEY_DATA.length - 1) {
+    if (currentCategoryIndex < localizedCategories.length - 1) {
       setCurrentCategoryIndex((prev) => prev + 1);
     } else {
       setAppState(AppState.RESULTS);
@@ -73,7 +98,7 @@ const App: React.FC = () => {
                   }
               } catch (error) {
                   console.error("Error parsing JSON", error);
-                  alert("Не вдалося прочитати файл. Переконайтеся, що це правильний JSON, збережений раніше.");
+                  alert("Не вдалося прочитати файл. (Error reading file)");
               }
           };
           reader.readAsText(file);
@@ -85,29 +110,45 @@ const App: React.FC = () => {
   };
 
   if (appState === AppState.RESULTS) {
-    return <Results answers={answers} onReset={resetSurvey} />;
+    return <Results answers={answers} onReset={resetSurvey} ui={ui} lang={language} />;
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10 border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-indigo-600">
+          <div className="flex items-center gap-2 text-indigo-600 cursor-pointer" onClick={() => setAppState(AppState.INTRO)}>
             <BrainCircuit className="w-8 h-8" />
             <span className="font-bold text-lg hidden sm:block">NeuroProfile</span>
           </div>
-          {appState === AppState.SURVEY && (
-            <div className="flex items-center gap-4 flex-1 justify-end max-w-md">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{progressPercent}% Завершено</span>
-                <div className="w-24 sm:w-48 h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                        className="h-full bg-indigo-500 transition-all duration-500 ease-out"
-                        style={{ width: `${progressPercent}%` }}
-                    />
+          
+          <div className="flex items-center gap-4">
+             {/* Language Switcher */}
+             <div className="flex bg-slate-100 rounded-lg p-1">
+                {(['uk', 'en', 'ru'] as Language[]).map(lang => (
+                    <button
+                        key={lang}
+                        onClick={() => setLanguage(lang)}
+                        className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${language === lang ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        {lang.toUpperCase()}
+                    </button>
+                ))}
+             </div>
+
+            {appState === AppState.SURVEY && (
+                <div className="hidden sm:flex flex-col w-32 items-end">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{progressPercent}% {ui.progress}</span>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1">
+                        <div 
+                            className="h-full bg-indigo-500 transition-all duration-500 ease-out"
+                            style={{ width: `${progressPercent}%` }}
+                        />
+                    </div>
                 </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
@@ -118,41 +159,40 @@ const App: React.FC = () => {
                 <BrainCircuit className="w-16 h-16" />
             </div>
             <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
-                Оцінка Когнітивного Профілю
+                <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
+                {ui.title}
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                Дізнайтеся більше про те, як працює ваша уява, пам'ять та мислення. 
-                Тест допоможе виявити ознаки афантазії, гіперфантазії та визначити ваші стратегії мислення.
+                {ui.description}
                 </p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 max-w-lg w-full text-left space-y-3">
-                <h3 className="font-bold text-slate-800 border-b pb-2 mb-2">Як оцінювати (Шкала 1-5):</h3>
+                <h3 className="font-bold text-slate-800 border-b pb-2 mb-2">{ui.howToRateTitle}</h3>
                 <ul className="text-sm space-y-2 text-slate-600">
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">1</span> Повна відсутність (Афантазія). Лише "знання".</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">2</span> Дуже слабко, рівень ідеї.</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">3</span> Нечітко, силует, відчуття.</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">4</span> Досить чітко (як сон).</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">5</span> Гіперреалістично (як наяву).</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">1</span> {ui.scale1}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">2</span> {ui.scale2}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">3</span> {ui.scale3}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">4</span> {ui.scale4}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">5</span> {ui.scale5}</li>
                 </ul>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                 <button
                 onClick={() => setAppState(AppState.SURVEY)}
-                className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md bg-indigo-600 px-8 font-medium text-white transition-all duration-300 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30"
+                className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md bg-indigo-600 px-8 font-medium text-white transition-all duration-300 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 w-full sm:w-auto"
                 >
-                    <span className="mr-2">Почати тест</span>
+                    <span className="mr-2">{ui.start}</span>
                     <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </button>
                 
                 <button
                     onClick={triggerFileUpload}
-                    className="flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-all shadow-sm"
+                    className="flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-all shadow-sm w-full sm:w-auto"
                 >
                     <Upload className="w-4 h-4" />
-                    Завантажити відповіді
+                    {ui.resume}
                 </button>
                 <input 
                     type="file" 
@@ -162,12 +202,14 @@ const App: React.FC = () => {
                     onChange={handleFileUpload} 
                 />
             </div>
+            
+            <p className="text-xs text-slate-400">Supports Export/Import in JSON (TOON)</p>
           </div>
         ) : (
           <div className="animate-fade-in">
             {/* Category Header */}
             <div className="mb-8">
-              <span className="text-indigo-600 font-bold uppercase tracking-wider text-sm mb-1 block">Частина {currentCategoryIndex + 1} з {SURVEY_DATA.length}</span>
+              <span className="text-indigo-600 font-bold uppercase tracking-wider text-sm mb-1 block">{ui.part} {currentCategoryIndex + 1} {ui.of} {localizedCategories.length}</span>
               <h2 className="text-3xl font-bold text-slate-900 mb-2">{activeCategory.title}</h2>
               <p className="text-slate-600 text-lg">{activeCategory.description}</p>
             </div>
@@ -180,6 +222,7 @@ const App: React.FC = () => {
                   question={q}
                   answer={answers[q.id]}
                   onAnswerChange={(val, note) => handleAnswerChange(q.id, val, note)}
+                  ui={ui}
                 />
               ))}
             </div>
@@ -196,15 +239,15 @@ const App: React.FC = () => {
                     disabled={currentCategoryIndex === 0}
                 >
                     <ChevronLeft className="w-5 h-5" />
-                    Назад
+                    {ui.back}
                 </button>
 
                 <button
                     onClick={nextCategory}
                     className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all hover:translate-y-[-1px]"
                 >
-                    {currentCategoryIndex === SURVEY_DATA.length - 1 ? 'Завершити' : 'Далі'}
-                    {currentCategoryIndex === SURVEY_DATA.length - 1 ? <CheckCircle className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                    {currentCategoryIndex === localizedCategories.length - 1 ? ui.finish : ui.next}
+                    {currentCategoryIndex === localizedCategories.length - 1 ? <CheckCircle className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                 </button>
             </div>
           </div>

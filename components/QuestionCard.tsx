@@ -1,17 +1,19 @@
 import React from 'react';
-import { Question, QuestionType, Answer } from '../types';
+import { LocalizedQuestion, QuestionType, Answer, UIStrings } from '../types';
 import { MessageSquare, CheckCircle2, Lightbulb } from 'lucide-react';
 
 interface QuestionCardProps {
-  question: Question;
+  question: LocalizedQuestion;
   answer?: Answer;
   onAnswerChange: (value: string | number | null, note: string) => void;
+  ui: UIStrings;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
   answer,
   onAnswerChange,
+  ui
 }) => {
   const handleValueChange = (val: string | number) => {
     onAnswerChange(val, answer?.note || '');
@@ -25,7 +27,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 transition-all hover:shadow-md">
       <div className="flex items-start gap-3 mb-2">
         <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600 mt-1 min-w-fit">
-            <span className="font-bold text-xs uppercase tracking-wider block">{question.subCategory || 'Питання'}</span>
+            <span className="font-bold text-xs uppercase tracking-wider block">{question.subCategory || 'Question'}</span>
         </div>
         <div className="flex-1">
             <h3 className="text-lg font-medium text-slate-800 leading-snug">{question.text}</h3>
@@ -44,8 +46,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           {question.type === QuestionType.SCALE && (
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center px-1 text-xs text-slate-500 font-medium uppercase tracking-wide">
-                <span>1 - Афантазія</span>
-                <span>5 - Гіперфантазія</span>
+                <span>1</span>
+                <span>5</span>
               </div>
               <div className="flex gap-2 w-full">
                 {[1, 2, 3, 4, 5].map((num) => {
@@ -70,11 +72,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               <div className="text-center h-5">
                 {answer?.value && (
                   <span className="text-sm font-medium text-indigo-600 animate-fade-in">
-                    {answer.value === 1 && "Повна відсутність образів"}
-                    {answer.value === 2 && "Дуже слабко / фрагментарно"}
-                    {answer.value === 3 && "Нечітко / Силует"}
-                    {answer.value === 4 && "Досить чітко"}
-                    {answer.value === 5 && "Як реальність (Гіперфантазія)"}
+                    {answer.value === 1 && ui.scale1}
+                    {answer.value === 2 && ui.scale2}
+                    {answer.value === 3 && ui.scale3}
+                    {answer.value === 4 && ui.scale4}
+                    {answer.value === 5 && ui.scale5}
                   </span>
                 )}
               </div>
@@ -114,12 +116,12 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 mb-2">
             <MessageSquare className="w-4 h-4" />
-            {question.type === QuestionType.TEXT ? "Ваша відповідь" : "Коментар або опис (опціонально)"}
+            {question.type === QuestionType.TEXT ? ui.yourAnswer : ui.optionalComment}
           </label>
           <textarea
             value={answer?.note || ''}
             onChange={handleNoteChange}
-            placeholder={question.placeholder || "Напишіть деталі тут..."}
+            placeholder={question.placeholder || ""}
             className="w-full min-h-[80px] p-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-y"
           />
         </div>

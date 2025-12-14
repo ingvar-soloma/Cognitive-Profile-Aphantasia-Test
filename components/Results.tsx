@@ -1,23 +1,43 @@
 import React from 'react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { Answer, Question, QuestionType } from '../types';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { Answer, QuestionType, UIStrings, Language } from '../types';
 import { SURVEY_DATA } from '../constants';
 import { Download } from 'lucide-react';
 
 interface ResultsProps {
   answers: Record<string, Answer>;
   onReset: () => void;
+  ui: UIStrings;
+  lang: Language;
 }
 
-export const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
+export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang }) => {
   // Helper to calculate averages for the radar chart
-  const calculateCategoryScore = (subCat: string) => {
+  const calculateCategoryScore = (subCatKey: string) => {
     let total = 0;
     let count = 0;
 
     SURVEY_DATA.forEach(cat => {
       cat.questions.forEach(q => {
-        if (q.subCategory?.includes(subCat) && q.type === QuestionType.SCALE) {
+        // We match based on the english key or internal logic ideally, but here we match the subCategory object
+        // Actually, matching strings in multi-lang is hard. 
+        // We will match based on the category stored in the Question object, which I updated to simple string in constants.ts
+        // Wait, I updated constants.ts to have LocalizedString for subCategory. 
+        // Let's rely on question IDs or introduce a fixed 'key' for subCategory.
+        // For simplicity, let's look at the IDs.
+        // 1_A_*: Visual
+        // 1_B_*: Auditory
+        // 1_C_1: Tactile, 1_C_2: Gustatory, 1_C_3: Olfactory
+        
+        // Let's implement logic based on IDs for robustness
+        let match = false;
+        if (subCatKey === 'Visual' && q.id.startsWith('1_A')) match = true;
+        if (subCatKey === 'Auditory' && q.id.startsWith('1_B')) match = true;
+        if (subCatKey === 'Tactile' && q.id === '1_C_1') match = true;
+        if (subCatKey === 'Gustatory' && q.id === '1_C_2') match = true;
+        if (subCatKey === 'Olfactory' && q.id === '1_C_3') match = true;
+
+        if (match && q.type === QuestionType.SCALE) {
           const val = answers[q.id]?.value;
           if (typeof val === 'number') {
             total += val;
@@ -30,12 +50,20 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
     return count > 0 ? parseFloat((total / count).toFixed(1)) : 0;
   };
 
+  const labels: Record<string, Record<Language, string>> = {
+    Visual: { uk: 'Візуальна', en: 'Visual', ru: 'Визуальная' },
+    Auditory: { uk: 'Аудіальна', en: 'Auditory', ru: 'Аудиальная' },
+    Tactile: { uk: 'Тактильна', en: 'Tactile', ru: 'Тактильная' },
+    Gustatory: { uk: 'Смакова', en: 'Gustatory', ru: 'Вкусовая' },
+    Olfactory: { uk: 'Нюхова', en: 'Olfactory', ru: 'Обонятельная' },
+  };
+
   const radarData = [
-    { subject: 'Візуальна', A: calculateCategoryScore('Візуальна'), fullMark: 5 },
-    { subject: 'Аудіальна', A: calculateCategoryScore('Аудіальна'), fullMark: 5 },
-    { subject: 'Тактильна', A: calculateCategoryScore('Тактильна'), fullMark: 5 },
-    { subject: 'Смакова', A: calculateCategoryScore('Смакова'), fullMark: 5 },
-    { subject: 'Нюхова', A: calculateCategoryScore('Нюхова'), fullMark: 5 },
+    { key: 'Visual', subject: labels['Visual'][lang], A: calculateCategoryScore('Visual'), fullMark: 5 },
+    { key: 'Auditory', subject: labels['Auditory'][lang], A: calculateCategoryScore('Auditory'), fullMark: 5 },
+    { key: 'Tactile', subject: labels['Tactile'][lang], A: calculateCategoryScore('Tactile'), fullMark: 5 },
+    { key: 'Gustatory', subject: labels['Gustatory'][lang], A: calculateCategoryScore('Gustatory'), fullMark: 5 },
+    { key: 'Olfactory', subject: labels['Olfactory'][lang], A: calculateCategoryScore('Olfactory'), fullMark: 5 },
   ];
 
   // Prepare textual answers for display
@@ -52,25 +80,25 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
   };
 
   const getProfileDescription = () => {
-    const visualScore = calculateCategoryScore('Візуальна');
-    if (visualScore <= 1.5) return "Ваш профіль вказує на Афантазію (відсутність візуальної уяви). Ви, ймовірно, спираєтесь на семантичну пам'ять та логічні концепти.";
-    if (visualScore <= 3) return "У вас середній рівень уяви. Образи можуть бути нечіткими або тьмяними (Гіпофантазія).";
-    if (visualScore >= 4.5) return "Ваш профіль вказує на Гіперфантазію. Ваша уява надзвичайно яскрава та деталізована.";
-    return "Ви маєте типовий рівень візуальної уяви (Фантазія). Ви можете візуалізувати, але розумієте різницю з реальністю.";
+    const visualScore = calculateCategoryScore('Visual');
+    if (visualScore <= 1.5) return ui.profileAphantasia;
+    if (visualScore <= 3) return ui.profileHypophantasia;
+    if (visualScore >= 4.5) return ui.profileHyperphantasia;
+    return ui.profilePhantasia;
   };
 
   return (
     <div className="max-w-4xl mx-auto p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
         <div className="bg-indigo-600 p-6 text-white text-center">
-          <h2 className="text-3xl font-bold mb-2">Ваш Когнітивний Профіль</h2>
+          <h2 className="text-3xl font-bold mb-2">{ui.resultsTitle}</h2>
           <p className="opacity-90">{getProfileDescription()}</p>
         </div>
 
         <div className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row gap-8 items-center mb-10">
             <div className="w-full md:w-1/2 h-[300px]">
-              <h3 className="text-center font-bold text-slate-700 mb-4">Сенсорна Карта</h3>
+              <h3 className="text-center font-bold text-slate-700 mb-4">{ui.sensoryMap}</h3>
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                   <PolarGrid />
@@ -90,10 +118,10 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
             </div>
             
             <div className="w-full md:w-1/2">
-               <h3 className="font-bold text-slate-700 mb-4 border-b pb-2">Деталі Балів (1-5)</h3>
+               <h3 className="font-bold text-slate-700 mb-4 border-b pb-2">{ui.scoreDetails}</h3>
                <ul className="space-y-3">
                  {radarData.map((item) => (
-                   <li key={item.subject} className="flex items-center justify-between">
+                   <li key={item.key} className="flex items-center justify-between">
                      <span className="text-slate-600 font-medium">{item.subject}</span>
                      <div className="flex items-center gap-3">
                         <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -111,16 +139,16 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
           </div>
 
           <div className="border-t pt-8">
-             <h3 className="text-xl font-bold text-slate-800 mb-6">Ваші Текстові Нотатки</h3>
+             <h3 className="text-xl font-bold text-slate-800 mb-6">{ui.notesTitle}</h3>
              {textAnswers.length === 0 ? (
-                 <p className="text-slate-400 italic">Ви не залишили текстових коментарів.</p>
+                 <p className="text-slate-400 italic">{ui.noNotes}</p>
              ) : (
                  <div className="grid gap-4 md:grid-cols-2">
                      {textAnswers.map((ans, idx) => {
                          const q = SURVEY_DATA.flatMap(c => c.questions).find(q => q.id === ans.questionId);
                          return (
                              <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm">
-                                 <p className="font-semibold text-slate-700 mb-1 line-clamp-2" title={q?.text}>{q?.text}</p>
+                                 <p className="font-semibold text-slate-700 mb-1 line-clamp-2" title={q?.text[lang]}>{q?.text[lang]}</p>
                                  <p className="text-slate-600">{ans.note}</p>
                              </div>
                          )
@@ -136,13 +164,13 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset }) => {
                 className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 hover:shadow-sm transition-all"
             >
                 <Download className="w-4 h-4" />
-                Зберегти JSON
+                {ui.downloadJson}
             </button>
             <button 
                 onClick={onReset}
                 className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
             >
-                Пройти знову
+                {ui.retake}
             </button>
         </div>
       </div>
