@@ -69,6 +69,7 @@ export interface UIStrings {
   import: string;
   reset: string;
   saveJson: string;
+  saveToon: string; // Added TOON label
   scale1: string;
   scale2: string;
   scale3: string;

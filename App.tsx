@@ -1,10 +1,12 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { SURVEY_DATA } from './constants';
 import { Answer, LocalizedCategoryData, Language } from './types';
 import { QuestionCard } from './components/QuestionCard';
 import { Results } from './components/Results';
 import { UI_TRANSLATIONS } from './translations';
-import { BrainCircuit, ChevronRight, ChevronLeft, CheckCircle, Upload, Globe } from 'lucide-react';
+import { BrainCircuit, ChevronRight, ChevronLeft, CheckCircle, Upload, Moon, Sun } from 'lucide-react';
+// @ts-ignore - Assuming the package is available via importmap
+import { decode } from '@toon-format/toon';
 
 enum AppState {
   INTRO = 'INTRO',
@@ -12,12 +14,28 @@ enum AppState {
   RESULTS = 'RESULTS',
 }
 
+type Theme = 'light' | 'dark';
+
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.INTRO);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [language, setLanguage] = useState<Language>('uk');
+  const [theme, setTheme] = useState<Theme>('light');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle Theme Logic
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   // Derive Localized Data
   const localizedCategories: LocalizedCategoryData[] = useMemo(() => {
@@ -85,8 +103,22 @@ const App: React.FC = () => {
       if (file) {
           const reader = new FileReader();
           reader.onload = (event) => {
+              const content = event.target?.result as string;
+              if (!content) return;
+
+              let loadedAnswers = null;
+
+              // Attempt to parse based on extension or content
+              const isToon = file.name.endsWith('.toon');
+
               try {
-                  const loadedAnswers = JSON.parse(event.target?.result as string);
+                  if (isToon) {
+                     loadedAnswers = decode(content);
+                  } else {
+                     // Try JSON
+                     loadedAnswers = JSON.parse(content);
+                  }
+
                   if (loadedAnswers && typeof loadedAnswers === 'object') {
                       setAnswers(loadedAnswers);
                       setAppState(AppState.SURVEY);
@@ -97,7 +129,20 @@ const App: React.FC = () => {
                       }
                   }
               } catch (error) {
-                  console.error("Error parsing JSON", error);
+                  console.error("Error parsing file", error);
+                  // Fallback: if JSON parse failed, maybe it was a TOON file named incorrectly or vice versa
+                  try {
+                      if (!isToon) {
+                          loadedAnswers = decode(content);
+                          if (loadedAnswers) {
+                               setAnswers(loadedAnswers);
+                               setAppState(AppState.SURVEY);
+                               setCurrentCategoryIndex(0);
+                               return;
+                          }
+                      }
+                  } catch(e) {}
+                  
                   alert("Не вдалося прочитати файл. (Error reading file)");
               }
           };
@@ -114,23 +159,36 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 pb-20 font-sans transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10 border-b border-slate-200">
+      <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-indigo-600 cursor-pointer" onClick={() => setAppState(AppState.INTRO)}>
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 cursor-pointer" onClick={() => setAppState(AppState.INTRO)}>
             <BrainCircuit className="w-8 h-8" />
             <span className="font-bold text-lg hidden sm:block">NeuroProfile</span>
           </div>
           
           <div className="flex items-center gap-4">
+             {/* Theme Switcher */}
+             <button
+               onClick={toggleTheme}
+               className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+               aria-label="Toggle Theme"
+             >
+               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+             </button>
+
              {/* Language Switcher */}
-             <div className="flex bg-slate-100 rounded-lg p-1">
+             <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
                 {(['uk', 'en', 'ru'] as Language[]).map(lang => (
                     <button
                         key={lang}
                         onClick={() => setLanguage(lang)}
-                        className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${language === lang ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${
+                            language === lang 
+                            ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        }`}
                     >
                         {lang.toUpperCase()}
                     </button>
@@ -139,8 +197,8 @@ const App: React.FC = () => {
 
             {appState === AppState.SURVEY && (
                 <div className="hidden sm:flex flex-col w-32 items-end">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{progressPercent}% {ui.progress}</span>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{progressPercent}% {ui.progress}</span>
+                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-1">
                         <div 
                             className="h-full bg-indigo-500 transition-all duration-500 ease-out"
                             style={{ width: `${progressPercent}%` }}
@@ -155,26 +213,26 @@ const App: React.FC = () => {
       <main className="max-w-3xl mx-auto p-4 md:p-8">
         {appState === AppState.INTRO ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 animate-fade-in-up">
-            <div className="bg-indigo-100 p-6 rounded-full text-indigo-600 mb-4">
+            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-6 rounded-full text-indigo-600 dark:text-indigo-400 mb-4">
                 <BrainCircuit className="w-16 h-16" />
             </div>
             <div>
-                <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
+                <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
                 {ui.title}
                 </h1>
-                <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
                 {ui.description}
                 </p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 max-w-lg w-full text-left space-y-3">
-                <h3 className="font-bold text-slate-800 border-b pb-2 mb-2">{ui.howToRateTitle}</h3>
-                <ul className="text-sm space-y-2 text-slate-600">
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">1</span> {ui.scale1}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">2</span> {ui.scale2}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">3</span> {ui.scale3}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">4</span> {ui.scale4}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 w-4">5</span> {ui.scale5}</li>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 max-w-lg w-full text-left space-y-3">
+                <h3 className="font-bold text-slate-800 dark:text-slate-200 border-b dark:border-slate-700 pb-2 mb-2">{ui.howToRateTitle}</h3>
+                <ul className="text-sm space-y-2 text-slate-600 dark:text-slate-400">
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">1</span> {ui.scale1}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">2</span> {ui.scale2}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">3</span> {ui.scale3}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">4</span> {ui.scale4}</li>
+                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">5</span> {ui.scale5}</li>
                 </ul>
             </div>
 
@@ -189,7 +247,7 @@ const App: React.FC = () => {
                 
                 <button
                     onClick={triggerFileUpload}
-                    className="flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-all shadow-sm w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm w-full sm:w-auto"
                 >
                     <Upload className="w-4 h-4" />
                     {ui.resume}
@@ -198,20 +256,20 @@ const App: React.FC = () => {
                     type="file" 
                     ref={fileInputRef} 
                     className="hidden" 
-                    accept=".json" 
+                    accept=".json,.toon" 
                     onChange={handleFileUpload} 
                 />
             </div>
             
-            <p className="text-xs text-slate-400">Supports Export/Import in JSON (TOON)</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Supports Export/Import in JSON & TOON</p>
           </div>
         ) : (
           <div className="animate-fade-in">
             {/* Category Header */}
             <div className="mb-8">
-              <span className="text-indigo-600 font-bold uppercase tracking-wider text-sm mb-1 block">{ui.part} {currentCategoryIndex + 1} {ui.of} {localizedCategories.length}</span>
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">{activeCategory.title}</h2>
-              <p className="text-slate-600 text-lg">{activeCategory.description}</p>
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider text-sm mb-1 block">{ui.part} {currentCategoryIndex + 1} {ui.of} {localizedCategories.length}</span>
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{activeCategory.title}</h2>
+              <p className="text-slate-600 dark:text-slate-300 text-lg">{activeCategory.description}</p>
             </div>
 
             {/* Questions List */}
@@ -228,13 +286,13 @@ const App: React.FC = () => {
             </div>
 
             {/* Navigation Footer */}
-            <div className="flex items-center justify-between pt-8 mt-8 border-t border-slate-200">
+            <div className="flex items-center justify-between pt-8 mt-8 border-t border-slate-200 dark:border-slate-700">
                 <button
                     onClick={prevCategory}
                     className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
                         currentCategoryIndex === 0 
-                        ? 'text-slate-400 cursor-not-allowed' 
-                        : 'text-slate-700 hover:bg-slate-100'
+                        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed' 
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                     disabled={currentCategoryIndex === 0}
                 >
@@ -244,7 +302,7 @@ const App: React.FC = () => {
 
                 <button
                     onClick={nextCategory}
-                    className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all hover:translate-y-[-1px]"
+                    className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:translate-y-[-1px]"
                 >
                     {currentCategoryIndex === localizedCategories.length - 1 ? ui.finish : ui.next}
                     {currentCategoryIndex === localizedCategories.length - 1 ? <CheckCircle className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}

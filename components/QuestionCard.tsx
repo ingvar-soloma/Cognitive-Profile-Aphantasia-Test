@@ -24,15 +24,15 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 transition-all hover:shadow-md">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6 transition-all hover:shadow-md">
       <div className="flex items-start gap-3 mb-2">
-        <div className="bg-indigo-50 p-2 rounded-lg text-indigo-600 mt-1 min-w-fit">
+        <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 mt-1 min-w-fit">
             <span className="font-bold text-xs uppercase tracking-wider block">{question.subCategory || 'Question'}</span>
         </div>
         <div className="flex-1">
-            <h3 className="text-lg font-medium text-slate-800 leading-snug">{question.text}</h3>
+            <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100 leading-snug">{question.text}</h3>
             {question.hint && (
-                <div className="flex items-start gap-2 mt-2 text-sm text-slate-500 bg-slate-50 p-2 rounded-md border border-slate-100 italic">
+                <div className="flex items-start gap-2 mt-2 text-sm text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 p-2 rounded-md border border-slate-100 dark:border-slate-600 italic">
                     <Lightbulb className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                     <span>{question.hint}</span>
                 </div>
@@ -45,7 +45,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         <div className="min-h-[60px]">
           {question.type === QuestionType.SCALE && (
             <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center px-1 text-xs text-slate-500 font-medium uppercase tracking-wide">
+              <div className="flex justify-between items-center px-1 text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
                 <span>1</span>
                 <span>5</span>
               </div>
@@ -60,7 +60,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                         flex-1 h-12 rounded-lg font-bold text-lg transition-all transform active:scale-95 border
                         ${isSelected 
                           ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg scale-105' 
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                          : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-600'
                         }
                       `}
                     >
@@ -71,7 +71,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               </div>
               <div className="text-center h-5">
                 {answer?.value && (
-                  <span className="text-sm font-medium text-indigo-600 animate-fade-in">
+                  <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 animate-fade-in">
                     {answer.value === 1 && ui.scale1}
                     {answer.value === 2 && ui.scale2}
                     {answer.value === 3 && ui.scale3}
@@ -91,8 +91,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   className={`
                     flex items-center p-3 border rounded-lg cursor-pointer transition-all
                     ${answer?.value === opt.value 
-                      ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' 
-                      : 'bg-white border-slate-200 hover:bg-slate-50'
+                      ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 ring-1 ring-indigo-500' 
+                      : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600'
                     }
                   `}
                 >
@@ -102,10 +102,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     value={opt.value}
                     checked={answer?.value === opt.value}
                     onChange={() => handleValueChange(opt.value)}
-                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-500"
                   />
-                  <span className="ml-3 text-slate-700 font-medium">{opt.label}</span>
-                  {answer?.value === opt.value && <CheckCircle2 className="w-4 h-4 ml-auto text-indigo-600" />}
+                  <span className="ml-3 text-slate-700 dark:text-slate-200 font-medium">{opt.label}</span>
+                  {answer?.value === opt.value && <CheckCircle2 className="w-4 h-4 ml-auto text-indigo-600 dark:text-indigo-400" />}
                 </label>
               ))}
             </div>
@@ -113,8 +113,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
 
         {/* Universal Text Area for elaboration */}
-        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 mb-2">
+        <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-100 dark:border-slate-700">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">
             <MessageSquare className="w-4 h-4" />
             {question.type === QuestionType.TEXT ? ui.yourAnswer : ui.optionalComment}
           </label>
@@ -122,7 +122,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             value={answer?.note || ''}
             onChange={handleNoteChange}
             placeholder={question.placeholder || ""}
-            className="w-full min-h-[80px] p-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-y"
+            className="w-full min-h-[80px] p-3 text-sm text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-y placeholder-slate-400 dark:placeholder-slate-500"
           />
         </div>
       </div>
