@@ -229,6 +229,43 @@ export const SURVEY_DATA: CategoryData[] = [
         },
         type: QuestionType.TEXT,
       },
+      {
+        id: '2_6',
+        category: 'Process',
+        subCategory: { uk: 'Просторова Маніпуляція', en: 'Spatial Manipulation', ru: 'Пространственная Манипуляция' },
+        text: {
+          uk: 'Як Ви уявляєте обертання складного 3D-об\'єкта (наприклад, неіснуючого механізму)?',
+          en: 'How do you imagine rotating a complex 3D object (e.g., a non-existent mechanism)?',
+          ru: 'Как вы представляете вращение сложного 3D-объекта (например, несуществующего механизма)?'
+        },
+        type: QuestionType.CHOICE,
+        options: [
+          { label: { uk: 'Бачу, як він обертається, як у відео', en: 'I see it rotating like a video', ru: 'Вижу, как он вращается, как в видео' }, value: 'visual_rotate' },
+          { label: { uk: 'Знаю його нову позицію, використовуючи логіку/правила', en: 'I know its new position using logic/rules', ru: 'Знаю его новую позицию, используя логику/правила' }, value: 'logic_rules' },
+          { label: { uk: 'Відчуваю рух як кінестетичне відчуття', en: 'I feel the movement as a kinesthetic sensation', ru: 'Ощущаю движение как кинестетическое чувство' }, value: 'kinesthetic' },
+        ],
+      },
+      {
+        id: '2_7',
+        category: 'Process',
+        subCategory: { uk: 'Робоча Пам\'ять', en: 'Working Memory', ru: 'Рабочая Память' },
+        text: {
+          uk: 'Коли Ви утримуєте в пам\'яті список із 7-10 слів, Ви їх:',
+          en: 'When holding a list of 7-10 words in memory, you are:',
+          ru: 'Когда вы удерживаете в памяти список из 7-10 слов, вы их:'
+        },
+        hint: {
+          uk: 'Приклад: Ви постійно їх проговорюєте внутрішнім голосом, чи уявляєте, що вони написані на дошці?',
+          en: 'Example: Are you constantly repeating them with an inner voice, or do you imagine them written on a board?',
+          ru: 'Пример: Вы постоянно их проговариваете внутренним голосом, или представляете, что они написаны на доске?'
+        },
+        type: QuestionType.CHOICE,
+        options: [
+          { label: { uk: 'Постійно проговорюєте внутрішнім діалогом', en: 'Constantly repeating them via inner dialogue', ru: 'Постоянно проговариваете внутренним диалогом' }, value: 'verbal_loop' },
+          { label: { uk: 'Уявляєте, що вони написані/позначені', en: 'Imagine them written/labeled', ru: 'Представляете, что они написаны/обозначены' }, value: 'visual_labels' },
+          { label: { uk: 'Перетворюєте на концепції, щоб "знати" їх', en: 'Convert them into concepts to "know" them', ru: 'Превращаете в концепции, чтобы "знать" их' }, value: 'conceptual' },
+        ],
+      },
     ],
   },
   {
@@ -346,6 +383,22 @@ export const SURVEY_DATA: CategoryData[] = [
         type: QuestionType.TEXT,
       },
       {
+        id: '3_B_4',
+        category: 'Memory',
+        subCategory: { uk: 'Сновидіння', en: 'Dreams', ru: 'Сновидения' },
+        text: {
+          uk: 'Які Ваші сновидіння?',
+          en: 'What are your dreams like?',
+          ru: 'Какие у вас сновидения?'
+        },
+        type: QuestionType.CHOICE,
+        options: [
+          { label: { uk: 'Чіткі, кольорові, реалістичні візуальні образи', en: 'Clear, colorful, realistic visual images', ru: 'Четкие, цветные, реалистичные визуальные образы' }, value: 'visual_dreams' },
+          { label: { uk: 'Невізуальні (діалог, відчуття, знання того, що відбувається)', en: 'Non-visual (dialogue, feelings, knowing what happens)', ru: 'Невизуальные (диалог, ощущения, знание происходящего)' }, value: 'non_visual_dreams' },
+          { label: { uk: 'Не пам\'ятаю сновидінь', en: 'I do not remember dreams', ru: 'Не помню сновидений' }, value: 'no_recall' },
+        ],
+      },
+      {
         id: '3_C_1',
         category: 'Navigation',
         subCategory: { uk: 'Карта', en: 'Map', ru: 'Карта' },
@@ -390,7 +443,39 @@ export const SURVEY_DATA: CategoryData[] = [
             { label: { uk: 'Логічні аргументи', en: 'Logical arguments', ru: 'Логические аргументы' }, value: 'logic' },
             { label: { uk: 'Емоційна переконливість', en: 'Emotional persuasiveness', ru: 'Эмоциональная убедительность' }, value: 'emotion' },
         ]
-      }
+      },
+      {
+        id: '3_E_1',
+        category: 'Strategy',
+        subCategory: { uk: 'Навчання', en: 'Learning', ru: 'Обучение' },
+        text: {
+          uk: 'Що є найефективнішим для запам\'ятовування нової інформації (наприклад, розділу підручника)?',
+          en: 'What is most effective for you to memorize new information (e.g., a textbook chapter)?',
+          ru: 'Что является наиболее эффективным для запоминания новой информации (например, раздела учебника)?'
+        },
+        type: QuestionType.CHOICE,
+        options: [
+          { label: { uk: 'Багаторазове читання/переказ вголос (фокус на словах)', en: 'Multiple reading/reciting aloud (focus on words)', ru: 'Многократное чтение/пересказ вслух (фокус на словах)' }, value: 'verbal_repetition' },
+          { label: { uk: 'Побудова ментальних схем, логічних карт (фокус на зв\'язках)', en: 'Building mental schemas, logical maps (focus on connections)', ru: 'Построение ментальных схем, логических карт (фокус на связях)' }, value: 'schematic_mapping' },
+          { label: { uk: 'Спроба візуалізувати матеріал як сцену', en: 'Trying to visualize the material as a scene', ru: 'Попытка визуализировать материал как сцену' }, value: 'visualize_scene' },
+        ],
+      },
+      {
+        id: '3_E_2',
+        category: 'Strategy',
+        subCategory: { uk: 'Ухвалення Рішень', en: 'Decision Making', ru: 'Принятие Решений' },
+        text: {
+          uk: 'При ухваленні важливого рішення Ви покладаєтесь на:',
+          en: 'When making an important decision, you rely on:',
+          ru: 'При принятии важного решения вы полагаетесь на:'
+        },
+        type: QuestionType.CHOICE,
+        options: [
+          { label: { uk: 'Детальний логічний аналіз (плюси/мінуси)', en: 'Detailed logical analysis (pros/cons)', ru: 'Подробный логический анализ (плюсы/минусы)' }, value: 'pure_logic' },
+          { label: { uk: 'Швидке інтуїтивне "відчуття" правильності', en: 'Quick intuitive "feeling" of correctness', ru: 'Быстрое интуитивное "чувство" правильности' }, value: 'intuition' },
+          { label: { uk: 'Змішаний підхід, з перевагою логіки', en: 'Mixed approach, leaning towards logic', ru: 'Смешанный подход, с преобладанием логики' }, value: 'mixed_logic' },
+        ],
+      },
     ],
   },
 ];

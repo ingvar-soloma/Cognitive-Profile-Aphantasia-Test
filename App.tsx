@@ -4,7 +4,7 @@ import { Answer, LocalizedCategoryData, Language } from './types';
 import { QuestionCard } from './components/QuestionCard';
 import { Results } from './components/Results';
 import { UI_TRANSLATIONS } from './translations';
-import { BrainCircuit, ChevronRight, ChevronLeft, CheckCircle, Upload, Moon, Sun } from 'lucide-react';
+import { BrainCircuit, ChevronRight, ChevronLeft, CheckCircle, Upload, Moon, Sun, Download } from 'lucide-react';
 // @ts-ignore - Assuming the package is available via importmap
 import { decode } from '@toon-format/toon';
 
@@ -14,14 +14,27 @@ enum AppState {
   RESULTS = 'RESULTS',
 }
 
+const LOCAL_STORAGE_KEY = 'neuroprofile_survey_state';
+
 type Theme = 'light' | 'dark';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.INTRO);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
-  const [language, setLanguage] = useState<Language>('uk');
-  const [theme, setTheme] = useState<Theme>('light');
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof navigator === 'undefined') return 'uk';
+    const lang = navigator.language.toLowerCase();
+    if (lang.includes('ru')) return 'ru';
+    if (lang.includes('en')) return 'en';
+    return 'uk';
+  });
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle Theme Logic
@@ -36,6 +49,49 @@ const App: React.FC = () => {
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
+
+  // Auto-Save & Restore Logic
+  useEffect(() => {
+    // Check for saved state on mount
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.answers && Object.keys(parsed.answers).length > 0) {
+            setAnswers(parsed.answers);
+            if (parsed.currentCategoryIndex >= 0) setCurrentCategoryIndex(parsed.currentCategoryIndex);
+            if (parsed.appState) setAppState(parsed.appState);
+        }
+      } catch (e) {
+        console.error("Failed to restore state", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save state whenever it changes
+    if (Object.keys(answers).length > 0) {
+        const stateToSave = {
+            answers,
+            currentCategoryIndex,
+            appState
+        };
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+    }
+  }, [answers, currentCategoryIndex, appState]);
+
+  useEffect(() => {
+      // Warn on exit if in survey
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+          if (appState === AppState.SURVEY && Object.keys(answers).length > 0) {
+              e.preventDefault();
+              e.returnValue = ''; // Required for Chrome
+          }
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [appState, answers]);
 
   // Derive Localized Data
   const localizedCategories: LocalizedCategoryData[] = useMemo(() => {
@@ -96,6 +152,17 @@ const App: React.FC = () => {
     setAnswers({});
     setCurrentCategoryIndex(0);
     setAppState(AppState.INTRO);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  };
+
+  const downloadProgress = () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(answers, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", `neuroprofile_answers_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,8 +262,21 @@ const App: React.FC = () => {
                 ))}
              </div>
 
+
+            
             {appState === AppState.SURVEY && (
-                <div className="hidden sm:flex flex-col w-32 items-end">
+                <button
+                    onClick={downloadProgress}
+                    className="ml-4 p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900 transition-colors"
+                    title={ui.resume} // Reusing 'resume' or we could add 'save' key, but for now reuse or just icon
+                    aria-label="Save Progress"
+                >
+                    <Download className="w-5 h-5" />
+                </button>
+            )}
+
+            {appState === AppState.SURVEY && (
+                <div className="hidden sm:flex flex-col w-32 items-end ml-4">
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{progressPercent}% {ui.progress}</span>
                     <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-1">
                         <div 
