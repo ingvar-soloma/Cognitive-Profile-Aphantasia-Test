@@ -1,4 +1,4 @@
-import { CategoryData, QuestionType } from './types';
+import { CategoryData, QuestionType, SurveyDefinition } from './types';
 
 export const SURVEY_DATA: CategoryData[] = [
   {
@@ -478,4 +478,35 @@ export const SURVEY_DATA: CategoryData[] = [
       },
     ],
   },
+];
+
+export const AVAILABLE_SURVEYS: SurveyDefinition[] = [
+  {
+    id: 'full_aphantasia_profile',
+    title: {
+      uk: 'Повний Профіль Афантазії',
+      en: 'Full Aphantasia Profile',
+      ru: 'Полный Профиль Афантазии'
+    },
+    description: {
+       uk: 'Детальний аналіз сенсорної уяви, процесів мислення та стратегій пам\'яті.',
+       en: 'Detailed analysis of sensory imagination, thinking processes, and memory strategies.',
+       ru: 'Детальный анализ сенсорного воображения, процессов мышления и стратегий памяти.'
+    },
+    categories: SURVEY_DATA
+  },
+  {
+    id: 'sensory_only',
+    title: {
+      uk: 'Тільки Сенсорна Уява',
+      en: 'Sensory Imagination Only',
+      ru: 'Только Сенсорное Воображение'
+    },
+    description: {
+       uk: 'Скорочений тест, що фокусується лише на візуальних, аудіальних та інших відчуттях.',
+       en: 'Shortened test focusing only on visual, auditory, and other sensations.',
+       ru: 'Сокращенный тест, фокусирующийся только на визуальных, аудиальных и других ощущениях.'
+    },
+    categories: [SURVEY_DATA[0]] // Just reusing the first category for the "Sensory" test
+  }
 ];

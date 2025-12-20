@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { SURVEY_DATA } from './constants';
+import { AVAILABLE_SURVEYS } from './constants';
 import { Answer, LocalizedCategoryData, Language } from './types';
 import { QuestionCard } from './components/QuestionCard';
 import { Results } from './components/Results';
@@ -35,6 +35,23 @@ const App: React.FC = () => {
     }
     return 'light';
   });
+  const [activeSurveyId, setActiveSurveyId] = useState<string>(AVAILABLE_SURVEYS[0].id);
+  const [userId, setUserId] = useState<string>('');
+  
+  // Initialize User ID
+  useEffect(() => {
+      let storedUserId = localStorage.getItem('neuroprofile_user_id');
+      if (!storedUserId) {
+          storedUserId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+          localStorage.setItem('neuroprofile_user_id', storedUserId);
+      }
+      setUserId(storedUserId);
+  }, []);
+
+  const currentSurvey = useMemo(() => 
+      AVAILABLE_SURVEYS.find(s => s.id === activeSurveyId) || AVAILABLE_SURVEYS[0]
+  , [activeSurveyId]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle Theme Logic
@@ -53,7 +70,7 @@ const App: React.FC = () => {
   // Auto-Save & Restore Logic
   useEffect(() => {
     // Check for saved state on mount
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_' + activeSurveyId);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -65,8 +82,13 @@ const App: React.FC = () => {
       } catch (e) {
         console.error("Failed to restore state", e);
       }
+    } else {
+        // Reset if no saved state for this survey
+        setAnswers({});
+        setCurrentCategoryIndex(0);
+        setAppState(AppState.INTRO);
     }
-  }, []);
+  }, [activeSurveyId]);
 
   useEffect(() => {
     // Save state whenever it changes
@@ -74,11 +96,14 @@ const App: React.FC = () => {
         const stateToSave = {
             answers,
             currentCategoryIndex,
-            appState
+            appState,
+            userId, 
+            surveyId: activeSurveyId,
+            updatedAt: new Date().toISOString()
         };
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+        localStorage.setItem(LOCAL_STORAGE_KEY + '_' + activeSurveyId, JSON.stringify(stateToSave));
     }
-  }, [answers, currentCategoryIndex, appState]);
+  }, [answers, currentCategoryIndex, appState, activeSurveyId, userId]);
 
   useEffect(() => {
       // Warn on exit if in survey
@@ -95,7 +120,7 @@ const App: React.FC = () => {
 
   // Derive Localized Data
   const localizedCategories: LocalizedCategoryData[] = useMemo(() => {
-    return SURVEY_DATA.map(cat => ({
+    return currentSurvey.categories.map(cat => ({
       id: cat.id,
       title: cat.title[language],
       description: cat.description[language],
@@ -119,7 +144,7 @@ const App: React.FC = () => {
   const activeCategory = localizedCategories[currentCategoryIndex];
   
   // Progress Calculation
-  const totalQuestions = useMemo(() => SURVEY_DATA.reduce((acc, cat) => acc + cat.questions.length, 0), []);
+  const totalQuestions = useMemo(() => currentSurvey.categories.reduce((acc, cat) => acc + cat.questions.length, 0), [currentSurvey]);
   const answeredCount = Object.keys(answers).length;
   const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
 
@@ -152,14 +177,14 @@ const App: React.FC = () => {
     setAnswers({});
     setCurrentCategoryIndex(0);
     setAppState(AppState.INTRO);
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem(LOCAL_STORAGE_KEY + '_' + activeSurveyId);
   };
 
   const downloadProgress = () => {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(answers, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `neuroprofile_answers_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchorNode.setAttribute("download", `neuroprofile_${userId}_${activeSurveyId}_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(downloadAnchorNode); // required for firefox
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
@@ -303,6 +328,36 @@ const App: React.FC = () => {
                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
                 {ui.description}
                 </p>
+            </div>
+
+            {/* Survey Selector */}
+            <div className="w-full max-w-lg space-y-3 text-left">
+               <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                   Select Test
+               </label>
+               <div className="grid grid-cols-1 gap-3">
+                   {AVAILABLE_SURVEYS.map(survey => (
+                       <button
+                           key={survey.id}
+                           onClick={() => setActiveSurveyId(survey.id)}
+                           className={`p-4 rounded-xl border text-left transition-all relative ${
+                               activeSurveyId === survey.id
+                               ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600'
+                               : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'
+                           }`}
+                       >
+                           <div className="flex items-center justify-between mb-1">
+                               <span className={`font-bold ${activeSurveyId === survey.id ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
+                                   {survey.title[language]}
+                               </span>
+                               {activeSurveyId === survey.id && <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
+                           </div>
+                           <p className="text-sm text-slate-600 dark:text-slate-400 pr-6">
+                               {survey.description?.[language]}
+                           </p>
+                       </button>
+                   ))}
+               </div>
             </div>
 
             <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 max-w-lg w-full text-left space-y-3">

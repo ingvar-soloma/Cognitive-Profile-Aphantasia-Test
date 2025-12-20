@@ -57,6 +57,20 @@ export interface LocalizedCategoryData {
   questions: LocalizedQuestion[];
 }
 
+export interface SurveyDefinition {
+  id: string;
+  title: LocalizedString;
+  description?: LocalizedString;
+  categories: CategoryData[];
+}
+
+export interface LocalizedSurveyDefinition {
+  id: string;
+  title: string;
+  description?: string;
+  categories: LocalizedCategoryData[];
+}
+
 export interface UIStrings {
   title: string;
   description: string;
