@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { AVAILABLE_SURVEYS } from './constants';
 import { Answer, LocalizedCategoryData, Language } from './types';
-import { QuestionCard } from './components/QuestionCard';
 import { Results } from './components/Results';
+import { Header } from './components/Header';
+import { Intro } from './components/Intro';
+import { Survey } from './components/Survey';
 import { UI_TRANSLATIONS } from './translations';
-import { BrainCircuit, ChevronRight, ChevronLeft, CheckCircle, Upload, Moon, Sun, Download } from 'lucide-react';
 // @ts-ignore - Assuming the package is available via importmap
 import { decode } from '@toon-format/toon';
 
@@ -30,7 +31,7 @@ const App: React.FC = () => {
     return 'uk';
   });
   const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (globalThis.window !== undefined && globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
     return 'light';
@@ -42,7 +43,7 @@ const App: React.FC = () => {
   useEffect(() => {
       let storedUserId = localStorage.getItem('neuroprofile_user_id');
       if (!storedUserId) {
-          storedUserId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+          storedUserId = 'user_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36);
           localStorage.setItem('neuroprofile_user_id', storedUserId);
       }
       setUserId(storedUserId);
@@ -110,7 +111,6 @@ const App: React.FC = () => {
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
           if (appState === AppState.SURVEY && Object.keys(answers).length > 0) {
               e.preventDefault();
-              e.returnValue = ''; // Required for Chrome
           }
       };
 
@@ -120,11 +120,7 @@ const App: React.FC = () => {
 
   // Derive Localized Data
   const localizedCategories: LocalizedCategoryData[] = useMemo(() => {
-    return currentSurvey.categories.map(cat => ({
-      id: cat.id,
-      title: cat.title[language],
-      description: cat.description[language],
-      questions: cat.questions.map(q => ({
+    const localizeQuestion = (q: any) => ({
         id: q.id,
         category: q.category,
         type: q.type,
@@ -132,13 +128,21 @@ const App: React.FC = () => {
         placeholder: q.placeholder ? q.placeholder[language] : undefined,
         subCategory: q.subCategory ? q.subCategory[language] : undefined,
         hint: q.hint ? q.hint[language] : undefined,
-        options: q.options?.map(opt => ({
+      options: q.options?.map((opt: any) => ({
           value: opt.value,
           label: opt.label[language]
         }))
-      }))
-    }));
-  }, [language]);
+    });
+
+    const localizeCategory = (cat: any) => ({
+      id: cat.id,
+      title: cat.title[language],
+      description: cat.description[language],
+      questions: cat.questions.map(localizeQuestion)
+    });
+
+    return currentSurvey.categories.map(localizeCategory);
+  }, [language, currentSurvey]);
 
   const ui = UI_TRANSLATIONS[language];
   const activeCategory = localizedCategories[currentCategoryIndex];
@@ -222,7 +226,7 @@ const App: React.FC = () => {
                   }
               } catch (error) {
                   console.error("Error parsing file", error);
-                  // Fallback: if JSON parse failed, maybe it was a TOON file named incorrectly or vice versa
+                // Fallback: if JSON parse failed, maybe it was a TOON file named incorrectly or vice versa
                   try {
                       if (!isToon) {
                           loadedAnswers = decode(content);
@@ -233,9 +237,10 @@ const App: React.FC = () => {
                                return;
                           }
                       }
-                  } catch(e) {}
-                  
-                  alert("Не вдалося прочитати файл. (Error reading file)");
+                  } catch(e) {
+                    alert("Error reading file");
+                  }
+
               }
           };
           reader.readAsText(file);
@@ -252,198 +257,41 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 pb-20 font-sans transition-colors duration-300">
-      {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 cursor-pointer" onClick={() => setAppState(AppState.INTRO)}>
-            <BrainCircuit className="w-8 h-8" />
-            <span className="font-bold text-lg hidden sm:block">NeuroProfile</span>
-          </div>
-          
-          <div className="flex items-center gap-4">
-             {/* Theme Switcher */}
-             <button
-               onClick={toggleTheme}
-               className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-               aria-label="Toggle Theme"
-             >
-               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-             </button>
-
-             {/* Language Switcher */}
-             <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
-                {(['uk', 'en', 'ru'] as Language[]).map(lang => (
-                    <button
-                        key={lang}
-                        onClick={() => setLanguage(lang)}
-                        className={`px-3 py-1 rounded-md text-sm font-bold transition-all ${
-                            language === lang 
-                            ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm' 
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                    >
-                        {lang.toUpperCase()}
-                    </button>
-                ))}
-             </div>
-
-
-            
-            {appState === AppState.SURVEY && (
-                <button
-                    onClick={downloadProgress}
-                    className="ml-4 p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900 transition-colors"
-                    title={ui.resume} // Reusing 'resume' or we could add 'save' key, but for now reuse or just icon
-                    aria-label="Save Progress"
-                >
-                    <Download className="w-5 h-5" />
-                </button>
-            )}
-
-            {appState === AppState.SURVEY && (
-                <div className="hidden sm:flex flex-col w-32 items-end ml-4">
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{progressPercent}% {ui.progress}</span>
-                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mt-1">
-                        <div 
-                            className="h-full bg-indigo-500 transition-all duration-500 ease-out"
-                            style={{ width: `${progressPercent}%` }}
-                        />
-                    </div>
-                </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header 
+        appState={appState}
+        ui={ui}
+        language={language}
+        theme={theme}
+        progressPercent={progressPercent}
+        onSetLanguage={setLanguage}
+        onToggleTheme={toggleTheme}
+        onDownloadProgress={downloadProgress}
+        onGoToIntro={() => setAppState(AppState.INTRO)}
+      />
 
       <main className="max-w-3xl mx-auto p-4 md:p-8">
         {appState === AppState.INTRO ? (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 animate-fade-in-up">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-6 rounded-full text-indigo-600 dark:text-indigo-400 mb-4">
-                <BrainCircuit className="w-16 h-16" />
-            </div>
-            <div>
-                <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
-                {ui.title}
-                </h1>
-                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                {ui.description}
-                </p>
-            </div>
-
-            {/* Survey Selector */}
-            <div className="w-full max-w-lg space-y-3 text-left">
-               <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                   Select Test
-               </label>
-               <div className="grid grid-cols-1 gap-3">
-                   {AVAILABLE_SURVEYS.map(survey => (
-                       <button
-                           key={survey.id}
-                           onClick={() => setActiveSurveyId(survey.id)}
-                           className={`p-4 rounded-xl border text-left transition-all relative ${
-                               activeSurveyId === survey.id
-                               ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600'
-                               : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'
-                           }`}
-                       >
-                           <div className="flex items-center justify-between mb-1">
-                               <span className={`font-bold ${activeSurveyId === survey.id ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
-                                   {survey.title[language]}
-                               </span>
-                               {activeSurveyId === survey.id && <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
-                           </div>
-                           <p className="text-sm text-slate-600 dark:text-slate-400 pr-6">
-                               {survey.description?.[language]}
-                           </p>
-                       </button>
-                   ))}
-               </div>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 max-w-lg w-full text-left space-y-3">
-                <h3 className="font-bold text-slate-800 dark:text-slate-200 border-b dark:border-slate-700 pb-2 mb-2">{ui.howToRateTitle}</h3>
-                <ul className="text-sm space-y-2 text-slate-600 dark:text-slate-400">
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">1</span> {ui.scale1}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">2</span> {ui.scale2}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">3</span> {ui.scale3}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">4</span> {ui.scale4}</li>
-                    <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">5</span> {ui.scale5}</li>
-                </ul>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                <button
-                onClick={() => setAppState(AppState.SURVEY)}
-                className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md bg-indigo-600 px-8 font-medium text-white transition-all duration-300 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 w-full sm:w-auto"
-                >
-                    <span className="mr-2">{ui.start}</span>
-                    <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </button>
-                
-                <button
-                    onClick={triggerFileUpload}
-                    className="flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm w-full sm:w-auto"
-                >
-                    <Upload className="w-4 h-4" />
-                    {ui.resume}
-                </button>
-                <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept=".json,.toon" 
-                    onChange={handleFileUpload} 
-                />
-            </div>
-            
-            <p className="text-xs text-slate-400 dark:text-slate-500">Supports Export/Import in JSON & TOON</p>
-          </div>
+          <Intro 
+            ui={ui}
+            language={language}
+            activeSurveyId={activeSurveyId}
+            onSetActiveSurveyId={setActiveSurveyId}
+            onStartSurvey={() => setAppState(AppState.SURVEY)}
+            onTriggerFileUpload={triggerFileUpload}
+            fileInputRef={fileInputRef}
+            onFileUpload={handleFileUpload}
+          />
         ) : (
-          <div className="animate-fade-in">
-            {/* Category Header */}
-            <div className="mb-8">
-              <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider text-sm mb-1 block">{ui.part} {currentCategoryIndex + 1} {ui.of} {localizedCategories.length}</span>
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{activeCategory.title}</h2>
-              <p className="text-slate-600 dark:text-slate-300 text-lg">{activeCategory.description}</p>
-            </div>
-
-            {/* Questions List */}
-            <div className="space-y-2">
-              {activeCategory.questions.map((q) => (
-                <QuestionCard
-                  key={q.id}
-                  question={q}
-                  answer={answers[q.id]}
-                  onAnswerChange={(val, note) => handleAnswerChange(q.id, val, note)}
-                  ui={ui}
-                />
-              ))}
-            </div>
-
-            {/* Navigation Footer */}
-            <div className="flex items-center justify-between pt-8 mt-8 border-t border-slate-200 dark:border-slate-700">
-                <button
-                    onClick={prevCategory}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
-                        currentCategoryIndex === 0 
-                        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed' 
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                    }`}
-                    disabled={currentCategoryIndex === 0}
-                >
-                    <ChevronLeft className="w-5 h-5" />
-                    {ui.back}
-                </button>
-
-                <button
-                    onClick={nextCategory}
-                    className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:translate-y-[-1px]"
-                >
-                    {currentCategoryIndex === localizedCategories.length - 1 ? ui.finish : ui.next}
-                    {currentCategoryIndex === localizedCategories.length - 1 ? <CheckCircle className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                </button>
-            </div>
-          </div>
+          <Survey 
+            ui={ui}
+            currentCategoryIndex={currentCategoryIndex}
+            totalCategories={localizedCategories.length}
+            activeCategory={activeCategory}
+            answers={answers}
+            onAnswerChange={handleAnswerChange}
+            onPrevCategory={prevCategory}
+            onNextCategory={nextCategory}
+          />
         )}
       </main>
     </div>
