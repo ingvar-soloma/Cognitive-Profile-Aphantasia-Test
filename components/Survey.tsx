@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 import { QuestionCard } from './QuestionCard';
-import { LocalizedCategoryData, Answer } from '../types';
+import { LocalizedCategoryData, Answer, LocalizedScaleConfig } from '../types';
 
 interface SurveyProps {
   ui: any;
@@ -13,6 +13,7 @@ interface SurveyProps {
   onPrevCategory: () => void;
   onNextCategory: () => void;
   isLoading?: boolean;
+  scaleConfig?: LocalizedScaleConfig;
 }
 
 const SkeletonLoader = () => (
@@ -50,6 +51,7 @@ export const Survey: React.FC<SurveyProps> = ({
   onPrevCategory,
   onNextCategory,
   isLoading = false,
+  scaleConfig
 }) => {
   if (isLoading || !activeCategory) {
       return <SkeletonLoader />;
@@ -75,6 +77,7 @@ export const Survey: React.FC<SurveyProps> = ({
             answer={answers[q.id]}
             onAnswerChange={(val, note) => onAnswerChange(q.id, val, note)}
             ui={ui}
+            scaleConfig={scaleConfig}
           />
         ))}
       </div>

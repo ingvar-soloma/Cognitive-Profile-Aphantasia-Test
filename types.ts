@@ -57,11 +57,24 @@ export interface LocalizedCategoryData {
   questions: LocalizedQuestion[];
 }
 
+export interface ScaleConfig {
+  min: number;
+  max: number;
+  labels: Record<number, LocalizedString>;
+}
+
+export interface LocalizedScaleConfig {
+  min: number;
+  max: number;
+  labels: Record<number, string>;
+}
+
 export interface SurveyDefinition {
   id: string;
   title: LocalizedString;
   description?: LocalizedString;
   categories: CategoryData[];
+  scaleConfig?: ScaleConfig; // Optional custom scale configuration
 }
 
 export interface LocalizedSurveyDefinition {
@@ -69,6 +82,7 @@ export interface LocalizedSurveyDefinition {
   title: string;
   description?: string;
   categories: LocalizedCategoryData[];
+  scaleConfig?: LocalizedScaleConfig;
 }
 
 export interface UIStrings {

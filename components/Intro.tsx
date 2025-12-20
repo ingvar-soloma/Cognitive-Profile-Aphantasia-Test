@@ -26,6 +26,14 @@ export const Intro: React.FC<IntroProps> = ({
   onFileUpload,
   isLoading = false,
 }) => {
+  // Get current survey config to display correct scale
+  const activeSurvey = AVAILABLE_SURVEYS.find(s => s.id === activeSurveyId);
+  const scaleConfig = activeSurvey?.scaleConfig;
+  
+  const min = scaleConfig?.min ?? 1;
+  const max = scaleConfig?.max ?? 5;
+  const scaleNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 animate-fade-in-up">
       <div className="bg-indigo-100 dark:bg-indigo-900/30 p-6 rounded-full text-indigo-600 dark:text-indigo-400 mb-4">
@@ -80,11 +88,19 @@ export const Intro: React.FC<IntroProps> = ({
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 max-w-lg w-full text-left space-y-3">
           <h3 className="font-bold text-slate-800 dark:text-slate-200 border-b dark:border-slate-700 pb-2 mb-2">{ui.howToRateTitle}</h3>
           <ul className="text-sm space-y-2 text-slate-600 dark:text-slate-400">
-              <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">1</span> {ui.scale1}</li>
-              <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">2</span> {ui.scale2}</li>
-              <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">3</span> {ui.scale3}</li>
-              <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">4</span> {ui.scale4}</li>
-              <li className="flex gap-2"><span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">5</span> {ui.scale5}</li>
+              {scaleNumbers.map(num => (
+                  <li key={num} className="flex gap-2">
+                      <span className="font-bold text-indigo-600 dark:text-indigo-400 w-4">{num}</span> 
+                      {scaleConfig?.labels[num]?.[language] || (
+                          // Fallback
+                          num === 1 ? ui.scale1 :
+                          num === 2 ? ui.scale2 :
+                          num === 3 ? ui.scale3 :
+                          num === 4 ? ui.scale4 :
+                          num === 5 ? ui.scale5 : ''
+                      )}
+                  </li>
+              ))}
           </ul>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Answer, LocalizedCategoryData, Language, SurveyDefinition } from './types';
+import { Answer, LocalizedCategoryData, Language, SurveyDefinition, LocalizedScaleConfig } from './types';
 import { SurveyService } from './services/SurveyService';
 import { Results } from './components/Results';
 import { Header } from './components/Header';
@@ -170,6 +170,21 @@ const App: React.FC = () => {
     return currentSurvey.categories.map(localizeCategory);
   }, [language, currentSurvey]);
 
+  const localizedScaleConfig: LocalizedScaleConfig | undefined = useMemo(() => {
+    if (!currentSurvey || !currentSurvey.scaleConfig) return undefined;
+    
+    const labels: Record<number, string> = {};
+    Object.entries(currentSurvey.scaleConfig.labels).forEach(([key, val]) => {
+        labels[Number(key)] = val[language];
+    });
+
+    return {
+        min: currentSurvey.scaleConfig.min,
+        max: currentSurvey.scaleConfig.max,
+        labels
+    };
+  }, [language, currentSurvey]);
+
   const ui = UI_TRANSLATIONS[language];
   const activeCategory = localizedCategories[currentCategoryIndex];
   
@@ -319,6 +334,7 @@ const App: React.FC = () => {
             onPrevCategory={prevCategory}
             onNextCategory={nextCategory}
             isLoading={isLoading}
+            scaleConfig={localizedScaleConfig}
           />
         )}
       </main>

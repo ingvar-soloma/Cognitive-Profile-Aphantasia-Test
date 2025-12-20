@@ -17,7 +17,18 @@ export const AVAILABLE_SURVEYS: SurveyDefinition[] = [
        en: 'Detailed analysis of sensory imagination, thinking processes, and memory strategies.',
        ru: 'Детальный анализ сенсорного воображения, процессов мышления и стратегий памяти.'
     },
-    categories: [APHANTASIA_CATEGORIES[0], APHANTASIA_CATEGORIES[1], APHANTASIA_CATEGORIES[2]]
+    categories: [...APHANTASIA_CATEGORIES],
+    scaleConfig: {
+      min: 1,
+      max: 5,
+      labels: {
+        1: { uk: "Повна відсутність (Афантазія)", en: "Total absence (Aphantasia)", ru: "Полное отсутствие (Афантазия)" },
+        2: { uk: "Дуже слабко / фрагментарно", en: "Very weak / Fragmented", ru: "Очень слабо / Фрагментарно" },
+        3: { uk: "Нечітко / Силует", en: "Vague / Silhouette", ru: "Нечетко / Силуэт" },
+        4: { uk: "Досить чітко", en: "Quite clear", ru: "Довольно четко" },
+        5: { uk: "Як реальність (Гіперфантазія)", en: "Realistic (Hyperphantasia)", ru: "Как реальность (Гиперфантазия)" }
+      }
+    }
   },
   {
     id: 'sensory_only',
@@ -31,7 +42,18 @@ export const AVAILABLE_SURVEYS: SurveyDefinition[] = [
        en: 'Shortened test focusing only on visual, auditory, and other sensations.',
        ru: 'Сокращенный тест, фокусирующийся только на визуальных, аудиальных и других ощущениях.'
     },
-    categories: [APHANTASIA_CATEGORIES[0]]
+    categories: [APHANTASIA_CATEGORIES[0]],
+    scaleConfig: {
+      min: 1,
+      max: 5,
+      labels: {
+        1: { uk: "Повна відсутність (Афантазія)", en: "Total absence (Aphantasia)", ru: "Полное отсутствие (Афантазия)" },
+        2: { uk: "Дуже слабко / фрагментарно", en: "Very weak / Fragmented", ru: "Очень слабо / Фрагментарно" },
+        3: { uk: "Нечітко / Силует", en: "Vague / Silhouette", ru: "Нечетко / Силуэт" },
+        4: { uk: "Досить чітко", en: "Quite clear", ru: "Довольно четко" },
+        5: { uk: "Як реальність (Гіперфантазія)", en: "Realistic (Hyperphantasia)", ru: "Как реальность (Гиперфантазия)" }
+      }
+    }
   },
   {
     id: 'processes_only',
@@ -45,7 +67,18 @@ export const AVAILABLE_SURVEYS: SurveyDefinition[] = [
        en: 'How exactly your brain constructs images and thoughts.',
        ru: 'Как именно ваш мозг конструирует образы и мысли.'
     },
-    categories: [APHANTASIA_CATEGORIES[1]]
+    categories: [APHANTASIA_CATEGORIES[1]],
+    scaleConfig: {
+      min: 1,
+      max: 5,
+      labels: {
+        1: { uk: "Повна відсутність (Афантазія)", en: "Total absence (Aphantasia)", ru: "Полное отсутствие (Афантазия)" },
+        2: { uk: "Дуже слабко / фрагментарно", en: "Very weak / Fragmented", ru: "Очень слабо / Фрагментарно" },
+        3: { uk: "Нечітко / Силует", en: "Vague / Silhouette", ru: "Нечетко / Силуэт" },
+        4: { uk: "Досить чітко", en: "Quite clear", ru: "Довольно четко" },
+        5: { uk: "Як реальність (Гіперфантазія)", en: "Realistic (Hyperphantasia)", ru: "Как реальность (Гиперфантазия)" }
+      }
+    }
   },
   {
     id: 'strategies_only',
@@ -59,7 +92,18 @@ export const AVAILABLE_SURVEYS: SurveyDefinition[] = [
        en: 'Analysis of thinking style, memory, and social interaction.',
        ru: 'Анализ стиля мышления, памяти и социального взаимодействия.'
     },
-    categories: [APHANTASIA_CATEGORIES[2]]
+    categories: [APHANTASIA_CATEGORIES[2]],
+    scaleConfig: {
+      min: 1,
+      max: 5,
+      labels: {
+        1: { uk: "Повна відсутність (Афантазія)", en: "Total absence (Aphantasia)", ru: "Полное отсутствие (Афантазия)" },
+        2: { uk: "Дуже слабко / фрагментарно", en: "Very weak / Fragmented", ru: "Очень слабо / Фрагментарно" },
+        3: { uk: "Нечітко / Силует", en: "Vague / Silhouette", ru: "Нечетко / Силуэт" },
+        4: { uk: "Досить чітко", en: "Quite clear", ru: "Довольно четко" },
+        5: { uk: "Як реальність (Гіперфантазія)", en: "Realistic (Hyperphantasia)", ru: "Как реальность (Гиперфантазия)" }
+      }
+    }
   },
   {
     id: 'personality_mbti',
@@ -73,6 +117,17 @@ export const AVAILABLE_SURVEYS: SurveyDefinition[] = [
       en: 'A separate test to determine your communication style, work, and decision-making.',
       ru: 'Отдельный тест для определения вашего стиля общения, работы и принятия решений.'
     },
-    categories: [PERSONALITY_CATEGORIES[0]]
+    categories: [...PERSONALITY_CATEGORIES],
+    scaleConfig: {
+      min: 1,
+      max: 5,
+      labels: {
+        1: { uk: "Зовсім не згоден", en: "Strongly Disagree", ru: "Совсем не согласен" },
+        2: { uk: "Не згоден", en: "Disagree", ru: "Не согласен" },
+        3: { uk: "Нейтрально", en: "Neutral", ru: "Нейтрально" },
+        4: { uk: "Згоден", en: "Agree", ru: "Согласен" },
+        5: { uk: "Цілком згоден", en: "Strongly Agree", ru: "Полностью согласен" }
+      }
+    }
   }
 ];
