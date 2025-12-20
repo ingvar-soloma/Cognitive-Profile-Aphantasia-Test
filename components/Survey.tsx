@@ -12,7 +12,33 @@ interface SurveyProps {
   onAnswerChange: (questionId: string, value: string | number | null, note: string) => void;
   onPrevCategory: () => void;
   onNextCategory: () => void;
+  isLoading?: boolean;
 }
+
+const SkeletonLoader = () => (
+    <div className="animate-pulse space-y-8">
+        <div className="mb-8">
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mb-2"></div>
+            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-3"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
+        </div>
+        <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                    <div className="flex gap-4 mb-4">
+                        <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                        <div className="flex-1 space-y-2">
+                            <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-full"></div>
+                            <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
+                        </div>
+                    </div>
+                    <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded w-full"></div>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 export const Survey: React.FC<SurveyProps> = ({
   ui,
@@ -23,7 +49,12 @@ export const Survey: React.FC<SurveyProps> = ({
   onAnswerChange,
   onPrevCategory,
   onNextCategory,
+  isLoading = false,
 }) => {
+  if (isLoading || !activeCategory) {
+      return <SkeletonLoader />;
+  }
+
   return (
     <div className="animate-fade-in">
       {/* Category Header */}

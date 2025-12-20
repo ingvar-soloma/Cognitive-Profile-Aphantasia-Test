@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { AVAILABLE_SURVEYS } from './constants';
-import { Answer, LocalizedCategoryData, Language } from './types';
+import { Answer, LocalizedCategoryData, Language, SurveyDefinition } from './types';
+import { SurveyService } from './services/SurveyService';
 import { Results } from './components/Results';
 import { Header } from './components/Header';
 import { Intro } from './components/Intro';
@@ -36,7 +36,10 @@ const App: React.FC = () => {
     }
     return 'light';
   });
-  const [activeSurveyId, setActiveSurveyId] = useState<string>(AVAILABLE_SURVEYS[0].id);
+  
+  const [activeSurveyId, setActiveSurveyId] = useState<string>('full_aphantasia_profile'); // ID за замовчуванням
+  const [currentSurvey, setCurrentSurvey] = useState<SurveyDefinition | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userId, setUserId] = useState<string>('');
   
   // Initialize User ID
@@ -49,9 +52,30 @@ const App: React.FC = () => {
       setUserId(storedUserId);
   }, []);
 
-  const currentSurvey = useMemo(() => 
-      AVAILABLE_SURVEYS.find(s => s.id === activeSurveyId) || AVAILABLE_SURVEYS[0]
-  , [activeSurveyId]);
+  // Fetch Survey Data (Simulation of DB call)
+  useEffect(() => {
+    // Only fetch if we are starting the survey or if we need to preload data
+    // For now, we fetch when activeSurveyId changes, but we don't block UI unless we are entering SURVEY mode
+    SurveyService.getSurveyById(activeSurveyId)
+      .then((data) => {
+        if (data) {
+          setCurrentSurvey(data);
+        }
+      });
+  }, [activeSurveyId]);
+
+  const handleStartSurvey = () => {
+      setIsLoading(true);
+      // Simulate loading delay or wait for data if not ready
+      SurveyService.getSurveyById(activeSurveyId)
+          .then((data) => {
+              if (data) {
+                  setCurrentSurvey(data);
+                  setAppState(AppState.SURVEY);
+              }
+          })
+          .finally(() => setIsLoading(false));
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -120,6 +144,8 @@ const App: React.FC = () => {
 
   // Derive Localized Data
   const localizedCategories: LocalizedCategoryData[] = useMemo(() => {
+    if (!currentSurvey) return [];
+
     const localizeQuestion = (q: any) => ({
         id: q.id,
         category: q.category,
@@ -148,7 +174,7 @@ const App: React.FC = () => {
   const activeCategory = localizedCategories[currentCategoryIndex];
   
   // Progress Calculation
-  const totalQuestions = useMemo(() => currentSurvey.categories.reduce((acc, cat) => acc + cat.questions.length, 0), [currentSurvey]);
+  const totalQuestions = useMemo(() => currentSurvey ? currentSurvey.categories.reduce((acc, cat) => acc + cat.questions.length, 0) : 0, [currentSurvey]);
   const answeredCount = Object.keys(answers).length;
   const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
 
@@ -276,10 +302,11 @@ const App: React.FC = () => {
             language={language}
             activeSurveyId={activeSurveyId}
             onSetActiveSurveyId={setActiveSurveyId}
-            onStartSurvey={() => setAppState(AppState.SURVEY)}
+            onStartSurvey={handleStartSurvey}
             onTriggerFileUpload={triggerFileUpload}
             fileInputRef={fileInputRef}
             onFileUpload={handleFileUpload}
+            isLoading={isLoading}
           />
         ) : (
           <Survey 
@@ -291,6 +318,7 @@ const App: React.FC = () => {
             onAnswerChange={handleAnswerChange}
             onPrevCategory={prevCategory}
             onNextCategory={nextCategory}
+            isLoading={isLoading}
           />
         )}
       </main>
