@@ -58,7 +58,7 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang }) 
   ];
 
   // Prepare textual answers for display
-  const textAnswers = Object.values(answers).filter(a => a.note && a.note.trim().length > 0);
+  const textAnswers = (Object.values(answers) as Answer[]).filter(a => a.note && a.note.trim().length > 0);
 
   const downloadFile = (extension: string) => {
     let content = "";
