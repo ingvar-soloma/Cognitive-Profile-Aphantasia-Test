@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrainCircuit, CheckCircle, Upload, ChevronRight, Loader2 } from 'lucide-react';
+import { BrainCircuit, CheckCircle, Upload, ChevronRight, Loader2, CornerDownRight } from 'lucide-react';
 import { AVAILABLE_SURVEYS } from '../constants';
 import { Language } from '../types';
 
@@ -46,28 +46,34 @@ export const Intro: React.FC<IntroProps> = ({
              Select Test
          </span>
          <div className="grid grid-cols-1 gap-3">
-             {AVAILABLE_SURVEYS.map(survey => (
-                 <button
-                     key={survey.id}
-                     onClick={() => onSetActiveSurveyId(survey.id)}
-                     disabled={isLoading}
-                     className={`p-4 rounded-xl border text-left transition-all relative ${
-                         activeSurveyId === survey.id
-                         ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600'
-                         : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'
-                     } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                 >
-                     <div className="flex items-center justify-between mb-1">
-                         <span className={`font-bold ${activeSurveyId === survey.id ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
-                             {survey.title[language]}
-                         </span>
-                         {activeSurveyId === survey.id && <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
-                     </div>
-                     <p className="text-sm text-slate-600 dark:text-slate-400 pr-6">
-                         {survey.description?.[language]}
-                     </p>
-                 </button>
-             ))}
+             {AVAILABLE_SURVEYS.map(survey => {
+                 const isSubTest = survey.id === 'sensory_only' || survey.id === 'processes_only' || survey.id === 'strategies_only';
+                 return (
+                     <button
+                         key={survey.id}
+                         onClick={() => onSetActiveSurveyId(survey.id)}
+                         disabled={isLoading}
+                         className={`p-4 rounded-xl border text-left transition-all relative ${
+                             activeSurveyId === survey.id
+                             ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600'
+                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'
+                         } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''} ${isSubTest ? 'ml-6 border-l-4 border-l-slate-300 dark:border-l-slate-600' : ''}`}
+                     >
+                         <div className="flex items-center justify-between mb-1">
+                             <div className="flex items-center gap-2">
+                                 {isSubTest && <CornerDownRight className="w-4 h-4 text-slate-400" />}
+                                 <span className={`font-bold ${activeSurveyId === survey.id ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
+                                     {survey.title[language].replace('↳ ', '')}
+                                 </span>
+                             </div>
+                             {activeSurveyId === survey.id && <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
+                         </div>
+                         <p className={`text-sm text-slate-600 dark:text-slate-400 pr-6 ${isSubTest ? 'pl-6' : ''}`}>
+                             {survey.description?.[language]}
+                         </p>
+                     </button>
+                 );
+             })}
          </div>
       </div>
 
