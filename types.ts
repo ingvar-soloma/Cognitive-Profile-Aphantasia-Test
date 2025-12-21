@@ -130,6 +130,22 @@ export interface UIStrings {
   switchProfile: string;
   activeProfile: string;
   noProfiles: string;
+  unanswered: string;
+  scrollToUnanswered: string;
+  importAnswers: string;
+  selectProfileToImport: string;
+  compareAnswers: string;
+  existingValue: string;
+  newValue: string;
+  mergeOverwrite: string;
+  keepExisting: string;
+  importSummary: string;
+  close: string;
+  confirmImport: string;
+  similarity: string;
+  createNewProfile: string;
+  importedProfile: string;
+  goHome: string;
 }
 
 export enum ProfileType {

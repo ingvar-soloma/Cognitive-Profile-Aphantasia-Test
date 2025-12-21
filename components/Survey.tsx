@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, ArrowDownCircle } from 'lucide-react';
 import { QuestionCard } from './QuestionCard';
 import { LocalizedCategoryData, Answer, LocalizedScaleConfig } from '../types';
 
@@ -14,6 +14,8 @@ interface SurveyProps {
   onNextCategory: () => void;
   isLoading?: boolean;
   scaleConfig?: LocalizedScaleConfig;
+  isQuestionAnswered: (q: any, ans: Answer | undefined) => boolean;
+  showUnansweredIndicators?: boolean;
 }
 
 const SkeletonLoader = () => (
@@ -51,8 +53,25 @@ export const Survey: React.FC<SurveyProps> = ({
   onPrevCategory,
   onNextCategory,
   isLoading = false,
-  scaleConfig
+  scaleConfig,
+  isQuestionAnswered,
+  showUnansweredIndicators = false
 }) => {
+  const unansweredIds = React.useMemo(() => {
+    if (!activeCategory) return [];
+    return activeCategory.questions
+      .filter(q => !isQuestionAnswered(q, answers[q.id]))
+      .map(q => q.id);
+  }, [activeCategory, answers, isQuestionAnswered]);
+
+  const scrollToFirstUnanswered = () => {
+    if (unansweredIds.length > 0) {
+      const el = document.getElementById(`question-${unansweredIds[0]}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
   if (isLoading || !activeCategory) {
       return <SkeletonLoader />;
   }
@@ -78,12 +97,13 @@ export const Survey: React.FC<SurveyProps> = ({
             onAnswerChange={(val, note) => onAnswerChange(q.id, val, note)}
             ui={ui}
             scaleConfig={scaleConfig}
+            isUnanswered={showUnansweredIndicators && unansweredIds.includes(q.id)}
           />
         ))}
       </div>
 
-      {/* Navigation Footer */}
-      <div className="flex items-center justify-between pt-8 mt-8 border-t border-slate-200 dark:border-slate-700">
+       {/* Navigation Footer */}
+       <div className="flex items-center justify-between pt-8 mt-8 border-t border-slate-200 dark:border-slate-700">
           <button
               onClick={onPrevCategory}
               className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
@@ -104,7 +124,21 @@ export const Survey: React.FC<SurveyProps> = ({
               {currentCategoryIndex === totalCategories - 1 ? ui.finish : ui.next}
               {currentCategoryIndex === totalCategories - 1 ? <CheckCircle className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
           </button>
-      </div>
-    </div>
+       </div>
+
+       {/* Floating Scroll Button */}
+       {unansweredIds.length > 0 && (
+         <button
+           onClick={scrollToFirstUnanswered}
+           className="fixed bottom-6 right-6 z-40 bg-indigo-600 text-white p-3 rounded-full shadow-2xl hover:bg-indigo-700 transition-all transform hover:scale-110 flex items-center gap-2 group"
+           title={ui.scrollToUnanswered}
+         >
+           <ArrowDownCircle className="w-6 h-6" />
+           <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 text-sm font-bold whitespace-nowrap">
+             {ui.scrollToUnanswered} ({unansweredIds.length})
+           </span>
+         </button>
+       )}
+     </div>
   );
 };

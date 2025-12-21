@@ -10,12 +10,13 @@ import { encode } from '@toon-format/toon';
 interface ResultsProps {
   answers: Record<string, Answer>;
   onReset: () => void;
+  onGoHome: () => void;
   ui: UIStrings;
   lang: Language;
   filenamePrefix?: string;
 }
 
-export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang, filenamePrefix }) => {
+export const Results: React.FC<ResultsProps> = ({ answers, onReset, onGoHome, ui, lang, filenamePrefix }) => {
   const calculateCategoryScore = (subCatKey: string) => ProfileService.calculateCategoryScore(answers, subCatKey);
 
   const labels: Record<string, Record<Language, string>> = {
@@ -157,9 +158,15 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang, fi
             </button>
             <button 
                 onClick={onReset}
-                className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
+                className="px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 shadow-md hover:shadow-lg transition-all"
             >
                 {ui.retake}
+            </button>
+            <button 
+                onClick={onGoHome}
+                className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
+            >
+                {ui.goHome}
             </button>
         </div>
       </div>

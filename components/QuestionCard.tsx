@@ -8,6 +8,7 @@ interface QuestionCardProps {
   onAnswerChange: (value: string | number | null, note: string) => void;
   ui: UIStrings;
   scaleConfig?: LocalizedScaleConfig;
+  isUnanswered?: boolean;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -15,7 +16,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   answer,
   onAnswerChange,
   ui,
-  scaleConfig
+  scaleConfig,
+  isUnanswered
 }) => {
   const handleValueChange = (val: string | number) => {
     onAnswerChange(val, answer?.note || '');
@@ -31,7 +33,19 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const scaleNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6 transition-all hover:shadow-md">
+    <div 
+      id={`question-${question.id}`}
+      className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border p-6 mb-6 transition-all hover:shadow-md relative
+        ${isUnanswered 
+          ? 'border-red-300 dark:border-red-900 shadow-red-50 dark:shadow-none ring-1 ring-red-100 dark:ring-red-900/30' 
+          : 'border-slate-200 dark:border-slate-700'}
+      `}
+    >
+      {isUnanswered && (
+        <div className="absolute -top-3 left-6 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded uppercase tracking-wider animate-bounce">
+          {ui.unanswered}
+        </div>
+      )}
       <div className="flex items-start gap-3 mb-2">
         <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 mt-1 min-w-fit">
             <span className="font-bold text-xs uppercase tracking-wider block">{question.subCategory || 'Question'}</span>

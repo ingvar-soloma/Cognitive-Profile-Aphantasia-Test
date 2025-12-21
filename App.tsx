@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import { Intro } from './components/Intro';
 import { Survey } from './components/Survey';
 import { ProfileManager } from './components/ProfileManager';
+import { ImportManager } from './components/ImportManager';
 import { UI_TRANSLATIONS } from './translations';
 import { AVAILABLE_SURVEYS } from './constants';
 import { ProfileService } from './services/ProfileService';
@@ -46,6 +47,8 @@ const App: React.FC = () => {
   
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  
+  const [importingAnswers, setImportingAnswers] = useState<Record<string, Answer> | null>(null);
   
   // Initialize
   useEffect(() => {
@@ -287,6 +290,31 @@ const App: React.FC = () => {
     }
   };
 
+  const handleApplyImport = (profileId: string | null, loadedAnswers: Record<string, Answer>) => {
+    let targetId = profileId;
+    
+    if (!profileId) {
+      // Create new profile
+      const newProfile = ProfileService.createProfile(ui.importedProfile, activeSurveyId);
+      targetId = newProfile.id;
+    }
+
+    if (targetId) {
+      ProfileService.updateProfile(targetId, loadedAnswers);
+      setProfiles(ProfileService.getProfiles());
+      if (targetId === activeProfileId) {
+        setAnswers(loadedAnswers);
+      } else {
+        setActiveProfileId(targetId);
+        setAnswers(loadedAnswers);
+      }
+    }
+    
+    setImportingAnswers(null);
+    setAppState(AppState.SURVEY);
+    setCurrentCategoryIndex(0);
+  };
+
   const prevCategory = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (currentCategoryIndex > 0) {
@@ -332,9 +360,7 @@ const App: React.FC = () => {
                   }
 
                   if (loadedAnswers && typeof loadedAnswers === 'object') {
-                      setAnswers(loadedAnswers);
-                      setAppState(AppState.SURVEY);
-                      setCurrentCategoryIndex(0);
+                      setImportingAnswers(loadedAnswers);
                       // Clear input value to allow re-uploading the same file if needed
                       if (fileInputRef.current) {
                           fileInputRef.current.value = '';
@@ -347,9 +373,7 @@ const App: React.FC = () => {
                       if (!isToon) {
                           loadedAnswers = decode(content);
                           if (loadedAnswers) {
-                               setAnswers(loadedAnswers);
-                               setAppState(AppState.SURVEY);
-                               setCurrentCategoryIndex(0);
+                               setImportingAnswers(loadedAnswers);
                                return;
                           }
                       }
@@ -372,7 +396,14 @@ const App: React.FC = () => {
     const typeLabel = ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown';
     const filenamePrefix = `${profileName}_${typeLabel}`;
 
-    return <Results answers={answers} onReset={handleRetake} ui={ui} lang={language} filenamePrefix={filenamePrefix} />;
+    return <Results 
+      answers={answers} 
+      onReset={handleRetake} 
+      onGoHome={() => setAppState(AppState.INTRO)}
+      ui={ui} 
+      lang={language} 
+      filenamePrefix={filenamePrefix} 
+    />;
   }
 
   return (
@@ -428,9 +459,22 @@ const App: React.FC = () => {
             onNextCategory={nextCategory}
             isLoading={isLoading}
             scaleConfig={localizedScaleConfig}
+            isQuestionAnswered={isQuestionAnswered}
+            showUnansweredIndicators={true}
           />
         )}
       </main>
+
+      {importingAnswers && (
+        <ImportManager 
+          profiles={profiles}
+          newAnswers={importingAnswers}
+          onImport={handleApplyImport}
+          onCancel={() => setImportingAnswers(null)}
+          ui={ui}
+          lang={language}
+        />
+      )}
     </div>
   );
 };
