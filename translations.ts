@@ -38,7 +38,14 @@ export const UI_TRANSLATIONS: Record<Language, UIStrings> = {
     profileAphantasia: "Ваш профіль вказує на Афантазію (відсутність візуальної уяви). Ви, ймовірно, спираєтесь на семантичну пам'ять та логічні концепти.",
     profileHypophantasia: "У вас середній рівень уяви. Образи можуть бути нечіткими або тьмяними (Гіпофантазія).",
     profileHyperphantasia: "Ваш профіль вказує на Гіперфантазію. Ваша уява надзвичайно яскрава та деталізована.",
-    profilePhantasia: "Ви маєте типовий рівень візуальної уяви (Фантазія). Ви можете візуалізувати, але розумієте різницю з реальністю."
+    profilePhantasia: "Ви маєте типовий рівень візуальної уяви (Фантазія). Ви можете візуалізувати, але розумієте різницю з реальністю.",
+    manageProfiles: "Керування профілями",
+    profileName: "Ваше ім'я",
+    createProfile: "Створити профіль",
+    deleteProfile: "Видалити",
+    switchProfile: "Переключити",
+    activeProfile: "Активний профіль",
+    noProfiles: "Профілів поки немає",
   },
   en: {
     title: "Cognitive Profile Assessment",
@@ -77,7 +84,14 @@ export const UI_TRANSLATIONS: Record<Language, UIStrings> = {
     profileAphantasia: "Your profile suggests Aphantasia (lack of visual imagery). You likely rely on semantic memory and logical concepts.",
     profileHypophantasia: "You have an average level of imagination. Images may be vague or dim (Hypophantasia).",
     profileHyperphantasia: "Your profile suggests Hyperphantasia. Your imagination is extremely vivid and detailed.",
-    profilePhantasia: "You have a typical level of visual imagination (Phantasia). You can visualize but understand the difference from reality."
+    profilePhantasia: "You have a typical level of visual imagination (Phantasia). You can visualize but understand the difference from reality.",
+    manageProfiles: "Manage Profiles",
+    profileName: "Your Name",
+    createProfile: "Create Profile",
+    deleteProfile: "Delete",
+    switchProfile: "Switch",
+    activeProfile: "Active Profile",
+    noProfiles: "No profiles yet",
   },
   ru: {
     title: "Оценка Когнитивного Профиля",
@@ -116,6 +130,14 @@ export const UI_TRANSLATIONS: Record<Language, UIStrings> = {
     profileAphantasia: "Ваш профиль указывает на Афантазию (отсутствие визуального воображения). Вы, вероятно, опираетесь на семантическую память и логические концепты.",
     profileHypophantasia: "У вас средний уровень воображения. Образы могут быть нечеткими или тусклыми (Гипофантазия).",
     profileHyperphantasia: "Ваш профиль указывает на Гиперфантазию. Ваше воображение чрезвычайно яркое и детализированное.",
-    profilePhantasia: "У вас типичный уровень визуального воображения (Фантазия). Вы можете визуализировать, но понимаете разницу с реальностью."
+    profilePhantasia: "У вас типичный уровень визуального воображения (Фантазия). Вы можете визуализировать, но понимаете разницу с реальностью.",
+    manageProfiles: "Управление профилями",
+    profileName: "Ваше имя",
+    createProfile: "Создать профиль",
+    deleteProfile: "Удалить",
+    switchProfile: "Переключить",
+    activeProfile: "Активный профиль",
+    noProfiles: "Профилей пока нет",
   }
+
 };

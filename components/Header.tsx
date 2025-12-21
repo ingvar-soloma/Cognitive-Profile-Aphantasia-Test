@@ -8,6 +8,7 @@ interface HeaderProps {
   language: Language;
   theme: 'light' | 'dark';
   progressPercent: number;
+  activeProfileName?: string;
   onSetLanguage: (lang: Language) => void;
   onToggleTheme: () => void;
   onDownloadProgress: () => void;
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   language,
   theme,
   progressPercent,
+  activeProfileName,
   onSetLanguage,
   onToggleTheme,
   onDownloadProgress,
@@ -28,14 +30,23 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
       <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-        <button 
-          className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg p-1" 
-          onClick={onGoToIntro}
-          aria-label="Go to Home"
-        >
-          <BrainCircuit className="w-8 h-8" />
-          <span className="font-bold text-lg hidden sm:block">NeuroProfile</span>
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg p-1" 
+            onClick={onGoToIntro}
+            aria-label="Go to Home"
+          >
+            <BrainCircuit className="w-8 h-8" />
+            <span className="font-bold text-lg hidden sm:block">NeuroProfile</span>
+          </button>
+
+          {activeProfileName && (
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-700/50 rounded-full border border-slate-200 dark:border-slate-700">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{ui.activeProfile}:</span>
+              <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{activeProfileName}</span>
+            </div>
+          )}
+        </div>
         
         <div className="flex items-center gap-4">
            {/* Theme Switcher */}

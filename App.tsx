@@ -1,11 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Answer, LocalizedCategoryData, Language, SurveyDefinition, LocalizedScaleConfig } from './types';
+import { Answer, LocalizedCategoryData, Language, SurveyDefinition, LocalizedScaleConfig, Profile, QuestionType } from './types';
 import { SurveyService } from './services/SurveyService';
 import { Results } from './components/Results';
 import { Header } from './components/Header';
 import { Intro } from './components/Intro';
 import { Survey } from './components/Survey';
+import { ProfileManager } from './components/ProfileManager';
 import { UI_TRANSLATIONS } from './translations';
+import { AVAILABLE_SURVEYS } from './constants';
+import { ProfileService } from './services/ProfileService';
 // @ts-ignore - Assuming the package is available via importmap
 import { decode } from '@toon-format/toon';
 
@@ -40,16 +43,28 @@ const App: React.FC = () => {
   const [activeSurveyId, setActiveSurveyId] = useState<string>('full_aphantasia_profile'); // ID за замовчуванням
   const [currentSurvey, setCurrentSurvey] = useState<SurveyDefinition | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [userId, setUserId] = useState<string>('');
   
-  // Initialize User ID
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  
+  // Initialize
   useEffect(() => {
       let storedUserId = localStorage.getItem('neuroprofile_user_id');
       if (!storedUserId) {
           storedUserId = 'user_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36);
           localStorage.setItem('neuroprofile_user_id', storedUserId);
       }
-      setUserId(storedUserId);
+
+      // Load profiles
+      const loadedProfiles = ProfileService.getProfiles();
+      setProfiles(loadedProfiles);
+      
+      const storedProfileId = localStorage.getItem('neuroprofile_active_profile_id');
+      if (storedProfileId && loadedProfiles.some(p => p.id === storedProfileId)) {
+          setActiveProfileId(storedProfileId);
+      } else if (loadedProfiles.length > 0) {
+          setActiveProfileId(loadedProfiles[0].id);
+      }
   }, []);
 
   // Fetch Survey Data (Simulation of DB call)
@@ -92,43 +107,23 @@ const App: React.FC = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  // Auto-Save & Restore Logic
+  // Load answers from active profile
   useEffect(() => {
-    // Check for saved state on mount
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY + '_' + activeSurveyId);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.answers && Object.keys(parsed.answers).length > 0) {
-            setAnswers(parsed.answers);
-            if (parsed.currentCategoryIndex >= 0) setCurrentCategoryIndex(parsed.currentCategoryIndex);
-            if (parsed.appState) setAppState(parsed.appState);
-        }
-      } catch (e) {
-        console.error("Failed to restore state", e);
-      }
-    } else {
-        // Reset if no saved state for this survey
-        setAnswers({});
-        setCurrentCategoryIndex(0);
-        setAppState(AppState.INTRO);
-    }
-  }, [activeSurveyId]);
+     if (activeProfileId) {
+         const profile = profiles.find(p => p.id === activeProfileId);
+         if (profile) {
+             setAnswers(profile.answers);
+             localStorage.setItem('neuroprofile_active_profile_id', activeProfileId);
+         }
+     }
+  }, [activeProfileId]);
 
   useEffect(() => {
     // Save state whenever it changes
-    if (Object.keys(answers).length > 0) {
-        const stateToSave = {
-            answers,
-            currentCategoryIndex,
-            appState,
-            userId, 
-            surveyId: activeSurveyId,
-            updatedAt: new Date().toISOString()
-        };
-        localStorage.setItem(LOCAL_STORAGE_KEY + '_' + activeSurveyId, JSON.stringify(stateToSave));
+    if (activeProfileId && Object.keys(answers).length > 0) {
+        ProfileService.updateProfile(activeProfileId, answers);
     }
-  }, [answers, currentCategoryIndex, appState, activeSurveyId, userId]);
+  }, [answers, activeProfileId]);
 
   useEffect(() => {
       // Warn on exit if in survey
@@ -189,15 +184,94 @@ const App: React.FC = () => {
   const activeCategory = localizedCategories[currentCategoryIndex];
   
   // Progress Calculation
-  const totalQuestions = useMemo(() => currentSurvey ? currentSurvey.categories.reduce((acc, cat) => acc + cat.questions.length, 0) : 0, [currentSurvey]);
-  const answeredCount = Object.keys(answers).length;
-  const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
+  const activeProfile = useMemo(() => profiles.find(p => p.id === activeProfileId), [profiles, activeProfileId]);
+
+  const isQuestionAnswered = (q: any, ans: Answer | undefined) => {
+    if (!ans) return false;
+    if (q.type === QuestionType.SCALE) return typeof ans.value === 'number';
+    if (q.type === QuestionType.CHOICE) return typeof ans.value === 'string' && ans.value !== '';
+    if (q.type === QuestionType.TEXT) return typeof ans.note === 'string' && ans.note.trim() !== '';
+    return false;
+  };
+
+  const surveyProgress = useMemo(() => {
+    const progress: Record<string, { answered: number; total: number; percent: number }> = {};
+    if (!activeProfile) return progress;
+
+    AVAILABLE_SURVEYS.forEach(survey => {
+      const questions = survey.categories.flatMap(c => c.questions);
+      const total = questions.length;
+      const answered = questions.filter(q => isQuestionAnswered(q, activeProfile.answers[q.id])).length;
+      progress[survey.id] = {
+        answered,
+        total,
+        percent: total > 0 ? Math.round((answered / total) * 100) : 0
+      };
+    });
+    
+    return progress;
+  }, [activeProfile, profiles]);
+
+  const currentSurveyQuestions = useMemo(() => currentSurvey ? currentSurvey.categories.flatMap(c => c.questions) : [], [currentSurvey]);
+  
+  const totalQuestions = currentSurveyQuestions.length;
+  const answeredCountInCurrentSurvey = useMemo(() => {
+    return currentSurveyQuestions.filter(q => isQuestionAnswered(q, answers[q.id])).length;
+  }, [currentSurveyQuestions, answers]);
+  
+  const progressPercent = totalQuestions > 0 ? Math.round((answeredCountInCurrentSurvey / totalQuestions) * 100) : 0;
 
   const handleAnswerChange = (questionId: string, value: string | number | null, note: string) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: { questionId, value, note },
-    }));
+    setAnswers((prev) => {
+      const newAnswers = {
+        ...prev,
+        [questionId]: { questionId, value, note },
+      };
+      
+      // Update profile immediately
+      if (activeProfileId) {
+          ProfileService.updateProfile(activeProfileId, newAnswers);
+          setProfiles(ProfileService.getProfiles());
+      }
+      
+      return newAnswers;
+    });
+  };
+
+  const handleCreateProfile = (name: string) => {
+    const newProfile = ProfileService.createProfile(name, activeSurveyId);
+    setProfiles(ProfileService.getProfiles());
+    setActiveProfileId(newProfile.id);
+  };
+
+  const handleDeleteProfile = (id: string) => {
+    ProfileService.deleteProfile(id);
+    const updatedProfiles = ProfileService.getProfiles();
+    setProfiles(updatedProfiles);
+    if (activeProfileId === id) {
+        setActiveProfileId(updatedProfiles.length > 0 ? updatedProfiles[0].id : null);
+    }
+  };
+
+  const handleSelectProfile = (id: string) => {
+    setActiveProfileId(id);
+  };
+
+  const handleRenameProfile = (id: string, newName: string) => {
+    ProfileService.renameProfile(id, newName);
+    setProfiles(ProfileService.getProfiles());
+  };
+
+  const handleRetake = () => {
+    if (activeProfile) {
+      const baseName = activeProfile.name.split(' (Retake')[0];
+      const retakes = profiles.filter(p => p.name.startsWith(baseName)).length;
+      const newName = `${baseName} (Retake ${retakes})`;
+      const newProfile = ProfileService.createProfile(newName, activeSurveyId);
+      setProfiles(ProfileService.getProfiles());
+      setActiveProfileId(newProfile.id);
+      setAppState(AppState.INTRO);
+    }
   };
 
   const nextCategory = () => {
@@ -206,6 +280,10 @@ const App: React.FC = () => {
       setCurrentCategoryIndex((prev) => prev + 1);
     } else {
       setAppState(AppState.RESULTS);
+      if (activeProfileId) {
+          ProfileService.updateProfile(activeProfileId, answers);
+          setProfiles(ProfileService.getProfiles());
+      }
     }
   };
 
@@ -218,19 +296,16 @@ const App: React.FC = () => {
     }
   };
 
-  const resetSurvey = () => {
-    setAnswers({});
-    setCurrentCategoryIndex(0);
-    setAppState(AppState.INTRO);
-    localStorage.removeItem(LOCAL_STORAGE_KEY + '_' + activeSurveyId);
-  };
-
   const downloadProgress = () => {
+      const profileName = activeProfile?.name || 'anonymous';
+      const typeLabel = ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown';
+      const filename = `${profileName}_${typeLabel}_${activeSurveyId}_${new Date().toISOString().slice(0,10)}.json`;
+
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(answers, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `neuroprofile_${userId}_${activeSurveyId}_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.setAttribute("download", filename);
+      document.body.appendChild(downloadAnchorNode); 
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
   };
@@ -293,7 +368,11 @@ const App: React.FC = () => {
   };
 
   if (appState === AppState.RESULTS) {
-    return <Results answers={answers} onReset={resetSurvey} ui={ui} lang={language} />;
+    const profileName = activeProfile?.name || 'anonymous';
+    const typeLabel = ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown';
+    const filenamePrefix = `${profileName}_${typeLabel}`;
+
+    return <Results answers={answers} onReset={handleRetake} ui={ui} lang={language} filenamePrefix={filenamePrefix} />;
   }
 
   return (
@@ -304,6 +383,7 @@ const App: React.FC = () => {
         language={language}
         theme={theme}
         progressPercent={progressPercent}
+        activeProfileName={activeProfile?.name}
         onSetLanguage={setLanguage}
         onToggleTheme={toggleTheme}
         onDownloadProgress={downloadProgress}
@@ -312,17 +392,30 @@ const App: React.FC = () => {
 
       <main className="max-w-3xl mx-auto p-4 md:p-8">
         {appState === AppState.INTRO ? (
-          <Intro 
-            ui={ui}
-            language={language}
-            activeSurveyId={activeSurveyId}
-            onSetActiveSurveyId={setActiveSurveyId}
-            onStartSurvey={handleStartSurvey}
-            onTriggerFileUpload={triggerFileUpload}
-            fileInputRef={fileInputRef}
-            onFileUpload={handleFileUpload}
-            isLoading={isLoading}
-          />
+          <>
+            <ProfileManager 
+              profiles={profiles}
+              activeProfileId={activeProfileId}
+              onSelect={handleSelectProfile}
+              onCreate={handleCreateProfile}
+              onDelete={handleDeleteProfile}
+              onRename={handleRenameProfile}
+              ui={ui}
+              lang={language}
+            />
+            <Intro 
+              ui={ui}
+              language={language}
+              activeSurveyId={activeSurveyId}
+              onSetActiveSurveyId={setActiveSurveyId}
+              onStartSurvey={handleStartSurvey}
+              onTriggerFileUpload={triggerFileUpload}
+              fileInputRef={fileInputRef}
+              onFileUpload={handleFileUpload}
+              isLoading={isLoading}
+              surveyProgress={surveyProgress}
+            />
+          </>
         ) : (
           <Survey 
             ui={ui}

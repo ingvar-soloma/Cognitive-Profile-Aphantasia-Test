@@ -13,6 +13,7 @@ interface IntroProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isLoading?: boolean;
+  surveyProgress?: Record<string, { answered: number; total: number; percent: number }>;
 }
 
 export const Intro: React.FC<IntroProps> = ({
@@ -25,6 +26,7 @@ export const Intro: React.FC<IntroProps> = ({
   fileInputRef,
   onFileUpload,
   isLoading = false,
+  surveyProgress = {},
 }) => {
   // Get current survey config to display correct scale
   const activeSurvey = AVAILABLE_SURVEYS.find(s => s.id === activeSurveyId);
@@ -56,15 +58,17 @@ export const Intro: React.FC<IntroProps> = ({
          <div className="grid grid-cols-1 gap-3">
              {AVAILABLE_SURVEYS.map(survey => {
                  const isSubTest = survey.id === 'sensory_only' || survey.id === 'processes_only' || survey.id === 'strategies_only';
+                 const progress = surveyProgress[survey.id] || { answered: 0, total: 0, percent: 0 };
+                 
                  return (
                      <button
                          key={survey.id}
                          onClick={() => onSetActiveSurveyId(survey.id)}
                          disabled={isLoading}
-                         className={`p-4 rounded-xl border text-left transition-all relative ${
+                         className={`p-4 rounded-xl border text-left transition-all relative group/btn ${
                              activeSurveyId === survey.id
                              ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600'
-                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'
+                             : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-sm'
                          } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''} ${isSubTest ? 'ml-6 border-l-4 border-l-slate-300 dark:border-l-slate-600' : ''}`}
                      >
                          <div className="flex items-center justify-between mb-1">
@@ -74,11 +78,32 @@ export const Intro: React.FC<IntroProps> = ({
                                      {survey.title[language].replace('↳ ', '')}
                                  </span>
                              </div>
-                             {activeSurveyId === survey.id && <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
+                             <div className="flex items-center gap-2">
+                                 {progress.percent > 0 && (
+                                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                         progress.percent === 100 
+                                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                                         : 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-400'
+                                     }`}>
+                                         {progress.percent === 100 ? ui.completed : `${progress.answered}/${progress.total}`}
+                                     </span>
+                                 )}
+                                 {activeSurveyId === survey.id && <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
+                             </div>
                          </div>
-                         <p className={`text-sm text-slate-600 dark:text-slate-400 pr-6 ${isSubTest ? 'pl-6' : ''}`}>
+                         
+                         <p className={`text-sm text-slate-600 dark:text-slate-400 pr-6 mb-2 ${isSubTest ? 'pl-6' : ''}`}>
                              {survey.description?.[language]}
                          </p>
+
+                         {progress.percent > 0 && (
+                              <div className={`mt-2 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden ${isSubTest ? 'ml-6' : ''}`}>
+                                  <div 
+                                      className={`h-full transition-all duration-500 ${progress.percent === 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                                      style={{ width: `${progress.percent}%` }}
+                                  />
+                              </div>
+                         )}
                      </button>
                  );
              })}

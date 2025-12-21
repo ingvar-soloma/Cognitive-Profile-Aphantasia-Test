@@ -1,8 +1,9 @@
 import React from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { Answer, QuestionType, UIStrings, Language } from '../types';
+import { Answer, UIStrings, Language } from '../types';
 import { SURVEY_DATA } from '../constants';
 import { Download, FileJson } from 'lucide-react';
+import { ProfileService } from '../services/ProfileService';
 // @ts-ignore
 import { encode } from '@toon-format/toon';
 
@@ -11,35 +12,11 @@ interface ResultsProps {
   onReset: () => void;
   ui: UIStrings;
   lang: Language;
+  filenamePrefix?: string;
 }
 
-export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang }) => {
-  // Helper to calculate averages for the radar chart
-  const calculateCategoryScore = (subCatKey: string) => {
-    let total = 0;
-    let count = 0;
-
-    SURVEY_DATA.forEach(cat => {
-      cat.questions.forEach(q => {
-        let match = false;
-        if (subCatKey === 'Visual' && q.id.startsWith('1_A')) match = true;
-        if (subCatKey === 'Auditory' && q.id.startsWith('1_B')) match = true;
-        if (subCatKey === 'Tactile' && q.id === '1_C_1') match = true;
-        if (subCatKey === 'Gustatory' && q.id === '1_C_2') match = true;
-        if (subCatKey === 'Olfactory' && q.id === '1_C_3') match = true;
-
-        if (match && q.type === QuestionType.SCALE) {
-          const val = answers[q.id]?.value;
-          if (typeof val === 'number') {
-            total += val;
-            count++;
-          }
-        }
-      });
-    });
-
-    return count > 0 ? parseFloat((total / count).toFixed(1)) : 0;
-  };
+export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang, filenamePrefix }) => {
+  const calculateCategoryScore = (subCatKey: string) => ProfileService.calculateCategoryScore(answers, subCatKey);
 
   const labels: Record<string, Record<Language, string>> = {
     Visual: { uk: 'Візуальна', en: 'Visual', ru: 'Визуальная' },
@@ -68,10 +45,14 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang }) 
       content = JSON.stringify(answers, null, 2);
     }
 
+    const prefix = filenamePrefix || 'aphantasia_profile';
+    const date = new Date().toISOString().slice(0, 10);
+    const fileName = `${prefix}_${date}.${extension}`;
+
     const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `aphantasia_profile.${extension}`);
+    downloadAnchorNode.setAttribute("download", fileName);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -148,7 +129,7 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset, ui, lang }) 
                      {textAnswers.map((ans, idx) => {
                          const q = SURVEY_DATA.flatMap(c => c.questions).find(q => q.id === ans.questionId);
                          return (
-                             <div key={idx} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-100 dark:border-slate-700 text-sm">
+                             <div key={ans.questionId} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-100 dark:border-slate-700 text-sm">
                                  <p className="font-semibold text-slate-700 dark:text-slate-200 mb-1 line-clamp-2" title={q?.text[lang]}>{q?.text[lang]}</p>
                                  <p className="text-slate-600 dark:text-slate-400">{ans.note}</p>
                              </div>

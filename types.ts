@@ -123,4 +123,27 @@ export interface UIStrings {
   profileHypophantasia: string;
   profileHyperphantasia: string;
   profilePhantasia: string;
+  manageProfiles: string;
+  profileName: string;
+  createProfile: string;
+  deleteProfile: string;
+  switchProfile: string;
+  activeProfile: string;
+  noProfiles: string;
+}
+
+export enum ProfileType {
+  APHANTASIA = 'APHANTASIA',
+  HYPOPHANTASIA = 'HYPOPHANTASIA',
+  PHANTASIA = 'PHANTASIA',
+  HYPERPHANTASIA = 'HYPERPHANTASIA',
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  type?: ProfileType; // Based on results
+  answers: Record<string, Answer>;
+  lastUpdated: string;
+  surveyId: string;
 }
