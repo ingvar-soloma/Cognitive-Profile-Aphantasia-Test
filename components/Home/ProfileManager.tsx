@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Profile, UIStrings, Language, ProfileType } from '../types';
-import { User, Plus, Trash2, UserCircle } from 'lucide-react';
-import { ProfileService } from '../services/ProfileService';
+import { Profile, UIStrings, Language, ProfileType } from '@/types';
+import { User, Plus, Trash2, UserCircle, Download } from 'lucide-react';
+import { ProfileService } from '@/services/ProfileService';
+import { AVAILABLE_SURVEYS } from '@/constants';
 
 interface ProfileManagerProps {
   profiles: Profile[];
@@ -27,6 +28,8 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [selectedProfileForDownload, setSelectedProfileForDownload] = useState<string | null>(null);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +66,55 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({
     if (e.key === 'Enter' || e.key === ' ') {
       onSelect(id);
     }
+  };
+
+  const handleDownloadClick = (e: React.MouseEvent, profileId: string) => {
+    e.stopPropagation();
+    setSelectedProfileForDownload(profileId);
+    setShowDownloadModal(true);
+  };
+
+  const handleDownloadConfirm = (surveyId: string) => {
+    if (!selectedProfileForDownload) return;
+    
+    const profile = profiles.find(p => p.id === selectedProfileForDownload);
+    if (!profile) return;
+
+    const survey = AVAILABLE_SURVEYS.find(s => s.id === surveyId);
+    if (!survey) return;
+
+    // Prepare content
+    let content = `Profile: ${profile.name}\n`;
+    content += `Date: ${new Date(profile.lastUpdated).toLocaleDateString()}\n`;
+    content += `Test: ${survey.title['en']}\n\n`; // Using English title as requested
+
+    survey.categories.forEach(cat => {
+        content += `--- ${cat.title['en']} ---\n\n`;
+        cat.questions.forEach(q => {
+            const answer = profile.answers[q.id];
+            content += `Q: ${q.text['en']}\n`;
+            if (answer) {
+                content += `Answer: ${answer.value}\n`;
+                if (answer.note) {
+                    content += `Note: ${answer.note}\n`;
+                }
+            } else {
+                content += `Answer: [No Answer]\n`;
+            }
+            content += `\n`;
+        });
+    });
+
+    const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `${profile.name}_${surveyId}_answers.txt`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+
+    setShowDownloadModal(false);
+    setSelectedProfileForDownload(null);
   };
 
   return (
@@ -139,6 +191,15 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                  <button
+                    onClick={(e) => handleDownloadClick(e, profile.id)}
+                    className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all"
+                    title={ui.downloadQuestions}
+                    aria-label={ui.downloadQuestions}
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+
                   {activeProfileId === profile.id ? (
                     <span className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 rounded-md whitespace-nowrap">
                       {ui.activeProfile}
@@ -185,6 +246,42 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({
           </button>
         </form>
       </div>
+
+      {/* Download Modal */}
+      {showDownloadModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+              <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">{ui.selectTestToDownload}</h3>
+              <button onClick={() => setShowDownloadModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                &times;
+              </button>
+            </div>
+            <div className="p-4 max-h-[60vh] overflow-y-auto">
+              <div className="grid gap-2">
+                {AVAILABLE_SURVEYS.map(survey => (
+                  <button
+                    key={survey.id}
+                    onClick={() => handleDownloadConfirm(survey.id)}
+                    className="text-left p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all"
+                  >
+                    <div className="font-semibold text-slate-800 dark:text-slate-200">{survey.title[lang]}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">{survey.description?.[lang]}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-right">
+              <button 
+                onClick={() => setShowDownloadModal(false)}
+                className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                {ui.close}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

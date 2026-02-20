@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Profile, Answer, UIStrings, Language } from '../types';
+import { Profile, Answer, UIStrings, Language } from '@/types';
 import { X, Check, AlertCircle, ArrowRight, User, Plus, ChevronDown, ChevronUp, Info } from 'lucide-react';
-import { AVAILABLE_SURVEYS } from '../constants';
-import { ProfileService } from '../services/ProfileService';
+import { AVAILABLE_SURVEYS } from '@/constants';
+import { ProfileService } from '@/services/ProfileService';
 
 interface ImportManagerProps {
   profiles: Profile[];

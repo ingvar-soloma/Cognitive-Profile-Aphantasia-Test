@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle, ArrowDownCircle } from 'lucide-react';
 import { QuestionCard } from './QuestionCard';
-import { LocalizedCategoryData, Answer, LocalizedScaleConfig } from '../types';
+import { LocalizedCategoryData, Answer, LocalizedScaleConfig } from '@/types';
 
 interface SurveyProps {
   ui: any;

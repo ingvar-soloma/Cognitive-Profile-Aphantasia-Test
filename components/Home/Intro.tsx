@@ -1,7 +1,8 @@
-import React from 'react';
-import { BrainCircuit, CheckCircle, Upload, ChevronRight, Loader2, CornerDownRight } from 'lucide-react';
-import { AVAILABLE_SURVEYS } from '../constants';
-import { Language } from '../types';
+import React, { useState } from 'react';
+import { BrainCircuit, CheckCircle, Upload, ChevronRight, Loader2, CornerDownRight, BarChart3 } from 'lucide-react';
+import { AVAILABLE_SURVEYS } from '@/constants';
+import { Language } from '@/types';
+import { ConsentModal } from './ConsentModal';
 
 interface IntroProps {
   ui: any;
@@ -14,6 +15,8 @@ interface IntroProps {
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isLoading?: boolean;
   surveyProgress?: Record<string, { answered: number; total: number; percent: number }>;
+  hasExistingResults?: boolean;
+  onShowResults?: () => void;
 }
 
 export const Intro: React.FC<IntroProps> = ({
@@ -27,7 +30,12 @@ export const Intro: React.FC<IntroProps> = ({
   onFileUpload,
   isLoading = false,
   surveyProgress = {},
+  hasExistingResults = false,
+  onShowResults
 }) => {
+  const [showConsent, setShowConsent] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'start' | 'resume' | null>(null);
+
   // Get current survey config to display correct scale
   const activeSurvey = AVAILABLE_SURVEYS.find(s => s.id === activeSurveyId);
   const scaleConfig = activeSurvey?.scaleConfig;
@@ -36,8 +44,34 @@ export const Intro: React.FC<IntroProps> = ({
   const max = scaleConfig?.max ?? 5;
   const scaleNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
+  const checkConsentAndProceed = (action: 'start' | 'resume') => {
+    const hasConsented = localStorage.getItem('aphantasia_consent_accepted') === 'true';
+    if (hasConsented) {
+      if (action === 'start') onStartSurvey();
+      else onTriggerFileUpload();
+    } else {
+      setPendingAction(action);
+      setShowConsent(true);
+    }
+  };
+
+  const handleConsentAccept = () => {
+    localStorage.setItem('aphantasia_consent_accepted', 'true');
+    setShowConsent(false);
+    if (pendingAction === 'start') onStartSurvey();
+    else if (pendingAction === 'resume') onTriggerFileUpload();
+    setPendingAction(null);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 animate-fade-in-up">
+      <ConsentModal 
+        isOpen={showConsent}
+        onClose={() => setShowConsent(false)}
+        onAccept={handleConsentAccept}
+        ui={ui}
+      />
+
       <div className="bg-indigo-100 dark:bg-indigo-900/30 p-6 rounded-full text-indigo-600 dark:text-indigo-400 mb-4">
           <BrainCircuit className="w-16 h-16" />
       </div>
@@ -63,19 +97,20 @@ export const Intro: React.FC<IntroProps> = ({
                  return (
                      <button
                          key={survey.id}
-                         onClick={() => onSetActiveSurveyId(survey.id)}
-                         disabled={isLoading}
+                         onClick={() => !survey.disabled && onSetActiveSurveyId(survey.id)}
+                         disabled={isLoading || survey.disabled}
                          className={`p-4 rounded-xl border text-left transition-all relative group/btn ${
                              activeSurveyId === survey.id
                              ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600'
                              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-sm'
-                         } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''} ${isSubTest ? 'ml-6 border-l-4 border-l-slate-300 dark:border-l-slate-600' : ''}`}
+                         } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''} ${survey.disabled ? 'opacity-40 grayscale cursor-not-allowed border-dashed' : ''} ${isSubTest ? 'ml-6 border-l-4 border-l-slate-300 dark:border-l-slate-600' : ''}`}
                      >
                          <div className="flex items-center justify-between mb-1">
                              <div className="flex items-center gap-2">
                                  {isSubTest && <CornerDownRight className="w-4 h-4 text-slate-400" />}
                                  <span className={`font-bold ${activeSurveyId === survey.id ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
                                      {survey.title[language].replace('↳ ', '')}
+                                     {survey.disabled && <span className="ml-2 text-[10px] uppercase tracking-tighter text-slate-500 font-normal">(Coming Soon)</span>}
                                  </span>
                              </div>
                              <div className="flex items-center gap-2">
@@ -130,8 +165,19 @@ export const Intro: React.FC<IntroProps> = ({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          {hasExistingResults && onShowResults && (
+             <button
+                onClick={onShowResults}
+                disabled={isLoading}
+                className={`flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all shadow-lg hover:shadow-emerald-500/30 w-full sm:w-auto ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+             >
+                <BarChart3 className="w-5 h-5" />
+                {ui.showResults}
+             </button>
+          )}
+
           <button
-          onClick={onStartSurvey}
+          onClick={() => checkConsentAndProceed('start')}
           disabled={isLoading}
           className={`group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md bg-indigo-600 px-8 font-medium text-white transition-all duration-300 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 w-full sm:w-auto ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
@@ -146,11 +192,11 @@ export const Intro: React.FC<IntroProps> = ({
           </button>
           
           <button
-              onClick={onTriggerFileUpload}
+              onClick={() => checkConsentAndProceed('resume')}
               disabled={isLoading}
               className={`flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm w-full sm:w-auto ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline"><Upload className="w-4 h-4" /></span>
               {ui.resume}
           </button>
           <input 
@@ -163,6 +209,27 @@ export const Intro: React.FC<IntroProps> = ({
       </div>
       
       <p className="text-xs text-slate-400 dark:text-slate-500">Supports Export/Import in JSON & TOON</p>
+      
+      <div className="max-w-xl text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 italic space-y-4 text-center">
+          <div>
+              <p className="font-bold mb-1">{ui.disclaimerTitle}</p>
+              <p>{ui.disclaimer}</p>
+          </div>
+          <div>
+              <p className="font-bold mb-1">{ui.gdprTitle}</p>
+              <p>{ui.gdprText}</p>
+          </div>
+          <div>
+              <p className="font-bold mb-1">{ui.contactTitle}</p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-indigo-600 dark:text-indigo-400">
+                  <a href="mailto:ingvar.soloma@gmail.com" className="hover:underline">ingvar.soloma@gmail.com</a>
+                  <span className="hidden sm:inline text-slate-300">|</span>
+                  <a href="https://t.me/ingvar_soloma" target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
+                      tg: @ingvar_soloma
+                  </a>
+              </div>
+          </div>
+      </div>
     </div>
   );
 };

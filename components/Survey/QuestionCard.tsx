@@ -1,5 +1,5 @@
 import React from 'react';
-import { LocalizedQuestion, QuestionType, Answer, UIStrings, LocalizedScaleConfig } from '../types';
+import { LocalizedQuestion, QuestionType, Answer, UIStrings, LocalizedScaleConfig } from '@/types';
 import { MessageSquare, CheckCircle2, Lightbulb } from 'lucide-react';
 
 interface QuestionCardProps {

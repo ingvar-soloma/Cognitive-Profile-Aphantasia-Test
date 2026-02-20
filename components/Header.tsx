@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { BrainCircuit, Moon, Sun, Download } from 'lucide-react';
-import { Language } from '../types';
+import { Language } from '@/types';
 
 interface HeaderProps {
   appState: string;
@@ -13,6 +13,7 @@ interface HeaderProps {
   onToggleTheme: () => void;
   onDownloadProgress: () => void;
   onGoToIntro: () => void;
+  telegramUser: any;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme,
   onDownloadProgress,
   onGoToIntro,
+  telegramUser
 }) => {
   return (
     <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
@@ -40,7 +42,27 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="font-bold text-lg hidden sm:block">NeuroProfile</span>
           </button>
 
-          {activeProfileName && (
+
+          {telegramUser && (
+            <div className="flex items-center gap-2 ml-2">
+               {telegramUser.photo_url ? (
+                 <img src={telegramUser.photo_url} alt={telegramUser.first_name} className="w-8 h-8 rounded-full border border-indigo-200 shadow-sm" />
+               ) : (
+                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs border border-indigo-200">
+                    {telegramUser.first_name[0]}
+                 </div>
+               )}
+               <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 hidden xs:block">{telegramUser.first_name}</span>
+            </div>
+          )}
+
+          {!telegramUser && (
+            <div id="telegram-login-container" className="ml-2">
+              <TelegramButton />
+            </div>
+          )}
+
+          {activeProfileName && !telegramUser && (
             <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-700/50 rounded-full border border-slate-200 dark:border-slate-700">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{ui.activeProfile}:</span>
               <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{activeProfileName}</span>
@@ -101,4 +123,23 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
     </header>
   );
+};
+
+export const TelegramButton: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const script = document.createElement('script');
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.dataset.telegramLogin = import.meta.env.VITE_TELEGRAM_BOT_NAME || 'aphantasia_test_bot';
+      script.dataset.size = 'medium';
+      script.dataset.onauth = 'onTelegramAuth(user)';
+      script.dataset.requestAccess = 'write';
+      script.async = true;
+      containerRef.current.appendChild(script);
+    }
+  }, []);
+
+  return <div ref={containerRef} />;
 };

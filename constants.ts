@@ -107,6 +107,7 @@ export const AVAILABLE_SURVEYS: SurveyDefinition[] = [
   },
   {
     id: 'personality_mbti',
+    disabled: true,
     title: {
       uk: 'Особистісний профіль (MBTI-стиль)',
       en: 'Personality Profile (MBTI-style)',

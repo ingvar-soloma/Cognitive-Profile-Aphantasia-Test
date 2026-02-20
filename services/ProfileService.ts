@@ -1,31 +1,98 @@
-import { Answer, QuestionType, ProfileType, Profile, Language } from '../types';
+import { Answer, ProfileType, Profile, Language } from '../types';
 import { SURVEY_DATA } from '../constants';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export class ProfileService {
+  static async saveResultToBackend(profile: Profile, testType: string, scores: any, lang: Language) {
+    const authDataString = localStorage.getItem('telegram_auth');
+    if (!authDataString) return null;
+
+    try {
+      const authData = JSON.parse(authDataString);
+      // The auth data is stored as { user: { ... } } or just { ... }
+      const telegramUser = authData.user || authData;
+
+      const response = await fetch(`${API_BASE_URL}/api/save-result`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          auth_data: telegramUser,
+          test_type: testType,
+          answers: profile.answers,
+          scores: scores,
+          lang: lang
+        }),
+      });
+      return await response.json();
+    } catch (e) {
+      console.error('Failed to save to backend', e);
+      return null;
+    }
+  }
+
+  static async loadResultFromBackend() {
+    const authDataString = localStorage.getItem('telegram_auth');
+    if (!authDataString) return null;
+
+    try {
+      const authData = JSON.parse(authDataString);
+      const user = authData.user || authData;
+      
+      const response = await fetch(`${API_BASE_URL}/api/me/result`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+      return null;
+    } catch (e) {
+      console.error('Failed to load from backend', e);
+      return null;
+    }
+  }
+
+  static async fetchAllResults() {
+    const authDataString = localStorage.getItem('telegram_auth');
+    if (!authDataString) return [];
+
+    try {
+      const authData = JSON.parse(authDataString);
+      const user = authData.user || authData;
+      
+      const response = await fetch(`${API_BASE_URL}/api/results?telegram_id=${user.id}&hash=${user.hash}`);
+      if (response.ok) {
+        return await response.json();
+      }
+      return [];
+    } catch (e) {
+      console.error('Failed to fetch admin results', e);
+      return [];
+    }
+  }
+
   static calculateCategoryScore(answers: Record<string, Answer>, subCatKey: string): number {
+    const questions = SURVEY_DATA.flatMap(c => c.questions).filter(q => q.category === 'Sensory' && q.subCategory?.en === subCatKey);
+    if (questions.length === 0) return 0;
+
     let total = 0;
     let count = 0;
-
-    SURVEY_DATA.forEach(cat => {
-      cat.questions.forEach(q => {
-        let match = false;
-        if (subCatKey === 'Visual' && q.id.startsWith('1_A')) match = true;
-        if (subCatKey === 'Auditory' && q.id.startsWith('1_B')) match = true;
-        if (subCatKey === 'Tactile' && q.id === '1_C_1') match = true;
-        if (subCatKey === 'Gustatory' && q.id === '1_C_2') match = true;
-        if (subCatKey === 'Olfactory' && q.id === '1_C_3') match = true;
-
-        if (match && q.type === QuestionType.SCALE) {
-          const val = answers[q.id]?.value;
-          if (typeof val === 'number') {
-            total += val;
-            count++;
-          }
-        }
-      });
+    questions.forEach(q => {
+      const ans = answers[q.id];
+      if (ans && typeof ans.value === 'number') {
+        total += ans.value;
+        count++;
+      }
     });
 
-    return count > 0 ? Number.parseFloat((total / count).toFixed(1)) : 0;
+    return count > 0 ? Number((total / count).toFixed(1)) : 0;
   }
 
   static getProfileTypeLabel(type: ProfileType | undefined, lang: Language): string {
@@ -39,8 +106,7 @@ export class ProfileService {
     return labels[type][lang];
   }
 
-  static getProfileType(answers: Record<string, Answer>): ProfileType {
-    const visualScore = this.calculateCategoryScore(answers, 'Visual');
+  static getProfileType(visualScore: number): ProfileType {
     if (visualScore <= 1.5) return ProfileType.APHANTASIA;
     if (visualScore <= 3) return ProfileType.HYPOPHANTASIA;
     if (visualScore >= 4.5) return ProfileType.HYPERPHANTASIA;
@@ -62,27 +128,35 @@ export class ProfileService {
     localStorage.setItem('neuroprofile_profiles', JSON.stringify(profiles));
   }
 
-  static createProfile(name: string, surveyId: string): Profile {
+  static createProfile(name: string, surveyId: string, customId?: string): Profile {
+    const profiles = this.getProfiles();
+    
+    // If customId provided, check if it already exists to avoid duplicates
+    if (customId) {
+      const existing = profiles.find(p => p.id === customId);
+      if (existing) return existing;
+    }
+
     const newProfile: Profile = {
-      id: 'profile_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36),
+      id: customId || 'profile_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36),
       name,
       answers: {},
       lastUpdated: new Date().toISOString(),
       surveyId,
     };
-    const profiles = this.getProfiles();
+    
     profiles.push(newProfile);
     this.saveProfiles(profiles);
     return newProfile;
   }
 
-  static updateProfile(profileId: string, answers: Record<string, Answer>): void {
+  static updateProfile(profileId: string, answers: Record<string, Answer>, type?: ProfileType): void {
     const profiles = this.getProfiles();
     const index = profiles.findIndex(p => p.id === profileId);
     if (index !== -1) {
       profiles[index].answers = answers;
       profiles[index].lastUpdated = new Date().toISOString();
-      profiles[index].type = this.getProfileType(answers);
+      if (type) profiles[index].type = type;
       this.saveProfiles(profiles);
     }
   }

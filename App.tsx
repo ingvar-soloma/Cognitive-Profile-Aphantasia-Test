@@ -1,17 +1,18 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Answer, LocalizedCategoryData, Language, SurveyDefinition, LocalizedScaleConfig, Profile, QuestionType } from './types';
 import { SurveyService } from './services/SurveyService';
-import { Results } from './components/Results';
+import { Results } from '@/components/Results/Results';
 import { Header } from './components/Header';
-import { Intro } from './components/Intro';
-import { Survey } from './components/Survey';
-import { ProfileManager } from './components/ProfileManager';
-import { ImportManager } from './components/ImportManager';
+import { Intro } from './components/Home/Intro';
+import { Survey } from './components/Survey/Survey';
+import { ProfileManager } from './components/Home/ProfileManager';
+import { ImportManager } from './components/Home/ImportManager';
 import { UI_TRANSLATIONS } from './translations';
 import { AVAILABLE_SURVEYS } from './constants';
 import { ProfileService } from './services/ProfileService';
 // @ts-ignore - Assuming the package is available via importmap
 import { decode } from '@toon-format/toon';
+import { AdminDashboard } from './components/AdminDashboard';
 
 enum AppState {
   INTRO = 'INTRO',
@@ -22,6 +23,16 @@ enum AppState {
 const LOCAL_STORAGE_KEY = 'neuroprofile_survey_state';
 
 type Theme = 'light' | 'dark';
+
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+}
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.INTRO);
@@ -47,8 +58,27 @@ const App: React.FC = () => {
   
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(() => {
+    const saved = localStorage.getItem('telegram_auth');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        return data.user || data;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const isAdmin = useMemo(() => {
+    if (!telegramUser) return false;
+    const adminIds = (import.meta.env.VITE_ADMIN_TELEGRAM_IDS || '').split(',');
+    return adminIds.includes(String(telegramUser.id));
+  }, [telegramUser]);
   
   const [importingAnswers, setImportingAnswers] = useState<Record<string, Answer> | null>(null);
+  const [hasExistingResults, setHasExistingResults] = useState<boolean>(false);
   
   // Initialize
   useEffect(() => {
@@ -68,6 +98,73 @@ const App: React.FC = () => {
       } else if (loadedProfiles.length > 0) {
           setActiveProfileId(loadedProfiles[0].id);
       }
+
+      // Telegram Login Listener
+      const handleTelegramLogin = (e: any) => {
+        const user = e.detail;
+        setTelegramUser(user);
+      };
+      globalThis.addEventListener('telegram-login', handleTelegramLogin);
+      return () => globalThis.removeEventListener('telegram-login', handleTelegramLogin);
+  }, []);
+
+  // Sync profiles with Telegram User
+  useEffect(() => {
+    if (telegramUser) {
+      // If logged in, we only care about the profile for this user
+      const userProfileId = `tg_${telegramUser.id}`;
+      
+      // Use latest profiles from service to avoid stale state issues
+      const currentProfiles = ProfileService.getProfiles();
+      let profile = currentProfiles.find(p => p.id === userProfileId);
+      
+      if (profile) {
+        // Even if profile exists, ensure state is synced
+        setProfiles(currentProfiles);
+      } else {
+        const name = `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim();
+        ProfileService.createProfile(name, activeSurveyId, userProfileId);
+        setProfiles(ProfileService.getProfiles());
+      }
+      
+      if (activeProfileId !== userProfileId) {
+        setActiveProfileId(userProfileId);
+      }
+
+      // Check if user already has results on backend
+      ProfileService.loadResultFromBackend().then(result => {
+        if (result && result.answers) {
+          setAnswers(result.answers);
+          setHasExistingResults(true);
+          setAppState(AppState.RESULTS);
+        } else {
+          setHasExistingResults(false);
+        }
+      });
+    } else {
+      setHasExistingResults(false);
+    }
+  }, [telegramUser, activeSurveyId]);
+
+  // One-time cleanup: Deduplicate profiles by ID if they somehow got duplicated
+  useEffect(() => {
+    const currentProfiles = ProfileService.getProfiles();
+    const uniqueProfilesMap = new Map();
+    let hasDuplicates = false;
+    
+    currentProfiles.forEach(p => {
+      if (uniqueProfilesMap.has(p.id)) {
+        hasDuplicates = true;
+      } else {
+        uniqueProfilesMap.set(p.id, p);
+      }
+    });
+    
+    if (hasDuplicates) {
+      const uniqueProfiles = Array.from(uniqueProfilesMap.values());
+      ProfileService.saveProfiles(uniqueProfiles);
+      setProfiles(uniqueProfiles);
+    }
   }, []);
 
   // Fetch Survey Data (Simulation of DB call)
@@ -136,9 +233,10 @@ const App: React.FC = () => {
           }
       };
 
-      window.addEventListener('beforeunload', handleBeforeUnload);
-      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+      globalThis.addEventListener('beforeunload', handleBeforeUnload);
+      return () => globalThis.removeEventListener('beforeunload', handleBeforeUnload);
   }, [appState, answers]);
+
 
   // Derive Localized Data
   const localizedCategories: LocalizedCategoryData[] = useMemo(() => {
@@ -391,20 +489,12 @@ const App: React.FC = () => {
       fileInputRef.current?.click();
   };
 
-  if (appState === AppState.RESULTS) {
-    const profileName = activeProfile?.name || 'anonymous';
-    const typeLabel = ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown';
-    const filenamePrefix = `${profileName}_${typeLabel}`;
-
-    return <Results 
-      answers={answers} 
-      onReset={handleRetake} 
-      onGoHome={() => setAppState(AppState.INTRO)}
-      ui={ui} 
-      lang={language} 
-      filenamePrefix={filenamePrefix} 
-    />;
-  }
+  const handleViewAdminResult = (result: any) => {
+    if (result.answers) {
+      setAnswers(result.answers);
+      setAppState(AppState.RESULTS);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 pb-20 font-sans transition-colors duration-300">
@@ -415,25 +505,48 @@ const App: React.FC = () => {
         theme={theme}
         progressPercent={progressPercent}
         activeProfileName={activeProfile?.name}
+        telegramUser={telegramUser}
         onSetLanguage={setLanguage}
         onToggleTheme={toggleTheme}
         onDownloadProgress={downloadProgress}
         onGoToIntro={() => setAppState(AppState.INTRO)}
       />
 
-      <main className="max-w-3xl mx-auto p-4 md:p-8">
-        {appState === AppState.INTRO ? (
+      <main className={`${appState === AppState.RESULTS ? 'max-w-5xl' : 'max-w-3xl'} mx-auto p-4 md:p-8 transition-all duration-500`}>
+        {appState === AppState.RESULTS && (
+           <Results 
+             answers={answers} 
+             onReset={handleRetake} 
+             onGoHome={() => setAppState(AppState.INTRO)}
+             ui={ui} 
+             lang={language} 
+             filenamePrefix={`${activeProfile?.name || 'anonymous'}_${ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown'}`} 
+             telegramUser={telegramUser}
+           />
+        )}
+
+        {appState === AppState.INTRO && (
           <>
-            <ProfileManager 
-              profiles={profiles}
-              activeProfileId={activeProfileId}
-              onSelect={handleSelectProfile}
-              onCreate={handleCreateProfile}
-              onDelete={handleDeleteProfile}
-              onRename={handleRenameProfile}
-              ui={ui}
-              lang={language}
-            />
+            {(isAdmin) && (
+              <AdminDashboard 
+                ui={ui} 
+                lang={language} 
+                onViewResult={handleViewAdminResult}
+              />
+            )}
+            
+            {(!telegramUser || isAdmin) && (
+              <ProfileManager 
+                profiles={profiles}
+                activeProfileId={activeProfileId}
+                onSelect={handleSelectProfile}
+                onCreate={handleCreateProfile}
+                onDelete={handleDeleteProfile}
+                onRename={handleRenameProfile}
+                ui={ui}
+                lang={language}
+              />
+            )}
             <Intro 
               ui={ui}
               language={language}
@@ -445,9 +558,13 @@ const App: React.FC = () => {
               onFileUpload={handleFileUpload}
               isLoading={isLoading}
               surveyProgress={surveyProgress}
+              hasExistingResults={hasExistingResults}
+              onShowResults={() => setAppState(AppState.RESULTS)}
             />
           </>
-        ) : (
+        )}
+
+        {appState === AppState.SURVEY && (
           <Survey 
             ui={ui}
             currentCategoryIndex={currentCategoryIndex}

@@ -9,11 +9,14 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        allowedHosts: ['sporophoric-edgar-kittenlike.ngrok-free.dev', 'localhost']
       },
       plugins: [react(), viteSingleFile()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
+        'process.env.VITE_TELEGRAM_BOT_NAME': JSON.stringify(env.VITE_TELEGRAM_BOT_NAME)
       },
       resolve: {
         alias: {

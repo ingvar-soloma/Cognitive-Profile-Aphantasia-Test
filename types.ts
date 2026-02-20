@@ -71,6 +71,7 @@ export interface LocalizedScaleConfig {
 
 export interface SurveyDefinition {
   id: string;
+  disabled?: boolean;
   title: LocalizedString;
   description?: LocalizedString;
   categories: CategoryData[];
@@ -146,6 +147,18 @@ export interface UIStrings {
   createNewProfile: string;
   importedProfile: string;
   goHome: string;
+  downloadQuestions: string;
+  selectTestToDownload: string;
+  disclaimerTitle: string;
+  disclaimer: string;
+  gdprTitle: string;
+  gdprText: string;
+  contactTitle: string;
+  contactText: string;
+  accept: string;
+  consentTitle: string;
+  consentCheckbox: string;
+  showResults: string;
 }
 
 export enum ProfileType {
