@@ -7,9 +7,9 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 3000,
-        host: '0.0.0.0',
-        allowedHosts: ['sporophoric-edgar-kittenlike.ngrok-free.dev', 'localhost']
+        port: Number.parseInt(env.VITE_PORT || '3000'),
+        host: env.VITE_HOST || '0.0.0.0',
+        allowedHosts: (env.VITE_ALLOWED_HOSTS || 'localhost').split(',')
       },
       plugins: [react(), viteSingleFile()],
       define: {

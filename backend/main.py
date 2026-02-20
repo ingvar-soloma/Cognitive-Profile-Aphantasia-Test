@@ -9,6 +9,7 @@ from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import re
+import aiofiles
 from datetime import datetime, timezone
 from google import genai
 from telegram import Bot
@@ -64,9 +65,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def verify_telegram_auth(auth_data: TelegramAuth):
+def verify_telegram_auth(auth_data: TelegramAuth) -> bool:
+    """Verifies Telegram authentication data."""
     if not TELEGRAM_BOT_TOKEN:
         # For development if token is not set
+        logger.warning("TELEGRAM_BOT_TOKEN not set, skipping auth verification")
         return True
     
     data_check_list = []
@@ -182,7 +185,7 @@ async def send_telegram_notification(msg: str):
 def get_result_file_path(telegram_id: str):
     return os.path.join(DATA_DIR, f"{telegram_id}.json")
 
-@app.post("/api/save-result")
+@app.post("/api/save-result", responses={401: {"description": "Invalid Telegram Auth"}})
 async def save_result(data: SaveResult):
     verify_telegram_auth(data.auth_data)
     
@@ -209,8 +212,8 @@ async def save_result(data: SaveResult):
     }
     
     file_path = get_result_file_path(str(data.auth_data.id))
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(result_data, f, ensure_ascii=False, indent=2)
+    async with aiofiles.open(file_path, mode="w", encoding="utf-8") as f:
+        await f.write(json.dumps(result_data, ensure_ascii=False, indent=2))
     
     # Notify Telegram Group
     user_name = f"{data.auth_data.first_name} {data.auth_data.last_name or ''}".strip()
@@ -241,7 +244,7 @@ async def save_result(data: SaveResult):
     
     return {"status": "success", "recommendations": recommendations}
 
-@app.post("/api/me/result")
+@app.post("/api/me/result", responses={401: {"description": "Invalid Telegram Auth"}})
 async def get_my_result(auth_data: TelegramAuth):
     verify_telegram_auth(auth_data)
     
@@ -250,8 +253,9 @@ async def get_my_result(auth_data: TelegramAuth):
     if not os.path.exists(file_path):
         return None
     
-    with open(file_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    async with aiofiles.open(file_path, mode="r", encoding="utf-8") as f:
+        content = await f.read()
+        return json.loads(content)
 
 @app.get("/api/results", responses={403: {"description": "Not authorized as admin"}})
 async def get_results(telegram_id: str, hash: str):
@@ -264,11 +268,14 @@ async def get_results(telegram_id: str, hash: str):
     if os.path.exists(DATA_DIR):
         for filename in os.listdir(DATA_DIR):
             if filename.endswith(".json"):
-                with open(os.path.join(DATA_DIR, filename), "r", encoding="utf-8") as f:
-                    results.append(json.load(f))
+                async with aiofiles.open(os.path.join(DATA_DIR, filename), mode="r", encoding="utf-8") as f:
+                    content = await f.read()
+                    results.append(json.loads(content))
     
     return sorted(results, key=lambda x: x.get("created_at", ""), reverse=True)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    is_debug = os.getenv("DEBUG", "false").lower() == "true"
+    host = os.getenv("HOST", "0.0.0.0")
+    uvicorn.run("main:app", host=host, port=8000, reload=is_debug)

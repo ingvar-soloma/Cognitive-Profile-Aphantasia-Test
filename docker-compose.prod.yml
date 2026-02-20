@@ -1,13 +1,13 @@
 services:
   backend:
     image: ${BACKEND_IMAGE:-aphantasia-backend:latest}
-    build: ./backend
+    build: 
+      context: ./backend
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
-      - ./backend:/app
       - backend_data:/app/data
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     env_file:
       - .env
     restart: always
@@ -16,14 +16,9 @@ services:
     image: ${FRONTEND_IMAGE:-aphantasia-frontend:latest}
     build:
       context: .
-      target: base
+      target: prod
     ports:
-      - "${VITE_PORT:-3000}:${VITE_PORT:-3000}"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    entrypoint: []
-    command: npm run dev
+      - "${PROD_PORT:-80}:80"
     depends_on:
       - backend
     restart: always
