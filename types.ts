@@ -57,6 +57,35 @@ export interface LocalizedCategoryData {
   questions: LocalizedQuestion[];
 }
 
+export interface ScaleConfig {
+  min: number;
+  max: number;
+  labels: Record<number, LocalizedString>;
+}
+
+export interface LocalizedScaleConfig {
+  min: number;
+  max: number;
+  labels: Record<number, string>;
+}
+
+export interface SurveyDefinition {
+  id: string;
+  disabled?: boolean;
+  title: LocalizedString;
+  description?: LocalizedString;
+  categories: CategoryData[];
+  scaleConfig?: ScaleConfig; // Optional custom scale configuration
+}
+
+export interface LocalizedSurveyDefinition {
+  id: string;
+  title: string;
+  description?: string;
+  categories: LocalizedCategoryData[];
+  scaleConfig?: LocalizedScaleConfig;
+}
+
 export interface UIStrings {
   title: string;
   description: string;
@@ -95,4 +124,55 @@ export interface UIStrings {
   profileHypophantasia: string;
   profileHyperphantasia: string;
   profilePhantasia: string;
+  manageProfiles: string;
+  profileName: string;
+  createProfile: string;
+  deleteProfile: string;
+  switchProfile: string;
+  activeProfile: string;
+  noProfiles: string;
+  unanswered: string;
+  scrollToUnanswered: string;
+  importAnswers: string;
+  selectProfileToImport: string;
+  compareAnswers: string;
+  existingValue: string;
+  newValue: string;
+  mergeOverwrite: string;
+  keepExisting: string;
+  importSummary: string;
+  close: string;
+  confirmImport: string;
+  similarity: string;
+  createNewProfile: string;
+  importedProfile: string;
+  goHome: string;
+  downloadQuestions: string;
+  selectTestToDownload: string;
+  disclaimerTitle: string;
+  disclaimer: string;
+  gdprTitle: string;
+  gdprText: string;
+  contactTitle: string;
+  contactText: string;
+  accept: string;
+  consentTitle: string;
+  consentCheckbox: string;
+  showResults: string;
+}
+
+export enum ProfileType {
+  APHANTASIA = 'APHANTASIA',
+  HYPOPHANTASIA = 'HYPOPHANTASIA',
+  PHANTASIA = 'PHANTASIA',
+  HYPERPHANTASIA = 'HYPERPHANTASIA',
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  type?: ProfileType; // Based on results
+  answers: Record<string, Answer>;
+  lastUpdated: string;
+  surveyId: string;
 }

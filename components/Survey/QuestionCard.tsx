@@ -1,5 +1,5 @@
 import React from 'react';
-import { LocalizedQuestion, QuestionType, Answer, UIStrings } from '../types';
+import { LocalizedQuestion, QuestionType, Answer, UIStrings, LocalizedScaleConfig } from '@/types';
 import { MessageSquare, CheckCircle2, Lightbulb } from 'lucide-react';
 
 interface QuestionCardProps {
@@ -7,13 +7,17 @@ interface QuestionCardProps {
   answer?: Answer;
   onAnswerChange: (value: string | number | null, note: string) => void;
   ui: UIStrings;
+  scaleConfig?: LocalizedScaleConfig;
+  isUnanswered?: boolean;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
   answer,
   onAnswerChange,
-  ui
+  ui,
+  scaleConfig,
+  isUnanswered
 }) => {
   const handleValueChange = (val: string | number) => {
     onAnswerChange(val, answer?.note || '');
@@ -23,8 +27,25 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     onAnswerChange(answer?.value ?? null, e.target.value);
   };
 
+  // Generate scale numbers based on config or default 1-5
+  const min = scaleConfig?.min ?? 1;
+  const max = scaleConfig?.max ?? 5;
+  const scaleNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6 transition-all hover:shadow-md">
+    <div 
+      id={`question-${question.id}`}
+      className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border p-6 mb-6 transition-all hover:shadow-md relative
+        ${isUnanswered 
+          ? 'border-red-300 dark:border-red-900 shadow-red-50 dark:shadow-none ring-1 ring-red-100 dark:ring-red-900/30' 
+          : 'border-slate-200 dark:border-slate-700'}
+      `}
+    >
+      {isUnanswered && (
+        <div className="absolute -top-3 left-6 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded uppercase tracking-wider animate-bounce">
+          {ui.unanswered}
+        </div>
+      )}
       <div className="flex items-start gap-3 mb-2">
         <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400 mt-1 min-w-fit">
             <span className="font-bold text-xs uppercase tracking-wider block">{question.subCategory || 'Question'}</span>
@@ -46,11 +67,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           {question.type === QuestionType.SCALE && (
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center px-1 text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
-                <span>1</span>
-                <span>5</span>
+                <span>{min}</span>
+                <span>{max}</span>
               </div>
               <div className="flex gap-2 w-full">
-                {[1, 2, 3, 4, 5].map((num) => {
+                {scaleNumbers.map((num) => {
                    const isSelected = answer?.value === num;
                    return (
                     <button
@@ -70,13 +91,16 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 })}
               </div>
               <div className="text-center h-5">
-                {answer?.value && (
+                {answer?.value && typeof answer.value === 'number' && (
                   <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 animate-fade-in">
-                    {answer.value === 1 && ui.scale1}
-                    {answer.value === 2 && ui.scale2}
-                    {answer.value === 3 && ui.scale3}
-                    {answer.value === 4 && ui.scale4}
-                    {answer.value === 5 && ui.scale5}
+                    {scaleConfig?.labels[answer.value] || (
+                        // Fallback to UI strings if no custom config or label missing
+                        answer.value === 1 ? ui.scale1 :
+                        answer.value === 2 ? ui.scale2 :
+                        answer.value === 3 ? ui.scale3 :
+                        answer.value === 4 ? ui.scale4 :
+                        answer.value === 5 ? ui.scale5 : ''
+                    )}
                   </span>
                 )}
               </div>

@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+python-multipart
+python-telegram-bot
+google-genai
+python-dotenv
+httpx
+pytz
+aiofiles
