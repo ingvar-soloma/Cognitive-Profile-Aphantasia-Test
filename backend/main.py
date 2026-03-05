@@ -187,6 +187,7 @@ def get_result_file_path(telegram_id: str):
 
 @app.post("/api/save-result", responses={401: {"description": "Invalid Telegram Auth"}})
 async def save_result(data: SaveResult):
+    logger.info(f"Incoming save-result request for user {data.auth_data.id} (@{data.auth_data.username})")
     verify_telegram_auth(data.auth_data)
     
     # Enforcement: Only one submission per TG ID
@@ -195,7 +196,10 @@ async def save_result(data: SaveResult):
     if os.path.exists(file_path):
         return {"status": "error", "message": "Result already exists for this user. Only one submission allowed."}
     
-    recommendations = await get_gemini_recommendations({"answers": data.answers, "scores": data.scores}, lang=data.lang)
+    recommendations = await get_gemini_recommendations({"answers": data.answers, "scores": data.scores}, lang=data.lang or "en")
+    
+    # Ensure recommendations is a string for further processing
+    recommendations_text = str(recommendations)
     
     result_data = {
         "username": data.auth_data.username,
@@ -207,7 +211,7 @@ async def save_result(data: SaveResult):
         "test_type": data.test_type,
         "answers": data.answers,
         "scores": data.scores,
-        "gemini_recommendations": recommendations,
+        "gemini_recommendations": recommendations_text,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -222,7 +226,7 @@ async def save_result(data: SaveResult):
     
     # Format recommendations for Telegram
     # 1. Truncate raw text first to avoid breaking HTML tags later
-    truncated_recs = recommendations[:2500] + ("..." if len(recommendations) > 2500 else "")
+    truncated_recs = recommendations_text[:2500] + ("..." if len(recommendations_text) > 2500 else "")
     
     # 2. Escape HTML special characters
     recs_safe = truncated_recs.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
@@ -246,6 +250,7 @@ async def save_result(data: SaveResult):
 
 @app.post("/api/me/result", responses={401: {"description": "Invalid Telegram Auth"}})
 async def get_my_result(auth_data: TelegramAuth):
+    logger.info(f"Incoming get-my-result request for user {auth_data.id}")
     verify_telegram_auth(auth_data)
     
     telegram_id = str(auth_data.id)

@@ -51,11 +51,11 @@ const App: React.FC = () => {
     }
     return 'light';
   });
-  
+
   const [activeSurveyId, setActiveSurveyId] = useState<string>('full_aphantasia_profile'); // ID за замовчуванням
   const [currentSurvey, setCurrentSurvey] = useState<SurveyDefinition | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  
+
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(() => {
@@ -63,7 +63,13 @@ const App: React.FC = () => {
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        return data.user || data;
+        const user = data.user || data;
+        if (user && user.id && user.hash && !user.error) {
+          return user;
+        }
+        console.warn('[App] Invalid telegram_auth in localStorage found and cleared');
+        localStorage.removeItem('telegram_auth');
+        return null;
       } catch (e) {
         return null;
       }
@@ -76,36 +82,57 @@ const App: React.FC = () => {
     const adminIds = (import.meta.env.VITE_ADMIN_TELEGRAM_IDS || '').split(',');
     return adminIds.includes(String(telegramUser.id));
   }, [telegramUser]);
-  
+
   const [importingAnswers, setImportingAnswers] = useState<Record<string, Answer> | null>(null);
   const [hasExistingResults, setHasExistingResults] = useState<boolean>(false);
-  
+
   // Initialize
   useEffect(() => {
-      let storedUserId = localStorage.getItem('neuroprofile_user_id');
-      if (!storedUserId) {
-          storedUserId = 'user_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36);
-          localStorage.setItem('neuroprofile_user_id', storedUserId);
-      }
+    let storedUserId = localStorage.getItem('neuroprofile_user_id');
+    if (!storedUserId) {
+      storedUserId = 'user_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36);
+      localStorage.setItem('neuroprofile_user_id', storedUserId);
+    }
 
-      // Load profiles
-      const loadedProfiles = ProfileService.getProfiles();
-      setProfiles(loadedProfiles);
-      
-      const storedProfileId = localStorage.getItem('neuroprofile_active_profile_id');
-      if (storedProfileId && loadedProfiles.some(p => p.id === storedProfileId)) {
-          setActiveProfileId(storedProfileId);
-      } else if (loadedProfiles.length > 0) {
-          setActiveProfileId(loadedProfiles[0].id);
-      }
+    // Load profiles
+    const loadedProfiles = ProfileService.getProfiles();
+    setProfiles(loadedProfiles);
 
-      // Telegram Login Listener
-      const handleTelegramLogin = (e: any) => {
-        const user = e.detail;
+    const storedProfileId = localStorage.getItem('neuroprofile_active_profile_id');
+    if (storedProfileId && loadedProfiles.some(p => p.id === storedProfileId)) {
+      setActiveProfileId(storedProfileId);
+    } else if (loadedProfiles.length > 0) {
+      setActiveProfileId(loadedProfiles[0].id);
+    }
+
+    // Telegram Login Listener
+    const handleTelegramLogin = (e: any) => {
+      const user = e.detail;
+      if (user && user.id && !user.error) {
+        console.log('[App] Telegram login event received:', user.first_name);
         setTelegramUser(user);
-      };
-      globalThis.addEventListener('telegram-login', handleTelegramLogin);
-      return () => globalThis.removeEventListener('telegram-login', handleTelegramLogin);
+      } else {
+        console.warn('[App] Invalid Telegram login event ignored:', user);
+      }
+    };
+    globalThis.addEventListener('telegram-login', handleTelegramLogin);
+
+    // Inject Telegram OAuth Script
+    const clientId = import.meta.env.VITE_TELEGRAM_CLIENT_ID;
+    if (clientId && !document.querySelector('script[src*="oauth.telegram.org"]')) {
+      const script = document.createElement('script');
+      script.src = "https://oauth.telegram.org/js/telegram-login.js?3";
+      script.setAttribute('data-client-id', clientId);
+      script.setAttribute('data-onauth', 'onTelegramAuth(data)');
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-origin', window.location.origin);
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      globalThis.removeEventListener('telegram-login', handleTelegramLogin);
+    };
   }, []);
 
   // Sync profiles with Telegram User
@@ -113,11 +140,11 @@ const App: React.FC = () => {
     if (telegramUser) {
       // If logged in, we only care about the profile for this user
       const userProfileId = `tg_${telegramUser.id}`;
-      
+
       // Use latest profiles from service to avoid stale state issues
       const currentProfiles = ProfileService.getProfiles();
       let profile = currentProfiles.find(p => p.id === userProfileId);
-      
+
       if (profile) {
         // Even if profile exists, ensure state is synced
         setProfiles(currentProfiles);
@@ -126,7 +153,7 @@ const App: React.FC = () => {
         ProfileService.createProfile(name, activeSurveyId, userProfileId);
         setProfiles(ProfileService.getProfiles());
       }
-      
+
       if (activeProfileId !== userProfileId) {
         setActiveProfileId(userProfileId);
       }
@@ -151,7 +178,7 @@ const App: React.FC = () => {
     const currentProfiles = ProfileService.getProfiles();
     const uniqueProfilesMap = new Map();
     let hasDuplicates = false;
-    
+
     currentProfiles.forEach(p => {
       if (uniqueProfilesMap.has(p.id)) {
         hasDuplicates = true;
@@ -159,7 +186,7 @@ const App: React.FC = () => {
         uniqueProfilesMap.set(p.id, p);
       }
     });
-    
+
     if (hasDuplicates) {
       const uniqueProfiles = Array.from(uniqueProfilesMap.values());
       ProfileService.saveProfiles(uniqueProfiles);
@@ -180,16 +207,16 @@ const App: React.FC = () => {
   }, [activeSurveyId]);
 
   const handleStartSurvey = () => {
-      setIsLoading(true);
-      // Simulate loading delay or wait for data if not ready
-      SurveyService.getSurveyById(activeSurveyId)
-          .then((data) => {
-              if (data) {
-                  setCurrentSurvey(data);
-                  setAppState(AppState.SURVEY);
-              }
-          })
-          .finally(() => setIsLoading(false));
+    setIsLoading(true);
+    // Simulate loading delay or wait for data if not ready
+    SurveyService.getSurveyById(activeSurveyId)
+      .then((data) => {
+        if (data) {
+          setCurrentSurvey(data);
+          setAppState(AppState.SURVEY);
+        }
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -209,32 +236,32 @@ const App: React.FC = () => {
 
   // Load answers from active profile
   useEffect(() => {
-     if (activeProfileId) {
-         const profile = profiles.find(p => p.id === activeProfileId);
-         if (profile) {
-             setAnswers(profile.answers);
-             localStorage.setItem('neuroprofile_active_profile_id', activeProfileId);
-         }
-     }
+    if (activeProfileId) {
+      const profile = profiles.find(p => p.id === activeProfileId);
+      if (profile) {
+        setAnswers(profile.answers);
+        localStorage.setItem('neuroprofile_active_profile_id', activeProfileId);
+      }
+    }
   }, [activeProfileId]);
 
   useEffect(() => {
     // Save state whenever it changes
     if (activeProfileId && Object.keys(answers).length > 0) {
-        ProfileService.updateProfile(activeProfileId, answers);
+      ProfileService.updateProfile(activeProfileId, answers);
     }
   }, [answers, activeProfileId]);
 
   useEffect(() => {
-      // Warn on exit if in survey
-      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-          if (appState === AppState.SURVEY && Object.keys(answers).length > 0) {
-              e.preventDefault();
-          }
-      };
+    // Warn on exit if in survey
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (appState === AppState.SURVEY && Object.keys(answers).length > 0) {
+        e.preventDefault();
+      }
+    };
 
-      globalThis.addEventListener('beforeunload', handleBeforeUnload);
-      return () => globalThis.removeEventListener('beforeunload', handleBeforeUnload);
+    globalThis.addEventListener('beforeunload', handleBeforeUnload);
+    return () => globalThis.removeEventListener('beforeunload', handleBeforeUnload);
   }, [appState, answers]);
 
 
@@ -243,17 +270,17 @@ const App: React.FC = () => {
     if (!currentSurvey) return [];
 
     const localizeQuestion = (q: any) => ({
-        id: q.id,
-        category: q.category,
-        type: q.type,
-        text: q.text[language],
-        placeholder: q.placeholder ? q.placeholder[language] : undefined,
-        subCategory: q.subCategory ? q.subCategory[language] : undefined,
-        hint: q.hint ? q.hint[language] : undefined,
+      id: q.id,
+      category: q.category,
+      type: q.type,
+      text: q.text[language],
+      placeholder: q.placeholder ? q.placeholder[language] : undefined,
+      subCategory: q.subCategory ? q.subCategory[language] : undefined,
+      hint: q.hint ? q.hint[language] : undefined,
       options: q.options?.map((opt: any) => ({
-          value: opt.value,
-          label: opt.label[language]
-        }))
+        value: opt.value,
+        label: opt.label[language]
+      }))
     });
 
     const localizeCategory = (cat: any) => ({
@@ -268,22 +295,22 @@ const App: React.FC = () => {
 
   const localizedScaleConfig: LocalizedScaleConfig | undefined = useMemo(() => {
     if (!currentSurvey || !currentSurvey.scaleConfig) return undefined;
-    
+
     const labels: Record<number, string> = {};
     Object.entries(currentSurvey.scaleConfig.labels).forEach(([key, val]) => {
-        labels[Number(key)] = val[language];
+      labels[Number(key)] = val[language];
     });
 
     return {
-        min: currentSurvey.scaleConfig.min,
-        max: currentSurvey.scaleConfig.max,
-        labels
+      min: currentSurvey.scaleConfig.min,
+      max: currentSurvey.scaleConfig.max,
+      labels
     };
   }, [language, currentSurvey]);
 
   const ui = UI_TRANSLATIONS[language];
   const activeCategory = localizedCategories[currentCategoryIndex];
-  
+
   // Progress Calculation
   const activeProfile = useMemo(() => profiles.find(p => p.id === activeProfileId), [profiles, activeProfileId]);
 
@@ -309,17 +336,17 @@ const App: React.FC = () => {
         percent: total > 0 ? Math.round((answered / total) * 100) : 0
       };
     });
-    
+
     return progress;
   }, [activeProfile, profiles]);
 
   const currentSurveyQuestions = useMemo(() => currentSurvey ? currentSurvey.categories.flatMap(c => c.questions) : [], [currentSurvey]);
-  
+
   const totalQuestions = currentSurveyQuestions.length;
   const answeredCountInCurrentSurvey = useMemo(() => {
     return currentSurveyQuestions.filter(q => isQuestionAnswered(q, answers[q.id])).length;
   }, [currentSurveyQuestions, answers]);
-  
+
   const progressPercent = totalQuestions > 0 ? Math.round((answeredCountInCurrentSurvey / totalQuestions) * 100) : 0;
 
   const handleAnswerChange = (questionId: string, value: string | number | null, note: string) => {
@@ -328,13 +355,13 @@ const App: React.FC = () => {
         ...prev,
         [questionId]: { questionId, value, note },
       };
-      
+
       // Update profile immediately
       if (activeProfileId) {
-          ProfileService.updateProfile(activeProfileId, newAnswers);
-          setProfiles(ProfileService.getProfiles());
+        ProfileService.updateProfile(activeProfileId, newAnswers);
+        setProfiles(ProfileService.getProfiles());
       }
-      
+
       return newAnswers;
     });
   };
@@ -350,7 +377,7 @@ const App: React.FC = () => {
     const updatedProfiles = ProfileService.getProfiles();
     setProfiles(updatedProfiles);
     if (activeProfileId === id) {
-        setActiveProfileId(updatedProfiles.length > 0 ? updatedProfiles[0].id : null);
+      setActiveProfileId(updatedProfiles.length > 0 ? updatedProfiles[0].id : null);
     }
   };
 
@@ -382,15 +409,15 @@ const App: React.FC = () => {
     } else {
       setAppState(AppState.RESULTS);
       if (activeProfileId) {
-          ProfileService.updateProfile(activeProfileId, answers);
-          setProfiles(ProfileService.getProfiles());
+        ProfileService.updateProfile(activeProfileId, answers);
+        setProfiles(ProfileService.getProfiles());
       }
     }
   };
 
   const handleApplyImport = (profileId: string | null, loadedAnswers: Record<string, Answer>) => {
     let targetId = profileId;
-    
+
     if (!profileId) {
       // Create new profile
       const newProfile = ProfileService.createProfile(ui.importedProfile, activeSurveyId);
@@ -407,7 +434,7 @@ const App: React.FC = () => {
         setAnswers(loadedAnswers);
       }
     }
-    
+
     setImportingAnswers(null);
     setAppState(AppState.SURVEY);
     setCurrentCategoryIndex(0);
@@ -423,70 +450,70 @@ const App: React.FC = () => {
   };
 
   const downloadProgress = () => {
-      const profileName = activeProfile?.name || 'anonymous';
-      const typeLabel = ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown';
-      const filename = `${profileName}_${typeLabel}_${activeSurveyId}_${new Date().toISOString().slice(0,10)}.json`;
+    const profileName = activeProfile?.name || 'anonymous';
+    const typeLabel = ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown';
+    const filename = `${profileName}_${typeLabel}_${activeSurveyId}_${new Date().toISOString().slice(0, 10)}.json`;
 
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(answers, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", filename);
-      document.body.appendChild(downloadAnchorNode); 
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(answers, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", filename);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-              const content = event.target?.result as string;
-              if (!content) return;
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        if (!content) return;
 
-              let loadedAnswers = null;
+        let loadedAnswers = null;
 
-              // Attempt to parse based on extension or content
-              const isToon = file.name.endsWith('.toon');
+        // Attempt to parse based on extension or content
+        const isToon = file.name.endsWith('.toon');
 
-              try {
-                  if (isToon) {
-                     loadedAnswers = decode(content);
-                  } else {
-                     // Try JSON
-                     loadedAnswers = JSON.parse(content);
-                  }
+        try {
+          if (isToon) {
+            loadedAnswers = decode(content);
+          } else {
+            // Try JSON
+            loadedAnswers = JSON.parse(content);
+          }
 
-                  if (loadedAnswers && typeof loadedAnswers === 'object') {
-                      setImportingAnswers(loadedAnswers);
-                      // Clear input value to allow re-uploading the same file if needed
-                      if (fileInputRef.current) {
-                          fileInputRef.current.value = '';
-                      }
-                  }
-              } catch (error) {
-                  console.error("Error parsing file", error);
-                // Fallback: if JSON parse failed, maybe it was a TOON file named incorrectly or vice versa
-                  try {
-                      if (!isToon) {
-                          loadedAnswers = decode(content);
-                          if (loadedAnswers) {
-                               setImportingAnswers(loadedAnswers);
-                               return;
-                          }
-                      }
-                  } catch(e) {
-                    alert("Error reading file");
-                  }
-
+          if (loadedAnswers && typeof loadedAnswers === 'object') {
+            setImportingAnswers(loadedAnswers);
+            // Clear input value to allow re-uploading the same file if needed
+            if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing file", error);
+          // Fallback: if JSON parse failed, maybe it was a TOON file named incorrectly or vice versa
+          try {
+            if (!isToon) {
+              loadedAnswers = decode(content);
+              if (loadedAnswers) {
+                setImportingAnswers(loadedAnswers);
+                return;
               }
-          };
-          reader.readAsText(file);
-      }
+            }
+          } catch (e) {
+            alert("Error reading file");
+          }
+
+        }
+      };
+      reader.readAsText(file);
+    }
   };
 
   const triggerFileUpload = () => {
-      fileInputRef.current?.click();
+    fileInputRef.current?.click();
   };
 
   const handleViewAdminResult = (result: any) => {
@@ -498,7 +525,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 pb-20 font-sans transition-colors duration-300">
-      <Header 
+      <Header
         appState={appState}
         ui={ui}
         language={language}
@@ -514,29 +541,29 @@ const App: React.FC = () => {
 
       <main className={`${appState === AppState.RESULTS ? 'max-w-5xl' : 'max-w-3xl'} mx-auto p-4 md:p-8 transition-all duration-500`}>
         {appState === AppState.RESULTS && (
-           <Results 
-             answers={answers} 
-             onReset={handleRetake} 
-             onGoHome={() => setAppState(AppState.INTRO)}
-             ui={ui} 
-             lang={language} 
-             filenamePrefix={`${activeProfile?.name || 'anonymous'}_${ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown'}`} 
-             telegramUser={telegramUser}
-           />
+          <Results
+            answers={answers}
+            onReset={handleRetake}
+            onGoHome={() => setAppState(AppState.INTRO)}
+            ui={ui}
+            lang={language}
+            filenamePrefix={`${activeProfile?.name || 'anonymous'}_${ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown'}`}
+            telegramUser={telegramUser}
+          />
         )}
 
         {appState === AppState.INTRO && (
           <>
             {(isAdmin) && (
-              <AdminDashboard 
-                ui={ui} 
-                lang={language} 
+              <AdminDashboard
+                ui={ui}
+                lang={language}
                 onViewResult={handleViewAdminResult}
               />
             )}
-            
+
             {(!telegramUser || isAdmin) && (
-              <ProfileManager 
+              <ProfileManager
                 profiles={profiles}
                 activeProfileId={activeProfileId}
                 onSelect={handleSelectProfile}
@@ -547,7 +574,7 @@ const App: React.FC = () => {
                 lang={language}
               />
             )}
-            <Intro 
+            <Intro
               ui={ui}
               language={language}
               activeSurveyId={activeSurveyId}
@@ -565,7 +592,7 @@ const App: React.FC = () => {
         )}
 
         {appState === AppState.SURVEY && (
-          <Survey 
+          <Survey
             ui={ui}
             currentCategoryIndex={currentCategoryIndex}
             totalCategories={localizedCategories.length}
@@ -583,7 +610,7 @@ const App: React.FC = () => {
       </main>
 
       {importingAnswers && (
-        <ImportManager 
+        <ImportManager
           profiles={profiles}
           newAnswers={importingAnswers}
           onImport={handleApplyImport}

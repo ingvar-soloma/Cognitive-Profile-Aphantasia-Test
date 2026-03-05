@@ -6,12 +6,21 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export class ProfileService {
   static async saveResultToBackend(profile: Profile, testType: string, scores: any, lang: Language) {
     const authDataString = localStorage.getItem('telegram_auth');
-    if (!authDataString) return null;
+    if (!authDataString) {
+      console.warn('[ProfileService] No telegram_auth found in localStorage');
+      return null;
+    }
 
     try {
       const authData = JSON.parse(authDataString);
-      // The auth data is stored as { user: { ... } } or just { ... }
       const telegramUser = authData.user || authData;
+
+      if (!telegramUser || !telegramUser.id || telegramUser.error) {
+        console.error('[ProfileService] Invalid telegram user data', telegramUser);
+        return null;
+      }
+
+      console.log('[ProfileService] Saving result to backend...', { testType, userId: telegramUser.id });
 
       const response = await fetch(`${API_BASE_URL}/api/save-result`, {
         method: 'POST',
@@ -26,9 +35,12 @@ export class ProfileService {
           lang: lang
         }),
       });
-      return await response.json();
+
+      const result = await response.json();
+      console.log('[ProfileService] Save result response:', result);
+      return result;
     } catch (e) {
-      console.error('Failed to save to backend', e);
+      console.error('[ProfileService] Failed to save to backend', e);
       return null;
     }
   }
@@ -40,7 +52,15 @@ export class ProfileService {
     try {
       const authData = JSON.parse(authDataString);
       const user = authData.user || authData;
-      
+
+      if (!user || !user.id || user.error) {
+        if (user?.error) {
+          console.warn('[ProfileService] Telegram auth contains error:', user.error);
+        }
+        return null;
+      }
+
+      console.log('[ProfileService] Loading result for user:', user.id);
       const response = await fetch(`${API_BASE_URL}/api/me/result`, {
         method: 'POST',
         headers: {
@@ -50,11 +70,15 @@ export class ProfileService {
       });
 
       if (response.ok) {
-        return await response.json();
+        const data = await response.json();
+        console.log('[ProfileService] Loaded result:', data ? 'Success' : 'None');
+        return data;
       }
+
+      console.error('[ProfileService] Load result failed:', response.status, response.statusText);
       return null;
     } catch (e) {
-      console.error('Failed to load from backend', e);
+      console.error('[ProfileService] Failed to load from backend', e);
       return null;
     }
   }
@@ -66,7 +90,7 @@ export class ProfileService {
     try {
       const authData = JSON.parse(authDataString);
       const user = authData.user || authData;
-      
+
       const response = await fetch(`${API_BASE_URL}/api/results?telegram_id=${user.id}&hash=${user.hash}`);
       if (response.ok) {
         return await response.json();
@@ -130,7 +154,7 @@ export class ProfileService {
 
   static createProfile(name: string, surveyId: string, customId?: string): Profile {
     const profiles = this.getProfiles();
-    
+
     // If customId provided, check if it already exists to avoid duplicates
     if (customId) {
       const existing = profiles.find(p => p.id === customId);
@@ -144,7 +168,7 @@ export class ProfileService {
       lastUpdated: new Date().toISOString(),
       surveyId,
     };
-    
+
     profiles.push(newProfile);
     this.saveProfiles(profiles);
     return newProfile;

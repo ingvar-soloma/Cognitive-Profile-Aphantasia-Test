@@ -25,4 +25,5 @@ dist-ssr
 
 # Data
 backend/data/results/
+backend/__pycache__
 .env
