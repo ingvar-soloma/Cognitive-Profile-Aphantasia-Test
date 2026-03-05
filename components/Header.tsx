@@ -124,9 +124,23 @@ export const Header: React.FC<HeaderProps> = ({
 };
 
 export const TelegramButton: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current && !containerRef.current.querySelector('script')) {
+      const script = document.createElement('script');
+      script.src = "https://oauth.telegram.org/js/telegram-login.js?22";
+      script.setAttribute('data-client-id', import.meta.env.VITE_TELEGRAM_CLIENT_ID);
+      script.setAttribute('data-onauth', 'onTelegramAuth(data)');
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-userpic', 'true');
+      script.setAttribute('data-size', 'medium');
+      script.async = true;
+      containerRef.current.appendChild(script);
+    }
+  }, []);
+
   return (
-    <button data-style="icon outlined"
-      className="tg-auth-button px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2"
-    ></button>
+    <div ref={containerRef} className="tg-login-container"></div>
   );
 };

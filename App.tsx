@@ -117,19 +117,6 @@ const App: React.FC = () => {
     };
     globalThis.addEventListener('telegram-login', handleTelegramLogin);
 
-    // Inject Telegram OAuth Script
-    const clientId = import.meta.env.VITE_TELEGRAM_CLIENT_ID;
-    if (clientId && !document.querySelector('script[src*="oauth.telegram.org"]')) {
-      const script = document.createElement('script');
-      script.src = "https://oauth.telegram.org/js/telegram-login.js?3";
-      script.setAttribute('data-client-id', clientId);
-      script.setAttribute('data-onauth', 'onTelegramAuth(data)');
-      script.setAttribute('data-request-access', 'write');
-      script.setAttribute('data-origin', window.location.origin);
-      script.async = true;
-      document.head.appendChild(script);
-    }
-
     return () => {
       globalThis.removeEventListener('telegram-login', handleTelegramLogin);
     };
