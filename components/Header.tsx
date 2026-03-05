@@ -161,7 +161,7 @@ export const TelegramButton: React.FC = () => {
     localStorage.setItem('tg_oauth_state', state);
     localStorage.setItem('tg_oauth_verifier', codeVerifier);
 
-    const authUrl = `https://oauth.telegram.org/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+    const authUrl = `https://oauth.telegram.org/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&origin=${encodeURIComponent(window.location.origin)}`;
 
     // Redirect browser directly to Telegram's OIDC page
     window.location.href = authUrl;
