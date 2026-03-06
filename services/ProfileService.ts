@@ -5,22 +5,22 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export class ProfileService {
   static async saveResultToBackend(profile: Profile, testType: string, scores: any, lang: Language) {
-    const authDataString = localStorage.getItem('telegram_auth');
+    const authDataString = localStorage.getItem('auth_token');
     if (!authDataString) {
-      console.warn('[ProfileService] No telegram_auth found in localStorage');
+      console.warn('[ProfileService] No auth_token found in localStorage');
       return null;
     }
 
     try {
       const authData = JSON.parse(authDataString);
-      const telegramUser = authData.user || authData;
+      const user = authData.user || authData;
 
-      if (!telegramUser || !telegramUser.id || telegramUser.error) {
-        console.error('[ProfileService] Invalid telegram user data', telegramUser);
+      if (!user || !user.id || user.error) {
+        console.error('[ProfileService] Invalid user data', user);
         return null;
       }
 
-      console.log('[ProfileService] Saving result to backend...', { testType, userId: telegramUser.id });
+      console.log('[ProfileService] Saving result to backend...', { testType, userId: user.id });
 
       const response = await fetch(`${API_BASE_URL}/api/save-result`, {
         method: 'POST',
@@ -28,7 +28,7 @@ export class ProfileService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          auth_data: telegramUser,
+          auth_data: user,
           test_type: testType,
           answers: profile.answers,
           scores: scores,
@@ -46,7 +46,7 @@ export class ProfileService {
   }
 
   static async loadResultFromBackend() {
-    const authDataString = localStorage.getItem('telegram_auth');
+    const authDataString = localStorage.getItem('auth_token');
     if (!authDataString) return null;
 
     try {
@@ -55,7 +55,7 @@ export class ProfileService {
 
       if (!user || !user.id || user.error) {
         if (user?.error) {
-          console.warn('[ProfileService] Telegram auth contains error:', user.error);
+          console.warn('[ProfileService] Auth contains error:', user.error);
         }
         return null;
       }
@@ -84,14 +84,14 @@ export class ProfileService {
   }
 
   static async fetchAllResults() {
-    const authDataString = localStorage.getItem('telegram_auth');
+    const authDataString = localStorage.getItem('auth_token');
     if (!authDataString) return [];
 
     try {
       const authData = JSON.parse(authDataString);
       const user = authData.user || authData;
 
-      const response = await fetch(`${API_BASE_URL}/api/results?telegram_id=${user.id}&hash=${user.hash}`);
+      const response = await fetch(`${API_BASE_URL}/api/results?user_id=${user.id}&hash=${user.hash}`);
       if (response.ok) {
         return await response.json();
       }

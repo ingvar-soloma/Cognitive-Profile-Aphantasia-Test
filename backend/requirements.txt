@@ -8,5 +8,7 @@ python-dotenv
 httpx
 pytz
 aiofiles
-httpx
 PyJWT
+google-auth
+google-auth-httplib2
+

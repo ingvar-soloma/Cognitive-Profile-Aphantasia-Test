@@ -22,10 +22,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Config
+AUTH_SECRET = os.getenv("AUTH_SECRET", os.getenv("TELEGRAM_BOT_TOKEN", "default-secret-for-hmac"))
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_GROUP_ID = os.getenv("TELEGRAM_GROUP_ID")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-ADMIN_TELEGRAM_IDS = os.getenv("ADMIN_TELEGRAM_IDS", "").split(",")
+ADMIN_USER_IDS = os.getenv("ADMIN_USER_IDS", os.getenv("ADMIN_TELEGRAM_IDS", "")).split(",")
 DATA_DIR = os.getenv("DATA_DIR", "/app/data/results")
 
 # Ensure data directory exists
@@ -38,8 +39,8 @@ if GEMINI_API_KEY:
     client = genai.Client(api_key=GEMINI_API_KEY)
 
 # Pydantic models
-class TelegramAuth(BaseModel):
-    id: int
+class UserAuth(BaseModel):
+    id: str | int
     first_name: str
     last_name: Optional[str] = None
     username: Optional[str] = None
@@ -48,7 +49,7 @@ class TelegramAuth(BaseModel):
     hash: str
 
 class SaveResult(BaseModel):
-    auth_data: TelegramAuth
+    auth_data: UserAuth
     test_type: str
     answers: Dict[str, Any]
     scores: Dict[str, Any]
@@ -59,7 +60,7 @@ from auth import router as auth_router
 # FastAPI App
 app = FastAPI(title="Aphantasia Test Backend")
 
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api", tags=["auth"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,11 +70,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def verify_telegram_auth(auth_data: TelegramAuth) -> bool:
-    """Verifies Telegram authentication data."""
-    if not TELEGRAM_BOT_TOKEN:
-        # For development if token is not set
-        logger.warning("TELEGRAM_BOT_TOKEN not set, skipping auth verification")
+def verify_auth(auth_data: UserAuth) -> bool:
+    """Verifies user authentication data."""
+    if not AUTH_SECRET:
+        # For development if secret is not set
+        logger.warning("AUTH_SECRET not set, skipping auth verification")
         return True
     
     data_check_list = []
@@ -83,11 +84,11 @@ def verify_telegram_auth(auth_data: TelegramAuth) -> bool:
             data_check_list.append(f"{key}={value}")
     
     data_check_string = "\n".join(data_check_list)
-    secret_key = hashlib.sha256(TELEGRAM_BOT_TOKEN.encode()).digest()
+    secret_key = hashlib.sha256(AUTH_SECRET.encode()).digest()
     hash_value = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
     
     if hash_value != auth_data.hash:
-        raise HTTPException(status_code=401, detail="Invalid Telegram Auth")
+        raise HTTPException(status_code=401, detail="Invalid Auth Hash")
     
     if time.time() - auth_data.auth_date > 86400:
         raise HTTPException(status_code=401, detail="Auth session expired")
@@ -186,19 +187,18 @@ async def send_telegram_notification(msg: str):
     except Exception as e:
         logger.error(f"Telegram notification error: {e}")
 
-def get_result_file_path(telegram_id: str):
-    return os.path.join(DATA_DIR, f"{telegram_id}.json")
+def get_result_file_path(user_id: str):
+    return os.path.join(DATA_DIR, f"{user_id}.json")
 
-@app.post("/api/save-result", responses={401: {"description": "Invalid Telegram Auth"}})
+@app.post("/api/save-result", responses={401: {"description": "Invalid Auth"}})
 async def save_result(data: SaveResult):
     logger.info(f"Incoming save-result request for user {data.auth_data.id} (@{data.auth_data.username})")
-    verify_telegram_auth(data.auth_data)
+    verify_auth(data.auth_data)
     
-    # Enforcement: Only one submission per TG ID
-    telegram_id = str(data.auth_data.id)
-    file_path = get_result_file_path(telegram_id)
-    if os.path.exists(file_path):
-        return {"status": "error", "message": "Result already exists for this user. Only one submission allowed."}
+    # Enforcement: Only one submission per ID removed to allow updating
+    user_id = str(data.auth_data.id)
+    file_path = get_result_file_path(user_id)
+    # Re-run gemini recommendations if updating
     
     recommendations = await get_gemini_recommendations({"answers": data.answers, "scores": data.scores}, lang=data.lang or "en")
     
@@ -207,7 +207,7 @@ async def save_result(data: SaveResult):
     
     result_data = {
         "username": data.auth_data.username,
-        "telegram_id": str(data.auth_data.id),
+        "user_id": str(data.auth_data.id),
         "first_name": data.auth_data.first_name,
         "last_name": data.auth_data.last_name,
         "photo_url": data.auth_data.photo_url,
@@ -252,13 +252,13 @@ async def save_result(data: SaveResult):
     
     return {"status": "success", "recommendations": recommendations}
 
-@app.post("/api/me/result", responses={401: {"description": "Invalid Telegram Auth"}})
-async def get_my_result(auth_data: TelegramAuth):
+@app.post("/api/me/result", responses={401: {"description": "Invalid Auth"}})
+async def get_my_result(auth_data: UserAuth):
     logger.info(f"Incoming get-my-result request for user {auth_data.id}")
-    verify_telegram_auth(auth_data)
+    verify_auth(auth_data)
     
-    telegram_id = str(auth_data.id)
-    file_path = get_result_file_path(telegram_id)
+    user_id = str(auth_data.id)
+    file_path = get_result_file_path(user_id)
     if not os.path.exists(file_path):
         return None
     
@@ -267,9 +267,9 @@ async def get_my_result(auth_data: TelegramAuth):
         return json.loads(content)
 
 @app.get("/api/results", responses={403: {"description": "Not authorized as admin"}})
-async def get_results(telegram_id: str, hash: str):
+async def get_results(user_id: str, hash: str):
     # Check admin
-    if telegram_id not in ADMIN_TELEGRAM_IDS:
+    if user_id not in ADMIN_USER_IDS:
         raise HTTPException(status_code=403, detail="Not authorized as admin")
     
     # In a real app we'd verify auth here too, but following existing pattern for admin check

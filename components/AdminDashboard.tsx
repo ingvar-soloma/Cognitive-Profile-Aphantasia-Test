@@ -23,10 +23,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
     load();
   }, []);
 
-  const filteredResults = results.filter(r => 
+  const filteredResults = results.filter(r =>
     (r.username?.toLowerCase().includes(search.toLowerCase())) ||
     (r.first_name?.toLowerCase().includes(search.toLowerCase())) ||
-    (r.telegram_id?.includes(search))
+    (r.user_id?.includes(search) || r.telegram_id?.includes(search))
   );
 
   if (loading) return (
@@ -44,7 +44,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-300" />
-          <input 
+          <input
             type="text"
             placeholder="Search users..."
             value={search}
@@ -66,7 +66,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {filteredResults.map((res) => (
-              <tr key={res.telegram_id + res.created_at} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+              <tr key={(res.user_id || res.telegram_id) + res.created_at} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     {res.photo_url ? (
@@ -78,7 +78,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
                     )}
                     <div>
                       <div className="font-bold text-slate-900 dark:text-white">{res.first_name} {res.last_name}</div>
-                      <div className="text-xs text-slate-500">@{res.username || res.telegram_id}</div>
+                      <div className="text-xs text-slate-500">@{res.username || res.user_id || res.telegram_id}</div>
                     </div>
                   </div>
                 </td>
@@ -94,7 +94,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button 
+                  <button
                     onClick={() => onViewResult(res)}
                     className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:underline"
                   >

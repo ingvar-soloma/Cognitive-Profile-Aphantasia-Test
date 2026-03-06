@@ -24,8 +24,8 @@ const LOCAL_STORAGE_KEY = 'neuroprofile_survey_state';
 
 type Theme = 'light' | 'dark';
 
-interface TelegramUser {
-  id: number;
+interface User {
+  id: string | number;
   first_name: string;
   last_name?: string;
   username?: string;
@@ -58,16 +58,17 @@ const App: React.FC = () => {
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
-  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(() => {
-    const saved = localStorage.getItem('telegram_auth');
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('auth_token') || localStorage.getItem('telegram_auth');
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        const user = data.user || data;
-        if (user && user.id && user.hash && !user.error) {
-          return user;
+        const userData = data.user || data;
+        if (userData && userData.id && userData.hash && !userData.error) {
+          return userData;
         }
-        console.warn('[App] Invalid telegram_auth in localStorage found and cleared');
+        console.warn('[App] Invalid auth in localStorage found and cleared');
+        localStorage.removeItem('auth_token');
         localStorage.removeItem('telegram_auth');
         return null;
       } catch (e) {
@@ -78,10 +79,10 @@ const App: React.FC = () => {
   });
 
   const isAdmin = useMemo(() => {
-    if (!telegramUser) return false;
-    const adminIds = (import.meta.env.VITE_ADMIN_TELEGRAM_IDS || '').split(',');
-    return adminIds.includes(String(telegramUser.id));
-  }, [telegramUser]);
+    if (!user) return false;
+    const adminIds = (import.meta.env.VITE_ADMIN_USER_IDS || import.meta.env.VITE_ADMIN_TELEGRAM_IDS || '').split(',');
+    return adminIds.includes(String(user.id));
+  }, [user]);
 
   const [importingAnswers, setImportingAnswers] = useState<Record<string, Answer> | null>(null);
   const [hasExistingResults, setHasExistingResults] = useState<boolean>(false);
@@ -105,61 +106,30 @@ const App: React.FC = () => {
       setActiveProfileId(loadedProfiles[0].id);
     }
 
-    // Telegram OAuth Callback
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const state = params.get('state');
-
-    if (code && state) {
-      const savedState = localStorage.getItem('tg_oauth_state');
-      const verifier = localStorage.getItem('tg_oauth_verifier');
-
-      if (state === savedState && verifier) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-        fetch(`${apiUrl}/api/auth/telegram/exchange`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            code,
-            code_verifier: verifier,
-            redirect_uri: window.location.origin + '/'
-          })
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.id && data.hash) {
-              localStorage.setItem('telegram_auth', JSON.stringify(data));
-              globalThis.dispatchEvent(new CustomEvent('telegram-login', { detail: data }));
-            }
-          })
-          .catch(err => console.error('Telegram OAuth Exchange Failed', err));
-      }
-    }
-
-    // Telegram Login Listener
-    const handleTelegramLogin = (e: any) => {
-      const user = e.detail;
-      if (user && user.id && !user.error) {
-        console.log('[App] Telegram login event received:', user.first_name);
-        setTelegramUser(user);
+    // Login Listener
+    const handleLogin = (e: any) => {
+      const userData = e.detail;
+      if (userData && userData.id && !userData.error) {
+        console.log('[App] Login event received:', userData.first_name);
+        setUser(userData);
       } else {
-        console.warn('[App] Invalid Telegram login event ignored:', user);
+        console.warn('[App] Invalid login event ignored:', userData);
       }
     };
-    globalThis.addEventListener('telegram-login', handleTelegramLogin);
+    globalThis.addEventListener('auth-login', handleLogin);
+    globalThis.addEventListener('telegram-login', handleLogin); // Keep for compatibility if components use it
 
     return () => {
-      globalThis.removeEventListener('telegram-login', handleTelegramLogin);
+      globalThis.removeEventListener('auth-login', handleLogin);
+      globalThis.removeEventListener('telegram-login', handleLogin);
     };
   }, []);
 
-  // Sync profiles with Telegram User
+  // Sync profiles with User
   useEffect(() => {
-    if (telegramUser) {
+    if (user) {
       // If logged in, we only care about the profile for this user
-      const userProfileId = `tg_${telegramUser.id}`;
+      const userProfileId = `g_${user.id}`;
 
       // Use latest profiles from service to avoid stale state issues
       const currentProfiles = ProfileService.getProfiles();
@@ -169,7 +139,7 @@ const App: React.FC = () => {
         // Even if profile exists, ensure state is synced
         setProfiles(currentProfiles);
       } else {
-        const name = `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim();
+        const name = `${user.first_name} ${user.last_name || ''}`.trim();
         ProfileService.createProfile(name, activeSurveyId, userProfileId);
         setProfiles(ProfileService.getProfiles());
       }
@@ -191,7 +161,7 @@ const App: React.FC = () => {
     } else {
       setHasExistingResults(false);
     }
-  }, [telegramUser, activeSurveyId]);
+  }, [user, activeSurveyId]);
 
   // One-time cleanup: Deduplicate profiles by ID if they somehow got duplicated
   useEffect(() => {
@@ -552,7 +522,7 @@ const App: React.FC = () => {
         theme={theme}
         progressPercent={progressPercent}
         activeProfileName={activeProfile?.name}
-        telegramUser={telegramUser}
+        user={user}
         onSetLanguage={setLanguage}
         onToggleTheme={toggleTheme}
         onDownloadProgress={downloadProgress}
@@ -568,7 +538,7 @@ const App: React.FC = () => {
             ui={ui}
             lang={language}
             filenamePrefix={`${activeProfile?.name || 'anonymous'}_${ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown'}`}
-            telegramUser={telegramUser}
+            user={user}
           />
         )}
 
@@ -582,7 +552,7 @@ const App: React.FC = () => {
               />
             )}
 
-            {(!telegramUser || isAdmin) && (
+            {(!user || isAdmin) && (
               <ProfileManager
                 profiles={profiles}
                 activeProfileId={activeProfileId}

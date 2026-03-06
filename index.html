@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="referrer" content="origin" />
   <title>Оцінка Когнітивного Профілю</title>
-  <script src="https://oauth.telegram.org/js/telegram-login.js?3"></script>
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script>
     tailwind.config = {
@@ -71,30 +70,6 @@
   }
 }
 </script>
-  <script type="text/javascript">
-    window.onTelegramAuth = function (data) {
-      console.log('[Auth] Telegram Auth response received:', data);
-
-      if (data && data.error) {
-        console.error('[Auth] Telegram Auth Error:', data.error);
-        // Don't save error to localStorage
-        return;
-      }
-
-      // data usually contains { user: { ... }, auth_date, hash, etc }
-      // or just the user directly depending on the version.
-      const user = data.user || data;
-
-      if (user && user.id && user.hash) {
-        console.log('[Auth] Valid user received:', user.first_name, user.id);
-        localStorage.setItem('telegram_auth', JSON.stringify(user));
-        // Dispatch custom event for React to listen
-        window.dispatchEvent(new CustomEvent('telegram-login', { detail: user }));
-      } else {
-        console.warn('[Auth] Received data does not look like a valid user:', data);
-      }
-    };
-  </script>
 </head>
 
 <body>

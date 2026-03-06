@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { BrainCircuit, Moon, Sun, Download } from 'lucide-react';
 import { Language } from '@/types';
+import { GoogleLogin } from '@react-oauth/google';
 
 interface HeaderProps {
   appState: string;
@@ -13,7 +14,7 @@ interface HeaderProps {
   onToggleTheme: () => void;
   onDownloadProgress: () => void;
   onGoToIntro: () => void;
-  telegramUser: any;
+  user: any;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -27,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme,
   onDownloadProgress,
   onGoToIntro,
-  telegramUser
+  user
 }) => {
   return (
     <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
@@ -42,26 +43,26 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="font-bold text-lg hidden sm:block">NeuroProfile</span>
           </button>
 
-          {telegramUser && (
+          {user && (
             <div className="flex items-center gap-2 ml-2">
-              {telegramUser.photo_url ? (
-                <img src={telegramUser.photo_url} alt={telegramUser.first_name} className="w-8 h-8 rounded-full border border-indigo-200 shadow-sm" />
+              {user.photo_url ? (
+                <img src={user.photo_url} alt={user.first_name} className="w-8 h-8 rounded-full border border-indigo-200 shadow-sm" />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs border border-indigo-200">
-                  {telegramUser.first_name}
+                  {user.first_name?.[0] || 'U'}
                 </div>
               )}
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 hidden xs:block">{telegramUser.first_name}</span>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 hidden xs:block">{user.first_name}</span>
             </div>
           )}
 
-          {!telegramUser && (
-            <div id="telegram-login-container" className="ml-2">
-              <TelegramButton />
+          {!user && (
+            <div id="auth-login-container" className="ml-2 flex flex-row items-center gap-2">
+              <GoogleAuthButton />
             </div>
           )}
 
-          {activeProfileName && !telegramUser && (
+          {activeProfileName && !user && (
             <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-700/50 rounded-full border border-slate-200 dark:border-slate-700">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{ui.activeProfile}:</span>
               <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{activeProfileName}</span>
@@ -123,62 +124,34 @@ export const Header: React.FC<HeaderProps> = ({
   );
 };
 
-export const TelegramButton: React.FC = () => {
-  const handleLogin = async () => {
-    let clientId = import.meta.env.VITE_TELEGRAM_CLIENT_ID;
-    if (clientId && clientId.includes(':')) {
-      clientId = clientId.split(':')[0]; // Use just the bot id if the full token was pasted
-    }
-    const redirectUri = window.location.origin + '/';
-    const scope = 'openid profile telegram:bot_access';
-
-    // Generate PKCE code verifier and challenge
-    const generateRandomString = (length: number) => {
-      const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-      let result = '';
-      const randomValues = new Uint8Array(length);
-      window.crypto.getRandomValues(randomValues);
-      for (let i = 0; i < length; i++) {
-        result += charset[randomValues[i] % charset.length];
-      }
-      return result;
-    };
-
-    const codeVerifier = generateRandomString(43); // Recommended length is 43-128
-    const encoder = new TextEncoder();
-    const data = encoder.encode(codeVerifier);
-    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    // Base64URL encode
-    const codeChallenge = btoa(String.fromCharCode(...hashArray))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-
-    const state = generateRandomString(16);
-
-    // Save state and verifier for later validation (when returning from Telegram)
-    localStorage.setItem('tg_oauth_state', state);
-    localStorage.setItem('tg_oauth_verifier', codeVerifier);
-
-    const authUrl = `https://oauth.telegram.org/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&origin=${encodeURIComponent(window.location.origin)}`;
-
-    // Redirect browser directly to Telegram's OIDC page
-    window.location.href = authUrl;
-  };
-
+export const GoogleAuthButton: React.FC = () => {
   return (
-    <div className="widget_container" id="widget_container">
-      <div
-        onClick={handleLogin}
-        className="tg-auth-button"
-        data-style="icon"
-        tabIndex={0}
-        aria-label="Log in with Telegram"
-        role="button"
-      >
-        Sign In with Telegram
-      </div>
+    <div className="ml-2">
+      <GoogleLogin
+        onSuccess={(credentialResponse) => {
+          if (!credentialResponse.credential) return;
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          fetch(`${apiUrl}/api/auth/google/exchange`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential: credentialResponse.credential })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.id && data.hash) {
+                localStorage.setItem('auth_token', JSON.stringify(data));
+                globalThis.dispatchEvent(new CustomEvent('auth-login', { detail: data }));
+              }
+            })
+            .catch(err => console.error('Google OAuth Exchange Failed', err));
+        }}
+        onError={() => {
+          console.error('Google Login Failed');
+        }}
+        useOneTap
+        shape="pill"
+      />
     </div>
   );
 };
+
