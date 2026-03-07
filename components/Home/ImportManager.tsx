@@ -24,8 +24,8 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(profiles[0]?.id || null);
   const [showAllDiffs, setShowAllDiffs] = useState(false);
 
-  const selectedProfile = useMemo(() => 
-    selectedProfileId ? profiles.find(p => p.id === selectedProfileId) : null, 
+  const selectedProfile = useMemo(() =>
+    selectedProfileId ? profiles.find(p => p.id === selectedProfileId) : null,
     [profiles, selectedProfileId]
   );
 
@@ -45,7 +45,7 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
           matches++;
         }
       });
-      
+
       const similarity = totalFilled > 0 ? Math.round((matches / totalFilled) * 100) : 0;
       return { ...p, similarity };
     }).sort((a, b) => b.similarity - a.similarity);
@@ -62,12 +62,12 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
       const oldAns = selectedProfile?.answers[qId];
       const newAns = newAnswers[qId];
 
-      if (newAns.value !== oldAns?.value || newAns.note !== oldAns?.note) {
+      if (newAns?.value !== oldAns?.value || newAns?.note !== oldAns?.note) {
         diff.push({
           id: qId,
           questionText: q?.text[lang] || qId,
           oldVal: oldAns?.value ?? '—',
-          newVal: newAns.value ?? '—'
+          newVal: newAns?.value ?? '—'
         });
       }
     });
@@ -105,11 +105,10 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
               {/* Option: Create New Profile */}
               <button
                 onClick={() => setSelectedProfileId(null)}
-                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                  selectedProfileId === null
-                    ? 'bg-emerald-50 border-emerald-500 dark:bg-emerald-900/20 ring-1 ring-emerald-500'
-                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-300 shadow-sm'
-                }`}
+                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${selectedProfileId === null
+                  ? 'bg-emerald-50 border-emerald-500 dark:bg-emerald-900/20 ring-1 ring-emerald-500'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-300 shadow-sm'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`p-1.5 rounded-lg ${selectedProfileId === null ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
@@ -126,11 +125,10 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
                 <button
                   key={p.id}
                   onClick={() => setSelectedProfileId(p.id)}
-                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                    selectedProfileId === p.id
-                      ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-900/20 ring-1 ring-indigo-500'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-300 shadow-sm'
-                  }`}
+                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${selectedProfileId === p.id
+                    ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-900/20 ring-1 ring-indigo-500'
+                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-300 shadow-sm'
+                    }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className={`p-1.5 rounded-lg ${selectedProfileId === p.id ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
@@ -193,7 +191,7 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
                     </div>
                   </div>
                 ))}
-                
+
                 {comparison.length > 5 && (
                   <button
                     onClick={() => setShowAllDiffs(!showAllDiffs)}
@@ -209,11 +207,11 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
               </div>
             </div>
           ) : (
-             <div className="p-10 text-center bg-slate-50 dark:bg-slate-900/30 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 text-slate-400 flex flex-col items-center gap-2">
-               <Check className="w-8 h-8 text-emerald-500/50 mb-2" />
-               <p className="font-semibold">No differences found.</p>
-               <p className="text-xs opacity-70">The imported file matches the selected profile exactly.</p>
-             </div>
+            <div className="p-10 text-center bg-slate-50 dark:bg-slate-900/30 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 text-slate-400 flex flex-col items-center gap-2">
+              <Check className="w-8 h-8 text-emerald-500/50 mb-2" />
+              <p className="font-semibold">No differences found.</p>
+              <p className="text-xs opacity-70">The imported file matches the selected profile exactly.</p>
+            </div>
           )}
         </div>
 

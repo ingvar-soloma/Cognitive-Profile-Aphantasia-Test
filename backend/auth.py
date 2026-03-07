@@ -3,13 +3,13 @@ import httpx
 import jwt
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-import base64
 import time
-import hashlib
-import hmac
+import uuid
+import os
 import logging
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from db import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,31 @@ router = APIRouter()
 
 class GoogleExchangeRequest(BaseModel):
     credential: str
+    guest_id: str | None = None
+
+@router.post("/auth/guest")
+async def create_guest_session():
+    user_id = f"guest_{uuid.uuid4().hex[:12]}"
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''INSERT INTO aphantasia_users (id, first_name, is_guest, last_login)
+                      VALUES (%s, %s, TRUE, CURRENT_TIMESTAMP)''',
+                   (user_id, "Guest"))
+    conn.commit()
+    conn.close()
+
+    auth_secret = os.getenv("AUTH_SECRET", os.getenv("TELEGRAM_BOT_TOKEN", "default-secret-for-hmac"))
+    auth_data = {
+        "id": user_id,
+        "first_name": "Guest",
+        "is_guest": True,
+        "auth_date": int(time.time())
+    }
+    
+    token = jwt.encode(auth_data, auth_secret, algorithm="HS256")
+    auth_data["hash"] = token
+    auth_data["access_token"] = token
+    return auth_data
 
 @router.post("/auth/google/exchange")
 async def exchange_google_code(req: GoogleExchangeRequest):
@@ -24,40 +49,68 @@ async def exchange_google_code(req: GoogleExchangeRequest):
     try:
         idinfo = id_token.verify_oauth2_token(req.credential, requests.Request(), client_id, clock_skew_in_seconds=10)
         
-        user_id = idinfo['sub']
+        user_id = str(idinfo['sub'])
         first_name = idinfo.get("given_name", "GoogleUser")
         last_name = idinfo.get("family_name", "")
         username = idinfo.get("email", "")
         photo_url = idinfo.get("picture", "")
-        auth_date = int(time.time())
 
-        # For HMAC generation, we'll use a secret from environment or default
-        # Since we removed Telegram, we might want to rename this ENV, but for now 
-        # using TELEGRAM_BOT_TOKEN as the secret key for backward compatibility of hashes if needed,
-        # or just define a new AUTH_SECRET.
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Check if Google user already exists
+        cursor.execute("SELECT * FROM aphantasia_users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        
+        if req.guest_id:
+            # Check if guest exists
+            cursor.execute("SELECT * FROM aphantasia_users WHERE id = %s AND is_guest = TRUE", (req.guest_id,))
+            guest = cursor.fetchone()
+            if guest and not user:
+                # Upgrade guest to this Google user
+                cursor.execute('''UPDATE aphantasia_users SET id = %s, email = %s, first_name = %s, last_name = %s, photo_url = %s, is_guest = FALSE, last_login = CURRENT_TIMESTAMP
+                                  WHERE id = %s''',
+                               (user_id, username, first_name, last_name, photo_url, req.guest_id))
+                
+                # Attempt to rename guest file if it exists
+                DATA_DIR = os.getenv("DATA_DIR", "/app/data/results")
+                old_file = os.path.join(DATA_DIR, f"{req.guest_id}.json")
+                if os.path.exists(old_file):
+                    os.rename(old_file, os.path.join(DATA_DIR, f"{user_id}.json"))
+                
+                user = True # We effectively created the user by updating the guest
+        
+        if not user:
+            cursor.execute('''INSERT INTO aphantasia_users (id, email, first_name, last_name, photo_url, is_guest, last_login)
+                              VALUES (%s, %s, %s, %s, %s, FALSE, CURRENT_TIMESTAMP)''',
+                           (user_id, username, first_name, last_name, photo_url))
+        elif not req.guest_id or user:
+            # We already have the Google user, just update their details
+            cursor.execute('''UPDATE aphantasia_users SET email = %s, first_name = %s, last_name = %s, photo_url = %s, is_guest = FALSE, last_login = CURRENT_TIMESTAMP
+                              WHERE id = %s''',
+                           (username, first_name, last_name, photo_url, user_id))
+        conn.commit()
+        conn.close()
+
         auth_secret = os.getenv("AUTH_SECRET", os.getenv("TELEGRAM_BOT_TOKEN", "default-secret-for-hmac"))
-            
+        
         auth_data = {
             "id": user_id,
             "first_name": first_name,
-            "auth_date": auth_date
+            "last_name": last_name,
+            "username": username,
+            "photo_url": photo_url,
+            "auth_date": int(time.time())
         }
-        if last_name: auth_data["last_name"] = last_name
-        if username: auth_data["username"] = username
-        if photo_url: auth_data["photo_url"] = photo_url
-
-        data_check_list = []
-        for key, value in sorted(auth_data.items()):
-            if value is not None:
-                data_check_list.append(f"{key}={value}")
-        data_check_string = "\n".join(data_check_list)
-        secret_key = hashlib.sha256(auth_secret.encode()).digest()
-        hash_value = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-
-        auth_data["hash"] = hash_value
+        
+        # Issue JWT
+        token = jwt.encode(auth_data, auth_secret, algorithm="HS256")
+        
+        # For backward compatibility with the frontend that still assumes UserAuth format with a hash
+        auth_data["hash"] = token
+        auth_data["access_token"] = token
 
         return auth_data
-    except ValueError as e:
+    except Exception as e:
         logger.error(f"Google verification failed: {e}")
         raise HTTPException(status_code=400, detail="Invalid Google token")
-

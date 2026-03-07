@@ -6,10 +6,12 @@ import json
 import logging
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import re
 import aiofiles
+import jwt
 from datetime import datetime, timezone
 from google import genai
 from telegram import Bot
@@ -30,7 +32,8 @@ ADMIN_USER_IDS = os.getenv("ADMIN_USER_IDS", os.getenv("ADMIN_TELEGRAM_IDS", "")
 DATA_DIR = os.getenv("DATA_DIR", "/app/data/results")
 
 # Ensure data directory exists
-os.makedirs(DATA_DIR, exist_ok=True)
+from db import init_db
+init_db()
 logger.info(f"Telegram Config: Token={'SET' if TELEGRAM_BOT_TOKEN else 'MISSING'}, Group={'SET' if TELEGRAM_GROUP_ID else 'MISSING'}")
 
 # Initialize Gemini Client
@@ -71,29 +74,22 @@ app.add_middleware(
 )
 
 def verify_auth(auth_data: UserAuth) -> bool:
-    """Verifies user authentication data."""
+    """Verifies user authentication data or JWT token."""
     if not AUTH_SECRET:
         # For development if secret is not set
         logger.warning("AUTH_SECRET not set, skipping auth verification")
         return True
     
-    data_check_list = []
-    auth_dict = auth_data.model_dump(exclude={'hash'})
-    for key, value in sorted(auth_dict.items()):
-        if value is not None:
-            data_check_list.append(f"{key}={value}")
-    
-    data_check_string = "\n".join(data_check_list)
-    secret_key = hashlib.sha256(AUTH_SECRET.encode()).digest()
-    hash_value = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-    
-    if hash_value != auth_data.hash:
-        raise HTTPException(status_code=401, detail="Invalid Auth Hash")
-    
-    if time.time() - auth_data.auth_date > 86400:
-        raise HTTPException(status_code=401, detail="Auth session expired")
-    
-    return True
+    try:
+        token = auth_data.hash
+        payload = jwt.decode(token, AUTH_SECRET, algorithms=["HS256"])
+        if str(payload.get("id")) != str(auth_data.id):
+            raise HTTPException(status_code=401, detail="Token mismatch")
+        return True
+    except jwt.PyJWTError as e:
+        logger.error(f"JWT Verification failed: {e}")
+        raise HTTPException(status_code=401, detail="Invalid Session Token")
+
 
 async def get_gemini_recommendations(test_results: Dict[str, Any], lang: str = "en"):
     if not client:
@@ -172,6 +168,88 @@ async def get_gemini_recommendations(test_results: Dict[str, Any], lang: str = "
         logger.error(f"Gemini error: {e}")
         return f"Error getting recommendations: {str(e)}"
 
+async def stream_gemini_recommendations(test_results: Dict[str, Any], lang: str = "en"):
+    if not client:
+        yield "Gemini API key not configured."
+        return
+    
+    try:
+        lang_map = {
+            "uk": "Ukrainian",
+            "ru": "Russian",
+            "en": "English"
+        }
+        target_lang = lang_map.get(lang, "English")
+
+        system_instruction = (
+            "You are a 'Cognitive Systems Architect' and Neurodiversity Specialist, "
+            "expertly versed in the research of Adam Zeman (Aphantasia) and Brian Levine (SDAM).\n\n"
+            
+            f"### CRITICAL RULE:\n"
+            f"You MUST provide your entire response in the {target_lang} language.\n\n"
+
+            "### YOUR MISSION:\n"
+            "Perform a deep-level deconstruction of the user's cognitive test results. "
+            "Apply the Dynamic Decision Strategy (DDS): before finalizing the report, "
+            "internally hypothesize the user's optimal processing mode (e.g., Semantic-Schematic vs. Visual-Episodic).\n\n"
+            
+            "### ANALYTICAL DIMENSIONS:\n"
+            "1. **Sensory Breadth (Multisensory Audit)**: Determine if the aphantasia is 'total' or 'partial'. "
+            "Check for 'Quiet Imagination' in auditory, olfactory, and tactile channels.\n"
+            "2. **Object vs. Spatial Processing**: Crucial distinction. While 'Object Visuals' (colors/details) may be null, "
+            "analyze 'Spatial Intelligence' (the ability to manipulate objects in 3D, mental rotation, and schematic thinking).\n"
+            "3. **Memory Architecture (SDAM check)**: Evaluate the presence of Severely Deficient Autobiographical Memory. "
+            "Distinguish between 'Semantic Memory' (knowing facts/data) and 'Episodic Memory' (re-experiencing events).\n"
+            "4. **Cognitive Resilience (Superpowers)**: Identify strengths like resistance to visual trauma (PTSD), "
+            "unbiased logical decision-making, and verbal innovation.\n"
+            "5. **Professional Synergy**: Map the profile to Belbin Team Roles (e.g., 'Monitor Evaluator' for analytical aphantasics).\n\n"
+            
+            "### REPORT STRUCTURE (Markdown):\n"
+            "Use clear headings with double newlines after each section to ensure proper rendering.\n\n"
+            "## 🧩 [Title]: The [Type Name] Architecture\n"
+            "*Assign a technical, empowering name (e.g., 'The Semantic Engine', 'The Spatial Strategist').*\n\n"
+            
+            "### 1. Executive Summary\n"
+            "Describe the user's cognitive 'OS'. Frame the results as a highly efficient alternative processing style, not a deficit.\n\n"
+            
+            "### 2. Deep Dive: Visual vs. Spatial Rendering\n"
+            "Explain the 'Object-Spatial' split. Clarify how the user 'thinks' without images by using semantic markers or spatial vectors.\n\n"
+            
+            "### 3. Memory & Time-Travel (SDAM Analysis)\n"
+            "Explain their relationship with the past. If SDAM is present, emphasize the 'Knowledge-Based' memory style over 'Movie-Based' memory.\n\n"
+            
+            "### 4. Professional Superpowers & Belbin Role\n"
+            "Detail why this profile is critical for teams (e.g., objective analysis, immunity to visual noise). "
+            "Specify their best role in a high-load engineering or creative team.\n\n"
+            
+            "### 5. The 'External Brain' Toolkit (Patches)\n"
+            "Provide 3-5 hyper-specific strategies as a bulleted list with double newlines between items:\n"
+            "- **Verbal Labeling**: Using words to 'index' feelings or spaces.\n\n"
+            "- **Externalization**: Using tools (Trello, Obsidian, Miro) as an 'Out-of-Core' memory buffer.\n\n"
+            "- **Semantic Anchoring**: Linking new data to existing logical nodes.\n\n"
+            
+            "### TONE & STYLE:\n"
+            "- Professional, clinical, yet profoundly empowering.\n"
+            "- Use system architecture metaphors (latency, bandwidth, database, indexing).\n"
+            "- **Strict Rule**: Avoid the 'broken' narrative. Use 'optimized for abstraction' instead.\n"
+            "- Ensure double newlines between logical sections for correct Markdown parsing.\n"
+        )
+
+        user_data_block = f"\n### INPUT TEST RESULTS (JSON):\n{json.dumps(test_results, indent=2)}"
+        
+        response = await client.aio.models.generate_content_stream(
+            model='gemini-3-flash-preview',
+            contents=system_instruction + user_data_block
+        )
+        
+        async for chunk in response:
+            if chunk.text:
+                yield chunk.text
+                
+    except Exception as e:
+        logger.error(f"Gemini streaming error: {e}")
+        yield f"\n\nError getting recommendations: {str(e)}"
+
 async def send_telegram_notification(msg: str):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_GROUP_ID:
         return
@@ -195,16 +273,20 @@ async def save_result(data: SaveResult):
     logger.info(f"Incoming save-result request for user {data.auth_data.id} (@{data.auth_data.username})")
     verify_auth(data.auth_data)
     
-    # Enforcement: Only one submission per ID removed to allow updating
     user_id = str(data.auth_data.id)
     file_path = get_result_file_path(user_id)
-    # Re-run gemini recommendations if updating
     
-    recommendations = await get_gemini_recommendations({"answers": data.answers, "scores": data.scores}, lang=data.lang or "en")
-    
-    # Ensure recommendations is a string for further processing
-    recommendations_text = str(recommendations)
-    
+    # Check if we already have recommendations saved
+    existing_recs = ""
+    if os.path.exists(file_path):
+        try:
+            async with aiofiles.open(file_path, mode="r", encoding="utf-8") as f:
+                content = await f.read()
+                existing_data = json.loads(content)
+                existing_recs = existing_data.get("gemini_recommendations", "")
+        except:
+            pass
+
     result_data = {
         "username": data.auth_data.username,
         "user_id": str(data.auth_data.id),
@@ -215,42 +297,60 @@ async def save_result(data: SaveResult):
         "test_type": data.test_type,
         "answers": data.answers,
         "scores": data.scores,
-        "gemini_recommendations": recommendations_text,
+        "gemini_recommendations": existing_recs,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
-    file_path = get_result_file_path(str(data.auth_data.id))
     async with aiofiles.open(file_path, mode="w", encoding="utf-8") as f:
         await f.write(json.dumps(result_data, ensure_ascii=False, indent=2))
+        
+    return {"status": "success"}
+
+@app.post("/api/analyze-result", responses={401: {"description": "Invalid Auth"}})
+async def analyze_result(data: SaveResult):
+    logger.info(f"Incoming analyze-result request for user {data.auth_data.id}")
+    verify_auth(data.auth_data)
     
-    # Notify Telegram Group
-    user_name = f"{data.auth_data.first_name} {data.auth_data.last_name or ''}".strip()
-    # Simple formatting to avoid Markdown parsing errors
-    scores_str = json.dumps(data.scores, indent=1)
+    user_id = str(data.auth_data.id)
+    file_path = get_result_file_path(user_id)
     
-    # Format recommendations for Telegram
-    # 1. Truncate raw text first to avoid breaking HTML tags later
-    truncated_recs = recommendations_text[:2500] + ("..." if len(recommendations_text) > 2500 else "")
-    
-    # 2. Escape HTML special characters
-    recs_safe = truncated_recs.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-    
-    # 3. Convert **bold** to <b>bold</b> and headers to bold
-    recs_html = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', recs_safe)
-    recs_html = re.sub(r'^#+ (.*)$', r'<b>\1</b>', recs_html, flags=re.MULTILINE)
-    
-    msg = (
-        f"🔔 <b>New Test Result!</b>\n\n"
-        f"<b>User:</b> {user_name} (@{data.auth_data.username or 'N/A'})\n"
-        f"<b>Test:</b> {data.test_type}\n"
-        f"<b>Score:</b>\n<code>{scores_str}</code>\n\n"
-        f"<b>AI Analysis:</b>\n{recs_html}"
-    )
-    
-    logger.info(f"Attempting to send Telegram notification (len={len(msg)})")
-    await send_telegram_notification(msg)
-    
-    return {"status": "success", "recommendations": recommendations}
+    async def event_generator():
+        full_text = ""
+        async for chunk in stream_gemini_recommendations({"answers": data.answers, "scores": data.scores}, lang=data.lang or "en"):
+            full_text += chunk
+            yield chunk
+            
+        # After streaming completes, save it to the file
+        if os.path.exists(file_path):
+            try:
+                async with aiofiles.open(file_path, mode="r", encoding="utf-8") as f:
+                    content = await f.read()
+                    existing_data = json.loads(content)
+                
+                existing_data["gemini_recommendations"] = full_text
+                
+                async with aiofiles.open(file_path, mode="w", encoding="utf-8") as f:
+                    await f.write(json.dumps(existing_data, ensure_ascii=False, indent=2))
+            except Exception as e:
+                logger.error(f"Failed to save streamed recommendations: {e}")
+                
+        # Send telegram notification after generation is done
+        user_name = f"{data.auth_data.first_name} {data.auth_data.last_name or ''}".strip()
+        scores_str = json.dumps(data.scores, indent=1)
+        truncated_recs = full_text[:2500] + ("..." if len(full_text) > 2500 else "")
+        recs_safe = truncated_recs.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        recs_html = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', recs_safe)
+        recs_html = re.sub(r'^#+ (.*)$', r'<b>\1</b>', recs_html, flags=re.MULTILINE)
+        msg = (
+            f"🔔 <b>New Test Result!</b>\n\n"
+            f"<b>User:</b> {user_name} (@{data.auth_data.username or 'N/A'})\n"
+            f"<b>Test:</b> {data.test_type}\n"
+            f"<b>Score:</b>\n<code>{scores_str}</code>\n\n"
+            f"<b>AI Analysis:</b>\n{recs_html}"
+        )
+        await send_telegram_notification(msg)
+
+    return StreamingResponse(event_generator(), media_type="text/plain")
 
 @app.post("/api/me/result", responses={401: {"description": "Invalid Auth"}})
 async def get_my_result(auth_data: UserAuth):

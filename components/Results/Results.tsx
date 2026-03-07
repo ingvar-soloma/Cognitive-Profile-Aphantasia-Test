@@ -26,13 +26,18 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset, onGoHome, ui
 
   const calculateCategoryScore = (subCatKey: string) => ProfileService.calculateCategoryScore(answers, subCatKey);
 
+  const hasAttemptedSave = React.useRef(false);
+
   React.useEffect(() => {
+    if (hasAttemptedSave.current) return;
+
     const saveAndGetRecs = async () => {
       const activeProfileId = localStorage.getItem('neuroprofile_active_profile_id');
       const profiles = ProfileService.getProfiles();
       const activeProfile = profiles.find(p => p.id === activeProfileId);
 
       if (activeProfile) {
+        hasAttemptedSave.current = true;
         setIsSaving(true);
         const scores = {
           Visual: calculateCategoryScore('Visual'),
@@ -43,26 +48,32 @@ export const Results: React.FC<ResultsProps> = ({ answers, onReset, onGoHome, ui
         };
 
         try {
-          // If not logged in, we can't save to backend yet
           if (!user) {
             setIsSaving(false);
             return;
           }
 
+          // Step 1: Fast save
           const result = await ProfileService.saveResultToBackend(activeProfile, activeProfile.surveyId, scores, lang);
 
-          if (result && result.status === 'success' && result.recommendations) {
-            setGeminiRecs(result.recommendations);
-          } else {
-            // If save failed (e.g. already exists) or no recs, try loading existing
+          if (result && result.status === 'success') {
+            // Check if there are already existing recommendations
             const existingResult = await ProfileService.loadResultFromBackend();
-            if (existingResult && existingResult.gemini_recommendations) {
+            if (existingResult && existingResult.gemini_recommendations && existingResult.gemini_recommendations.trim().length > 0) {
               setGeminiRecs(existingResult.gemini_recommendations);
+              setIsSaving(false);
+            } else {
+              // Step 2: Stream LLM Analysis if missing
+              setGeminiRecs('');
+              await ProfileService.streamAnalysisFromBackend(activeProfile, activeProfile.surveyId, scores, lang, (chunk) => {
+                setGeminiRecs(prev => (prev || '') + chunk);
+                // Optionally stop spinner after first chunk
+                setIsSaving(false);
+              });
             }
           }
         } catch (error) {
           console.error("Error managing backend results", error);
-          // Fallback to loading
           const existingResult = await ProfileService.loadResultFromBackend();
           if (existingResult && existingResult.gemini_recommendations) {
             setGeminiRecs(existingResult.gemini_recommendations);

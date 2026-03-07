@@ -45,6 +45,50 @@ export class ProfileService {
     }
   }
 
+  static async streamAnalysisFromBackend(profile: Profile, testType: string, scores: any, lang: Language, onChunk: (text: string) => void) {
+    const authDataString = localStorage.getItem('auth_token');
+    if (!authDataString) return null;
+
+    try {
+      const authData = JSON.parse(authDataString);
+      const user = authData.user || authData;
+
+      if (!user || !user.id || user.error) {
+        return null;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/analyze-result`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          auth_data: user,
+          test_type: testType,
+          answers: profile.answers,
+          scores: scores,
+          lang: lang
+        }),
+      });
+
+      if (!response.body) return null;
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        onChunk(chunk);
+      }
+      return true;
+    } catch (e) {
+      console.error('[ProfileService] Failed to stream from backend', e);
+      return null;
+    }
+  }
+
   static async loadResultFromBackend() {
     const authDataString = localStorage.getItem('auth_token');
     if (!authDataString) return null;
@@ -68,6 +112,14 @@ export class ProfileService {
         },
         body: JSON.stringify(user),
       });
+
+      if (response.status === 401) {
+        console.warn('[ProfileService] 401 Unauthorized. Clearing invalid session.');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('telegram_auth');
+        globalThis.dispatchEvent(new CustomEvent('auth-logout'));
+        return null;
+      }
 
       if (response.ok) {
         const data = await response.json();

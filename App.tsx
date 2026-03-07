@@ -471,7 +471,13 @@ const App: React.FC = () => {
             loadedAnswers = decode(content);
           } else {
             // Try JSON
-            loadedAnswers = JSON.parse(content);
+            const parsed = JSON.parse(content);
+            // If the user uploaded a backend JSON export, extraction the answers part
+            if (parsed && typeof parsed === 'object' && parsed.answers && typeof parsed.answers === 'object') {
+              loadedAnswers = parsed.answers;
+            } else {
+              loadedAnswers = parsed;
+            }
           }
 
           if (loadedAnswers && typeof loadedAnswers === 'object') {
