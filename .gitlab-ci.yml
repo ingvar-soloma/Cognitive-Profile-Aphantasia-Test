@@ -7,13 +7,16 @@ variables:
   FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend:latest
   BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend:latest
 
+.docker_login: &docker_login
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
 build_frontend:
+  <<: *docker_login
   stage: build
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build -t $FRONTEND_IMAGE .
     - docker push $FRONTEND_IMAGE
@@ -21,12 +24,11 @@ build_frontend:
     - main
 
 build_backend:
+  <<: *docker_login
   stage: build
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build -t $BACKEND_IMAGE ./backend
     - docker push $BACKEND_IMAGE
@@ -45,7 +47,16 @@ deploy:
     - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY && docker compose pull && docker compose up -d"
+    - ssh $SSH_USER@$SSH_HOST "
+        set -e;
+        cd $DEPLOY_PATH;
+
+        echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY;
+
+        export BACKEND_IMAGE=$BACKEND_IMAGE;
+        export FRONTEND_IMAGE=$FRONTEND_IMAGE;
+        make prod-up;
+      "
   only:
     - main
   environment:
