@@ -17,15 +17,27 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-          script: |
             set -e
             cd ${{ secrets.DEPLOY_PATH }}
-            echo "Current user: $(whoami)"
             
-            # Use sudo if necessary to fix permissions or pull updates
-            sudo git fetch origin
-            sudo git pull origin main
+            # Fix directory ownership if it was cloned by a different user (e.g. root)
+            sudo chown -R $USER:$USER .
             
-            # Build and up using sudo
-            sudo make prod-build
-            sudo make prod-up
+            # Update known_hosts to avoid interactive prompt
+            mkdir -p ~/.ssh && chmod 700 ~/.ssh
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
+            
+            # Start ssh-agent and try to add all standard keys
+            eval $(ssh-agent -s)
+            for key in id_rsa id_ed25519 id_ecdsa; do
+              if [ -f ~/.ssh/$key ]; then
+                ssh-add ~/.ssh/$key 2>/dev/null && echo "Added $key"
+              fi
+            done
+            
+            # Now we can safely pull and build
+            git fetch origin
+            git pull origin main
+            
+            make prod-build
+            make prod-up

@@ -9,22 +9,30 @@ deploy:
     - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh $SSH_USER@$SSH_HOST "
         set -e;
         cd $DEPLOY_PATH;
-        echo 'Current user: \$(whoami)';
+        # Fix directory ownership if it was cloned by a different user
+        sudo chown -R \$USER:\$USER .;
         
-        # Use sudo for operations to prevent permission denied error
-        sudo git fetch origin;
-        sudo git pull origin main;
+        # Ensure hosts are known
+        mkdir -p ~/.ssh && chmod 700 ~/.ssh;
+        ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts 2>/dev/null;
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null;
+        
+        # Identity setup
+        eval \$(ssh-agent -s);
+        for key in id_rsa id_ed25519 id_ecdsa; do
+          if [ -f ~/.ssh/\$key ]; then
+            ssh-add ~/.ssh/\$key 2>/dev/null && echo \"Added \$key\";
+          fi
+        done;
 
-        sudo make prod-build;
-        sudo make prod-up;
+        git fetch origin;
+        git pull origin main;
+        make prod-build;
+        make prod-up;
       "
   only:
     - main
