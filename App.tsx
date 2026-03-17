@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Answer, LocalizedCategoryData, Language, SurveyDefinition, LocalizedScaleConfig, Profile, QuestionType } from './types';
+import { Answer, LocalizedCategoryData, Language, SurveyDefinition, LocalizedScaleConfig, Profile, QuestionType, UIStrings } from './types';
 import { SurveyService } from './services/SurveyService';
 import { Results } from '@/components/Results/Results';
 import { Header } from './components/Header';
@@ -75,7 +75,8 @@ const App: React.FC = () => {
         'y': 'youtube',
         'l': 'linkedin',
         'x': 'twitter',
-        'g': 'google'
+        'g': 'google',
+        'r': 'reddit',
       };
       
       const fullSource = sourceMap[s] || s;
@@ -433,20 +434,20 @@ const App: React.FC = () => {
       id: q.id,
       category: q.category,
       type: q.type,
-      text: q.text[language],
-      placeholder: q.placeholder ? q.placeholder[language] : undefined,
-      subCategory: q.subCategory ? q.subCategory[language] : undefined,
-      hint: q.hint ? q.hint[language] : undefined,
+      text: q.text[language] || q.text['en'],
+      placeholder: q.placeholder ? (q.placeholder[language] || q.placeholder['en']) : undefined,
+      subCategory: q.subCategory ? (q.subCategory[language] || q.subCategory['en']) : undefined,
+      hint: q.hint ? (q.hint[language] || q.hint['en']) : undefined,
       options: q.options?.map((opt: any) => ({
         value: opt.value,
-        label: opt.label[language]
+        label: opt.label[language] || opt.label['en']
       }))
     });
 
     const localizeCategory = (cat: any) => ({
       id: cat.id,
-      title: cat.title[language],
-      description: cat.description[language],
+      title: cat.title[language] || cat.title['en'],
+      description: cat.description[language] || cat.description['en'],
       questions: cat.questions.map(localizeQuestion)
     });
 
@@ -458,7 +459,7 @@ const App: React.FC = () => {
 
     const labels: Record<number, string> = {};
     Object.entries(currentSurvey.scaleConfig.labels).forEach(([key, val]) => {
-      labels[Number(key)] = val[language];
+      labels[Number(key)] = val[language] || (val as any)['en'];
     });
 
     return {
@@ -468,7 +469,12 @@ const App: React.FC = () => {
     };
   }, [language, currentSurvey]);
 
-  const ui = UI_TRANSLATIONS[language];
+  // Use memo to optimize translation object creation with fallback to English
+  const ui = useMemo(() => {
+    const base = UI_TRANSLATIONS['en'] || {};
+    const current = UI_TRANSLATIONS[language] || {};
+    return { ...base, ...current } as UIStrings;
+  }, [language]);
   const activeCategory = localizedCategories[currentCategoryIndex];
 
   // Progress Calculation

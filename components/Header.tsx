@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BrainCircuit, Moon, Sun, ChevronDown, BookOpen, HelpCircle, FileText, Zap, Newspaper, Brain } from 'lucide-react';
-import { Language } from '@/types';
+import { BrainCircuit, Moon, Sun, ChevronDown, BookOpen, HelpCircle, FileText, Zap, Newspaper, Brain, Menu, X, Globe } from 'lucide-react';
+import { Language, UIStrings } from '@/types';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -38,6 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
     const pathname = location.pathname;
 
     const [infoOpen, setInfoOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const infoRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown on outside click
@@ -51,6 +52,11 @@ export const Header: React.FC<HeaderProps> = ({
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    // Close mobile menu on route change
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [pathname]);
+
     const infoLinks = [
         { path: '/about', label: ui.navAbout, icon: Brain },
         { path: '/how-it-works', label: ui.navHowItWorks, icon: Zap },
@@ -58,6 +64,12 @@ export const Header: React.FC<HeaderProps> = ({
         { path: '/news', label: ui.navNews, icon: Newspaper },
         { path: '/terms', label: ui.navTerms, icon: FileText },
         { path: '/privacy', label: ui.privacyPolicy, icon: BookOpen },
+    ];
+
+    const mainLinks = [
+        { state: 'INTRO', label: ui.navTests, active: pathname === '/' && !!user || appState === 'SURVEY' },
+        { state: 'DASHBOARD_RESULTS', label: ui.navResults, active: pathname.startsWith('/results') || pathname.startsWith('/history') },
+        { state: 'RECOMMENDATIONS', label: ui.navRecommendations, active: pathname === '/recommendations' },
     ];
 
     const infoPathnames = infoLinks.map(l => l.path);
@@ -74,7 +86,15 @@ export const Header: React.FC<HeaderProps> = ({
         <header className="border-b border-stone-line bg-brand-paper/80 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
             <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                 {/* Logo + Nav */}
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <button
+                        onClick={() => setMobileMenuOpen(true)}
+                        className="md:hidden p-2 text-stone-500 hover:text-brand-ink transition-colors mr-1"
+                        aria-label="Open Menu"
+                    >
+                        <Menu className="w-5 h-5" />
+                    </button>
+
                     <button
                         className="flex items-center gap-2 text-brand-graphite cursor-pointer focus:outline-none rounded-lg transition-transform active:scale-95"
                         onClick={() => navigate('/')}
@@ -83,38 +103,21 @@ export const Header: React.FC<HeaderProps> = ({
                         <div className="bg-brand-ink p-1.5 rounded-lg shrink-0">
                             <BrainCircuit className="w-5 h-5 text-white" />
                         </div>
-                        <span className="font-serif text-lg lg:text-xl font-bold tracking-tight text-brand-graphite hidden md:block">
+                        <span className="font-serif text-base sm:text-lg lg:text-xl font-bold tracking-tight text-brand-graphite hidden xs:block">
                             NeuroProfile
-                        </span>
-                        <span className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded-md bg-brand-clay/10 text-brand-clay text-[9px] font-bold uppercase tracking-widest border border-brand-clay/20">
-                            Beta
                         </span>
                     </button>
 
                     <nav className="hidden md:flex ml-4 lg:ml-8 bg-stone-bg/80 p-1 rounded-full border border-stone-line gap-0.5 lg:gap-1">
-                        {/* Tests — home / survey */}
-                        <button
-                            onClick={() => onNavigate('INTRO')}
-                            className={navBtnClass(pathname === '/' && !!user || appState === 'SURVEY')}
-                        >
-                            {ui.navTests}
-                        </button>
-
-                        {/* Results */}
-                        <button
-                            onClick={() => onNavigate('DASHBOARD_RESULTS')}
-                            className={navBtnClass(pathname.startsWith('/results') || pathname.startsWith('/history'))}
-                        >
-                            {ui.navResults}
-                        </button>
-
-                        {/* Recommendations */}
-                        <button
-                            onClick={() => onNavigate('RECOMMENDATIONS')}
-                            className={navBtnClass(pathname === '/recommendations')}
-                        >
-                            {ui.navRecommendations}
-                        </button>
+                        {mainLinks.map(link => (
+                            <button
+                                key={link.state}
+                                onClick={() => onNavigate(link.state)}
+                                className={navBtnClass(link.active)}
+                            >
+                                {link.label}
+                            </button>
+                        ))}
 
                         {/* Info dropdown */}
                         <div className="relative" ref={infoRef}>
@@ -159,20 +162,20 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 {/* Right side */}
-                <div className="flex items-center gap-2 sm:gap-4">
-                    {/* Language switcher */}
-                    <div className="hidden sm:flex items-center gap-2 text-xs font-medium">
+                <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+                    {/* Minimize Language selector */}
+                    <div className="flex items-center border border-stone-line bg-stone-bg/40 rounded-lg p-0.5 shrink-0">
                         {(['uk', 'en', 'ru'] as Language[]).map(lang => (
                             <button
                                 key={lang}
                                 onClick={() => onSetLanguage(lang)}
-                                className={`transition-all py-0.5 px-2 rounded-md ${
+                                className={`px-1.5 sm:px-2 py-1 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-tight transition-all ${
                                     language === lang
-                                        ? 'text-brand-graphite bg-stone-bg ring-1 ring-stone-line shadow-sm'
-                                        : 'text-stone-400 hover:text-brand-graphite'
+                                        ? 'bg-white text-brand-ink shadow-sm ring-1 ring-stone-line/50'
+                                        : 'text-stone-400 hover:text-stone-600'
                                 }`}
                             >
-                                {lang.toUpperCase()}
+                                {lang === 'uk' ? 'UA' : lang.toUpperCase()}
                             </button>
                         ))}
                     </div>
@@ -180,43 +183,118 @@ export const Header: React.FC<HeaderProps> = ({
                     {/* Theme toggle */}
                     <button
                         onClick={onToggleTheme}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-stone-bg text-brand-graphite border border-stone-line hover:border-brand-ink/40 transition-all active:scale-95 group shadow-sm"
+                        className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl bg-stone-bg text-brand-graphite border border-stone-line hover:border-brand-ink/40 transition-all active:scale-95 group shadow-sm shrink-0"
                         aria-label="Toggle Theme"
                     >
                         {theme === 'light' ? (
-                            <Moon className="w-4 h-4 text-brand-ink group-hover:fill-brand-ink transition-all" />
+                            <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-ink group-hover:fill-brand-ink transition-all" />
                         ) : (
-                            <Sun className="w-4 h-4 text-brand-clay group-hover:rotate-45 transition-transform" />
+                            <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-clay group-hover:rotate-45 transition-transform" />
                         )}
                     </button>
 
-                    <div className="h-4 w-px bg-stone-line hidden sm:block mx-1" />
+                    <div className="h-4 w-px bg-stone-line hidden sm:block mx-0.5" />
 
                     {/* User / Login */}
-                    {user ? (
-                        <div className="flex items-center gap-2 lg:gap-3 shrink-0">
-                            <button onClick={() => { }} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <div className="flex items-center gap-2">
+                        {user ? (
+                            <button 
+                                onClick={onLogout}
+                                className="flex items-center gap-2 p-1 hover:bg-stone-bg rounded-lg transition-colors"
+                                title={ui.logout}
+                            >
                                 {user.photo_url ? (
-                                    <img src={user.photo_url} alt={user.first_name} className="w-8 h-8 rounded-full border border-stone-line shadow-sm" />
+                                    <img src={user.photo_url} alt={user.first_name} className="w-8 h-8 rounded-lg border border-stone-line shadow-sm" />
                                 ) : (
-                                    <div className="w-8 h-8 rounded-full bg-brand-clay/10 text-brand-clay flex items-center justify-center font-serif italic font-bold text-sm border border-brand-clay/20">
+                                    <div className="w-8 h-8 rounded-lg bg-brand-clay/10 text-brand-clay flex items-center justify-center font-serif italic font-bold text-sm border border-brand-clay/20">
                                         {user.first_name?.[0] || 'U'}
                                     </div>
                                 )}
-                                <span className="text-sm font-medium hidden sm:block text-brand-graphite">{user.first_name}</span>
+                                <span className="hidden lg:block text-[10px] font-bold text-stone-400 uppercase tracking-widest">{ui.logout}</span>
                             </button>
-                            <button
-                                onClick={onLogout}
-                                className="text-[10px] font-bold text-stone-400 hover:text-brand-clay transition-colors uppercase tracking-[0.1em]"
-                            >
-                                {ui.logout}
-                            </button>
-                        </div>
-                    ) : (
-                        <GoogleAuthButton useOneTap={true} />
-                    )}
+                        ) : (
+                            <div className="scale-90 sm:scale-100 origin-right">
+                                <GoogleAuthButton useOneTap={true} />
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Mobile Sidebar */}
+            {mobileMenuOpen && (
+                <div className="fixed inset-0 z-[100] md:hidden">
+                    <div className="absolute inset-0 bg-brand-graphite/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+                    <div className="absolute inset-y-0 left-0 w-72 bg-brand-paper shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+                        <div className="p-4 border-b border-stone-line flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="bg-brand-ink p-1.5 rounded-lg">
+                                    <BrainCircuit className="w-5 h-5 text-white" />
+                                </div>
+                                <span className="font-serif text-lg font-bold text-brand-graphite">NeuroProfile</span>
+                            </div>
+                            <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-stone-500 hover:text-brand-clay">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                            <div className="space-y-1">
+                                <h3 className="px-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">{ui.navTests}</h3>
+                                {mainLinks.map(link => (
+                                    <button
+                                        key={link.state}
+                                        onClick={() => { onNavigate(link.state); setMobileMenuOpen(false); }}
+                                        className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                                            link.active ? 'bg-brand-ink/5 text-brand-ink' : 'text-stone-500 hover:bg-stone-bg'
+                                        }`}
+                                    >
+                                        {link.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="space-y-1">
+                                <h3 className="px-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">{ui.navAbout}</h3>
+                                {infoLinks.map(link => (
+                                    <button
+                                        key={link.path}
+                                        onClick={() => { navigate(link.path); setMobileMenuOpen(false); }}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                                            pathname === link.path ? 'bg-brand-ink/5 text-brand-ink' : 'text-stone-500 hover:bg-stone-bg'
+                                        }`}
+                                    >
+                                        <link.icon className="w-4 h-4" />
+                                        {link.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="p-4 border-t border-stone-line bg-stone-bg/30">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Globe className="w-4 h-4 text-stone-400" />
+                                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Language</span>
+                                </div>
+                                <div className="flex gap-1">
+                                    {(['uk', 'en', 'ru'] as Language[]).map(lang => (
+                                        <button
+                                            key={lang}
+                                            onClick={() => onSetLanguage(lang)}
+                                            className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${
+                                                language === lang ? 'bg-brand-ink text-white' : 'text-stone-500'
+                                            }`}
+                                        >
+                                            {lang.toUpperCase()}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Progress bar for survey */}
             {appState === 'SURVEY' && (
