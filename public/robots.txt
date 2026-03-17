@@ -6,5 +6,5 @@ Disallow: /*?s=
 Disallow: /*?utm_
 Disallow: /*?ref=
 
-# Sitemaps (if you have them)
-# Sitemap: https://neuroprofile.org/sitemap.xml
+# Sitemaps
+Sitemap: https://neuroprofile.org/sitemap.xml
