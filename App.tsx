@@ -115,11 +115,11 @@ const App: React.FC = () => {
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [language, setLanguage] = useState<Language>(() => {
-    if (typeof navigator === 'undefined') return 'uk';
+    if (typeof navigator === 'undefined') return 'en';
     const lang = navigator.language.toLowerCase();
+    if (lang.includes('uk')) return 'uk';
     if (lang.includes('ru')) return 'ru';
-    if (lang.includes('en')) return 'en';
-    return 'uk';
+    return 'en';
   });
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('neuroprofile_theme') as Theme;
@@ -145,6 +145,12 @@ const App: React.FC = () => {
     }
     return null;
   });
+
+  // Update HTML lang attribute
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   const [backendRecommendations, setBackendRecommendations] = useState<Record<string, string>>({});
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
   const [loginModalConfig, setLoginModalConfig] = useState<{ title?: string, description?: string }>({});
