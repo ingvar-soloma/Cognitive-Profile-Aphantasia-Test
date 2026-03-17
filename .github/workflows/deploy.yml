@@ -18,9 +18,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
-            mkdir -p ~/.ssh
-            ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
-            ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts 2>/dev/null
+            # Use token for git authentication to avoid SSH key issues in CI
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
             git fetch origin
             git pull origin main
             make prod-build

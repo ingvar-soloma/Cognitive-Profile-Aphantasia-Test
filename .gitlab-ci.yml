@@ -17,9 +17,8 @@ deploy:
     - ssh $SSH_USER@$SSH_HOST "
         set -e;
         cd $DEPLOY_PATH;
-        mkdir -p ~/.ssh;
-        ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null;
-        ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts 2>/dev/null;
+        # Use token for git authentication
+        git remote set-url origin https://oauth2:$CI_JOB_TOKEN@gitlab.com/$CI_PROJECT_PATH.git;
         git fetch origin;
         git pull origin main;
         make prod-build;
