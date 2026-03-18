@@ -228,9 +228,9 @@ export const Header: React.FC<HeaderProps> = ({
                         className="absolute inset-0 bg-brand-graphite/40 backdrop-blur-sm transition-opacity duration-300" 
                         onClick={() => setMobileMenuOpen(false)} 
                     />
-                    <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] h-screen bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 z-[1001]">
-                        <div className="p-5 border-b border-stone-line flex items-center justify-between bg-white">
-                            <div className="flex items-center gap-2">
+                    <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] h-screen bg-brand-paper shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 z-[1001]">
+                        <div className="p-5 border-b border-stone-line flex items-center justify-between bg-brand-paper">
+                             <div className="flex items-center gap-2">
                                 <div className="bg-brand-ink p-1.5 rounded-lg">
                                     <BrainCircuit className="w-5 h-5 text-white" />
                                 </div>
@@ -241,7 +241,7 @@ export const Header: React.FC<HeaderProps> = ({
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-5 space-y-8 bg-white">
+                        <div className="flex-1 overflow-y-auto p-5 space-y-8 bg-brand-paper">
                             <div className="space-y-2">
                                 <h3 className="px-3 text-[11px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-3">{ui.navTests}</h3>
                                 <div className="space-y-1">
@@ -278,26 +278,62 @@ export const Header: React.FC<HeaderProps> = ({
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-stone-line bg-stone-bg/50">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Globe className="w-4 h-4 text-stone-400" />
-                                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Language</span>
+                        <div className="p-6 border-t border-stone-line bg-stone-bg/50 space-y-4">
+                            {/* Settings (Language + Theme) */}
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Globe className="w-4 h-4 text-stone-400" />
+                                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{ui.language}</span>
+                                    </div>
+                                    <div className="flex gap-1 border border-stone-line/50 p-0.5 rounded-lg bg-brand-paper/50">
+                                        {(['uk', 'en', 'ru'] as Language[]).map(lang => (
+                                            <button
+                                                key={lang}
+                                                onClick={() => onSetLanguage(lang)}
+                                                className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${
+                                                    language === lang ? 'bg-brand-ink text-white shadow-sm' : 'text-stone-500 hover:text-brand-graphite'
+                                                }`}
+                                            >
+                                                {lang.toUpperCase()}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="flex gap-1">
-                                    {(['uk', 'en', 'ru'] as Language[]).map(lang => (
-                                        <button
-                                            key={lang}
-                                            onClick={() => onSetLanguage(lang)}
-                                            className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${
-                                                language === lang ? 'bg-brand-ink text-white' : 'text-stone-500'
-                                            }`}
-                                        >
-                                            {lang.toUpperCase()}
-                                        </button>
-                                    ))}
+
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        {theme === 'light' ? <Moon className="w-4 h-4 text-stone-400" /> : <Sun className="w-4 h-4 text-stone-400" />}
+                                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Theme</span>
+                                    </div>
+                                    <button
+                                        onClick={onToggleTheme}
+                                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-paper border border-stone-line text-[10px] font-bold text-brand-graphite uppercase tracking-widest transition-all active:scale-95"
+                                    >
+                                        {theme === 'light' ? 'Dark' : 'Light'}
+                                    </button>
                                 </div>
                             </div>
+
+                            {/* PWA / Browser Link */}
+                            {(() => {
+                                // Check if in standalone mode (PWA)
+                                const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+                                if (isStandalone || true) { // Always show for now if requested, or limit to standalone
+                                    return (
+                                        <a 
+                                            href={window.location.origin + window.location.pathname} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-stone-line text-stone-500 hover:text-brand-ink transition-colors group"
+                                        >
+                                            <Globe className="w-4 h-4 group-hover:animate-pulse" />
+                                            <span className="text-[11px] font-bold uppercase tracking-widest">Open in Browser</span>
+                                        </a>
+                                    );
+                                }
+                                return null;
+                            })()}
                         </div>
                     </div>
                 </div>
