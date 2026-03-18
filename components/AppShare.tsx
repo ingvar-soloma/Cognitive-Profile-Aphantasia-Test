@@ -52,7 +52,7 @@ export const AppShare: React.FC<AppShareProps> = ({
         )}
         
         <a 
-          href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl('r'))}&title=${encodeURIComponent(currentSurvey?.title[lang] || ui.resultsTitle)}`}
+          href={`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl('r'))}&title=${encodeURIComponent(`I discovered my ${currentSurvey?.title[lang] || ui.resultsTitle}. What's yours?`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-6 py-3 bg-[#FF4500] text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-md"

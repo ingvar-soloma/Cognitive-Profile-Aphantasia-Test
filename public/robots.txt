@@ -1,10 +1,12 @@
+# Allow social crawlers to access shared results even with parameters
+User-agent: LinkedInBot
+Allow: /results/
+
+User-agent: RedditBot
+Allow: /results/
+
 User-agent: *
 Allow: /
-
-# Prevent duplicate indexing of lead source links
-Disallow: /*?s=
-Disallow: /*?utm_
-Disallow: /*?ref=
 
 # Sitemaps
 Sitemap: https://cognitiveprofile.ingvarsoloma.dev/sitemap.xml

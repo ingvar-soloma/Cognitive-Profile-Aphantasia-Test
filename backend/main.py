@@ -352,17 +352,24 @@ async def get_public_result_page(request: Request, user_id: str, conn: asyncpg.C
     test_type = data.get("test_type", "Cognitive")
     nickname = user['public_nickname'] or "Anonymous"
     
-    # Check if request is likely from a social crawler or browser
-    accept = request.headers.get("accept", "")
-    if "text/html" in accept or "User-Agent" in request.headers and any(bot in request.headers["User-Agent"] for bot in ["LinkedInBot", "RedditBot", "facebookexternalhit", "Twitterbot"]):
+    accept = request.headers.get("accept", "").lower()
+    ua = request.headers.get("User-Agent", "").lower()
+    if "text/html" in accept or any(bot in ua for bot in ["linkedin", "reddit", "facebook", "twitter", "whatsapp", "slack", "discord", "bot"]):
         # serve index.html with injected tags
         index_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "index.html")
         if os.path.exists(index_path):
             async with aiofiles.open(index_path, mode="r", encoding="utf-8") as f:
                 html = await f.read()
             
-            og_title = f"I discovered my {test_type} architecture. What's yours?"
-            og_desc = f"View the cognitive profile of {nickname} and explore the spectrum of imagination."
+            test_names = {
+                "full_aphantasia_profile": "Full Cognitive Profile",
+                "express_aphantasia_diagnostics": "Express Diagnostics"
+            }
+            test_type_raw = data.get("test_type", "unknown")
+            test_name = test_names.get(test_type_raw, test_type_raw.replace("_", " ").title())
+            
+            og_title = f"I discovered my {test_name}. What's yours?"
+            og_desc = f"I just mapped my sensory architecture. My profile: {test_name}. Explore your own cognitive spectrum and see how you perceive the world!"
             
             # Dynamic Radar Chart Image via QuickChart
             scores = data.get("scores", {})
@@ -401,7 +408,12 @@ async def get_public_result_page(request: Request, user_id: str, conn: asyncpg.C
                 <meta property="og:description" content="{og_desc}" />
                 <meta property="og:image" content="{og_image}" />
                 <meta property="og:url" content="{request.url}" />
+                <meta property="og:type" content="article" />
+                <meta property="og:site_name" content="Cognitive Profile" />
                 <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="{og_title}" />
+                <meta name="twitter:description" content="{og_desc}" />
+                <meta name="twitter:image" content="{og_image}" />
             '''
             html = html.replace("<head>", f"<head>{tags}")
             return HTMLResponse(content=html)
