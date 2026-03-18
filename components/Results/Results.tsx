@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { Answer, UIStrings, Language, QuestionType, SurveyDefinition } from '@/types';
+import { Answer, UIStrings, Language, QuestionType, SurveyDefinition, Badge } from '@/types';
 import { SURVEY_DATA, AVAILABLE_SURVEYS } from '@/constants';
-import { Download, FileJson, BrainCircuit, ShieldAlert, Sparkles, Zap, MessageSquare, ChevronRight } from 'lucide-react';
+import { Download, FileJson, BrainCircuit, ShieldAlert, Sparkles, Zap, MessageSquare, ChevronRight, User } from 'lucide-react';
 import { ProfileService } from '@/services/ProfileService';
 // @ts-ignore
 import { encode } from '@toon-format/toon';
@@ -18,9 +18,11 @@ interface ResultsProps {
   lang: Language;
   filenamePrefix?: string;
   user: any;
+  targetUser?: any;
   surveyId?: string;
   survey?: SurveyDefinition | null;
   initialRecommendations?: Record<string, string>;
+  badges?: Badge[];
 }
 
 const RadarIcon = ({ className }: { className?: string }) => (
@@ -32,8 +34,39 @@ const RadarIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+export const BadgeIcon = ({ badge, size = "md" }: { badge: Badge, size?: "sm" | "md" | "lg" }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  
+  const sizeClasses = {
+    sm: "w-6 h-6 text-xs",
+    md: "w-10 h-10 text-xl",
+    lg: "w-16 h-16 text-3xl"
+  };
+
+  return (
+    <div className="relative inline-block">
+      <div 
+        className={`${sizeClasses[size]} rounded-full bg-brand-paper-accent border border-stone-line flex items-center justify-center cursor-pointer hover:bg-brand-ink hover:border-brand-ink transition-all duration-300 shadow-sm`}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        <span className="leading-none">{badge.icon || "🏆"}</span>
+      </div>
+      
+      {showTooltip && badge.description && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 p-4 bg-brand-paper-accent border border-stone-line rounded-2xl shadow-xl z-[100] animate-fade-in text-center pointer-events-none">
+          <div className="font-bold text-[10px] text-brand-ink uppercase tracking-[0.15em] mb-1">{badge.name}</div>
+          <p className="text-[10px] text-stone-500 font-sans leading-relaxed">{badge.description}</p>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-stone-line"></div>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[7px] border-transparent border-t-brand-paper-accent -mt-[1px]"></div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const Results: React.FC<ResultsProps> = ({
-  answers, onReset, onGoHome, ui, lang, filenamePrefix, user, surveyId, survey, initialRecommendations = {}
+  answers, onReset, onGoHome, ui, lang, filenamePrefix, user, targetUser, surveyId, survey, initialRecommendations = {}, badges = []
 }) => {
   const navigate = useNavigate();
   const [geminiRecs, setGeminiRecs] = useState<string | null>(null);
@@ -234,7 +267,35 @@ export const Results: React.FC<ResultsProps> = ({
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-clay/10 rounded-full blur-3xl -ml-32 -mb-32"></div>
 
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight leading-tight">{ui.resultsTitle}</h2>
+            {(targetUser || user) && (
+              <div className="flex flex-col items-center mb-6">
+                <div className="flex items-center gap-4 mb-4">
+                  {(targetUser?.photo_url || user?.photo_url) ? (
+                    <img src={targetUser?.photo_url || user?.photo_url} className="w-16 h-16 rounded-full border-2 border-white/20 shadow-inner" alt="" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-white border-2 border-white/20">
+                      <User className="w-8 h-8" />
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <h1 className="text-2xl font-bold tracking-tight">{(targetUser?.first_name || user?.first_name)} {(targetUser?.last_name || user?.last_name || '')}</h1>
+                    {(targetUser?.username || user?.username) && <p className="text-white/60 text-xs font-mono">@{targetUser?.username || user?.username}</p>}
+                  </div>
+                </div>
+                
+                {badges.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {badges.map(b => (
+                      <BadgeIcon key={b.code} badge={b} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight leading-tight">
+              {currentSurvey?.title[lang] || ui.resultsTitle}
+            </h2>
             <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-brand-paper-accent/10 backdrop-blur-md rounded-full border border-brand-paper-accent/20">
               <span className="text-xs font-bold tracking-[0.2em] uppercase">{getProfileDescription()}</span>
             </div>
@@ -363,9 +424,9 @@ export const Results: React.FC<ResultsProps> = ({
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        backgroundColor: 'var(--color-brand-paper-accent)',
                         backdropFilter: 'blur(8px)',
-                        border: '1px solid rgba(229, 231, 235, 0.5)',
+                        border: '1px solid var(--color-stone-line)',
                         borderRadius: '16px',
                         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
                         fontFamily: 'Manrope, sans-serif'

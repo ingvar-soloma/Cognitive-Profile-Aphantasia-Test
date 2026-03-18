@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ProfileService } from '@/services/ProfileService';
 import { UIStrings, Language } from '@/types';
-import { Users, Search, Calendar, ChevronRight, User } from 'lucide-react';
+import { Users, Search, Calendar, ChevronRight, User, Award, Table } from 'lucide-react';
+import { BadgeManager } from './Admin/BadgeManager';
+import { BadgeIcon } from './Results/Results';
 
 interface AdminDashboardProps {
   ui: UIStrings;
@@ -15,6 +17,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<'records' | 'badges'>('records');
   const lastFetchedQuery = useRef<string | null>(null);
 
   // Local debounce for search to avoid too many requests
@@ -39,14 +42,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
     load();
   }, [debouncedSearch, results.length, onSetResults]);
 
-  if (loading && results.length === 0) return (
+  if (loading && results.length === 0 && activeTab === 'records') return (
     <div className="flex items-center justify-center p-20">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-ink"></div>
     </div>
   );
 
   return (
-    <div className="card-editorial p-0 overflow-hidden mb-12 animate-fade-in border-stone-line/50">
+    <div className="space-y-8 animate-fade-in">
+      {/* Tab Switcher */}
+      <div className="flex gap-4 p-1.5 bg-brand-paper-accent/30 rounded-2xl border border-stone-line w-fit">
+        <button 
+          onClick={() => setActiveTab('records')}
+          className={`px-8 py-2.5 rounded-xl flex items-center gap-3 text-[10px] uppercase font-bold tracking-widest transition-all ${activeTab === 'records' ? 'bg-brand-ink text-white shadow-soft' : 'text-stone-400 hover:text-brand-ink'}`}
+        >
+          <Table className="w-4 h-4" />
+          User Records
+        </button>
+        <button 
+          onClick={() => setActiveTab('badges')}
+          className={`px-8 py-2.5 rounded-xl flex items-center gap-3 text-[10px] uppercase font-bold tracking-widest transition-all ${activeTab === 'badges' ? 'bg-brand-ink text-white shadow-soft' : 'text-stone-400 hover:text-brand-ink'}`}
+        >
+          <Award className="w-4 h-4" />
+          Manage Badges
+        </button>
+      </div>
+
+      {activeTab === 'badges' ? (
+        <div className="card-editorial p-0 border-stone-line/50">
+           <BadgeManager ui={ui} lang={lang} />
+        </div>
+      ) : (
+        <div className="card-editorial p-0 overflow-hidden border-stone-line/50">
       <div className="bg-brand-ink p-6 md:p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-editorial">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/10">
@@ -101,11 +128,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
                         {res.first_name} {res.last_name || ''}
                       </div>
                       <div className="flex items-center gap-2">
-                         <span className="text-[10px] text-stone-400 font-mono tracking-tighter bg-stone-100 px-1.5 py-0.5 rounded">ID: {res.user_id}</span>
+                         <span className="text-[10px] text-stone-400 font-mono tracking-tighter bg-stone-bg px-1.5 py-0.5 rounded border border-stone-line/50">ID: {res.user_id}</span>
                          {res.username && (
                            <span className="text-[10px] text-brand-ink/70 font-sans font-medium hover:underline cursor-pointer">@{res.username}</span>
                          )}
                       </div>
+                      
+                      {res.badges && res.badges.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                           {res.badges.map((b: any) => (
+                             <BadgeIcon key={b.code} badge={b} size="sm" />
+                           ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -114,7 +149,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
                     <span className="text-xs font-bold text-brand-graphite mb-1">
                       {res.test_type === 'full_aphantasia_profile' ? ui.fullCognitiveProfile : ui.expressDiagnostics}
                     </span>
-                    <span className="text-[9px] uppercase tracking-widest text-stone-400 font-bold bg-stone-100 rounded-full px-2 py-0.5 w-fit">
+                    <span className="text-[9px] uppercase tracking-widest text-stone-400 font-bold bg-stone-bg rounded-full px-2 py-0.5 w-fit border border-stone-line/50">
                       {String(res.answers ? Object.values(res.answers).reduce((acc: number, curr: any) => acc + Object.keys(curr || {}).length, 0) : 0)} {ui.answersProvided}
                     </span>
                   </div>
@@ -156,5 +191,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
         </table>
       </div>
     </div>
+   )}
+  </div>
   );
 };

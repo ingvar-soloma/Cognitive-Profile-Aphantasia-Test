@@ -200,7 +200,7 @@ export const DashboardResults: React.FC<DashboardResultsProps> = ({ profiles, on
                                     <button
                                         key={test.id}
                                         onClick={() => handleView({ isLocal: false, fullData: test.fullData })}
-                                        className="flex items-center justify-between p-4 bg-brand-paper-accent/40 border border-stone-line rounded-2xl hover:bg-white hover:shadow-sm hover:border-brand-ink/20 transition-all text-left group"
+                                        className="flex items-center justify-between p-4 bg-brand-paper-accent/40 border border-stone-line rounded-2xl hover:bg-brand-paper-accent hover:shadow-sm hover:border-brand-ink/20 transition-all text-left group"
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 bg-brand-ink/5 rounded-xl flex items-center justify-center text-brand-ink group-hover:bg-brand-ink group-hover:text-white transition-colors duration-300">

@@ -32,7 +32,7 @@ ADMIN_USER_IDS = [id.strip() for id in os.getenv("ADMIN_USER_IDS", os.getenv("AD
 DATA_DIR = os.getenv("DATA_DIR", "/app/data/results")
 
 # Ensure data directory exists
-from db import init_db
+from db import init_db, get_db
 init_db()
 logger.info(f"Telegram Config: Token={'SET' if TELEGRAM_BOT_TOKEN else 'MISSING'}, Group={'SET' if TELEGRAM_GROUP_ID else 'MISSING'}")
 
@@ -57,6 +57,19 @@ class SaveResult(BaseModel):
     answers: Dict[str, Any]
     scores: Dict[str, Any]
     lang: Optional[str] = "en"
+
+class Badge(BaseModel):
+    id: Optional[int] = None
+    code: str
+    name: str
+    icon: Optional[str] = None
+    description: Optional[str] = None
+    is_active: bool = True
+    is_secret: bool = False
+
+class UserBadgeAssign(BaseModel):
+    user_id: str
+    badge_id: int
 
 from auth import router as auth_router
 
@@ -503,6 +516,9 @@ async def get_my_result(auth_data: UserAuth):
             except Exception as e:
                 logger.error(f"Failed to save migrated data: {e}")
 
+        # Inject Badges
+        data["badges"] = get_user_badges_sync(user_id)
+
         return data
 
 @app.get("/api/results", responses={403: {"description": "Not authorized as admin"}})
@@ -523,7 +539,9 @@ async def get_results(user_id: str, hash: str, q: Optional[str] = None, target_u
             try:
                 async with aiofiles.open(file_path, mode="r", encoding="utf-8") as f:
                     content = await f.read()
-                    results.append(json.loads(content))
+                    res = json.loads(content)
+                    res["badges"] = get_user_badges_sync(target_user_id)
+                    results.append(res)
             except Exception as e:
                 logger.error(f"Error reading specific result file {target_user_id}: {e}")
         return results
@@ -562,6 +580,7 @@ async def get_results(user_id: str, hash: str, q: Optional[str] = None, target_u
                         if not match:
                             continue
 
+                    res["badges"] = get_user_badges_sync(str(res.get("user_id", "")))
                     results.append(res)
             except Exception as e:
                 logger.error(f"Error reading result file {filename}: {e}")
@@ -646,6 +665,150 @@ async def get_subscribers(user_id: str, hash: str):
         logger.error(f"Error reading subscribers.json: {e}")
         return []
 
+# --- Badge Endpoints ---
+
+@app.get("/api/badges")
+async def get_all_badges(include_inactive: bool = False):
+    conn = get_db()
+    cursor = conn.cursor()
+    if include_inactive:
+        cursor.execute("SELECT * FROM badges ORDER BY id ASC")
+    else:
+        cursor.execute("SELECT * FROM badges WHERE is_active = TRUE ORDER BY id ASC")
+    badges = cursor.fetchall()
+    conn.close()
+    return badges
+
+@app.post("/api/badges")
+async def create_badge(badge: Badge, user_id: str, hash: str):
+    if user_id not in ADMIN_USER_IDS:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO badges (code, name, icon, description, is_active, is_secret)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
+        ''', (badge.code, badge.name, badge.icon, badge.description, badge.is_active, badge.is_secret))
+        new_id = cursor.fetchone()["id"]
+        conn.commit()
+        return {"status": "success", "id": new_id}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
+
+@app.put("/api/badges/{badge_id}")
+async def update_badge(badge_id: int, badge: Badge, user_id: str, hash: str):
+    if user_id not in ADMIN_USER_IDS:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            UPDATE badges 
+            SET code = %s, name = %s, icon = %s, description = %s, is_active = %s, is_secret = %s
+            WHERE id = %s
+        ''', (badge.code, badge.name, badge.icon, badge.description, badge.is_active, badge.is_secret, badge_id))
+        conn.commit()
+        return {"status": "success"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
+
+@app.delete("/api/badges/{badge_id}")
+async def delete_badge(badge_id: int, user_id: str, hash: str):
+    if user_id not in ADMIN_USER_IDS:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM badges WHERE id = %s", (badge_id,))
+        conn.commit()
+        return {"status": "success"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
+
+@app.get("/api/users/{target_user_id}/badges")
+async def get_user_badges(target_user_id: str):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT b.* FROM badges b
+        JOIN user_badges ub ON b.id = ub.badge_id
+        WHERE ub.user_id = %s
+    ''', (target_user_id,))
+    badges = cursor.fetchall()
+    conn.close()
+    return badges
+
+@app.post("/api/user-badges")
+async def assign_badge_to_user(req: UserBadgeAssign, user_id: str, hash: str):
+    if user_id not in ADMIN_USER_IDS:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO user_badges (user_id, badge_id)
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING
+        ''', (req.user_id, req.badge_id))
+        conn.commit()
+        return {"status": "success"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
+
+@app.delete("/api/user-badges/{target_user_id}/{badge_id}")
+async def remove_badge_from_user(target_user_id: str, badge_id: int, user_id: str, hash: str):
+    if user_id not in ADMIN_USER_IDS:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            DELETE FROM user_badges 
+            WHERE user_id = %s AND badge_id = %s
+        ''', (target_user_id, badge_id))
+        conn.commit()
+        return {"status": "success"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
+
+def get_user_badges_sync(user_id: str):
+    """Helper to get badges synchronously for injection into results."""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT b.* FROM badges b
+            JOIN user_badges ub ON b.id = ub.badge_id
+            WHERE ub.user_id = %s AND b.is_active = TRUE
+        ''', (user_id,))
+        badges = cursor.fetchall()
+        conn.close()
+        return badges
+    except Exception as e:
+        logger.error(f"Error fetching badges for user {user_id}: {e}")
+        return []
 
 if __name__ == "__main__":
     import uvicorn

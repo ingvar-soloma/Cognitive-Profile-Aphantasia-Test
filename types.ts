@@ -346,4 +346,16 @@ export interface Profile {
   answers: Record<string, Record<string, Answer>>; // surveyId -> questions
   lastUpdated: string;
   surveyId: string;
+  badges?: Badge[];
+}
+
+export interface Badge {
+  id: number;
+  code: string;
+  name: string;
+  icon?: string;
+  description?: string;
+  is_active: boolean;
+  is_secret: boolean;
+  assigned_at?: string;
 }

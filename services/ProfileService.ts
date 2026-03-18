@@ -1,4 +1,4 @@
-import { Answer, ProfileType, Profile, Language } from '../types';
+import { Answer, ProfileType, Profile, Language, Badge } from '../types';
 import { SURVEY_DATA } from '../constants';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== null) 
@@ -200,6 +200,111 @@ export class ProfileService {
     } catch (e) {
       console.error('Failed to fetch admin results', e);
       return [];
+    }
+  }
+
+  // --- Badge Management ---
+
+  static async fetchBadges(includeInactive = false): Promise<Badge[]> {
+    try {
+      const url = `${API_BASE_URL}/api/badges?include_inactive=${includeInactive}`;
+      const response = await fetch(url);
+      if (response.ok) return await response.json();
+      return [];
+    } catch (e) {
+      console.error('Failed to fetch badges', e);
+      return [];
+    }
+  }
+
+  static async createBadge(badge: Partial<Badge>) {
+    const authDataString = localStorage.getItem('auth_token');
+    if (!authDataString) return null;
+    const authData = JSON.parse(authDataString);
+    const user = authData.user || authData;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/badges?user_id=${user.id}&hash=${user.hash}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(badge),
+      });
+      return await response.json();
+    } catch (e) {
+      console.error('Failed to create badge', e);
+      return null;
+    }
+  }
+
+  static async updateBadge(badgeId: number, badge: Partial<Badge>) {
+    const authDataString = localStorage.getItem('auth_token');
+    if (!authDataString) return null;
+    const authData = JSON.parse(authDataString);
+    const user = authData.user || authData;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/badges/${badgeId}?user_id=${user.id}&hash=${user.hash}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(badge),
+      });
+      return await response.json();
+    } catch (e) {
+      console.error('Failed to update badge', e);
+      return null;
+    }
+  }
+
+  static async deleteBadge(badgeId: number) {
+    const authDataString = localStorage.getItem('auth_token');
+    if (!authDataString) return null;
+    const authData = JSON.parse(authDataString);
+    const user = authData.user || authData;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/badges/${badgeId}?user_id=${user.id}&hash=${user.hash}`, {
+        method: 'DELETE',
+      });
+      return await response.json();
+    } catch (e) {
+      console.error('Failed to delete badge', e);
+      return null;
+    }
+  }
+
+  static async assignBadge(targetUserId: string, badgeId: number) {
+    const authDataString = localStorage.getItem('auth_token');
+    if (!authDataString) return null;
+    const authData = JSON.parse(authDataString);
+    const user = authData.user || authData;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user-badges?user_id=${user.id}&hash=${user.hash}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: targetUserId, badge_id: badgeId }),
+      });
+      return await response.json();
+    } catch (e) {
+      console.error('Failed to assign badge', e);
+      return null;
+    }
+  }
+
+  static async removeBadge(targetUserId: string, badgeId: number) {
+    const authDataString = localStorage.getItem('auth_token');
+    if (!authDataString) return null;
+    const authData = JSON.parse(authDataString);
+    const user = authData.user || authData;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user-badges/${targetUserId}/${badgeId}?user_id=${user.id}&hash=${user.hash}`, {
+        method: 'DELETE',
+      });
+      return await response.json();
+    } catch (e) {
+      console.error('Failed to remove badge', e);
+      return null;
     }
   }
 

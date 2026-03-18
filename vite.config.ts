@@ -29,8 +29,14 @@ export default defineConfig(({ mode }) => {
       react(),
       // viteSingleFile(), // Single file is usually incompatible with PWA service workers
       VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          clientsClaim: true,
+        },
         manifest: {
           name: 'NeuroProfile: Cognitive & Aphantasia Test',
           short_name: 'NeuroProfile',

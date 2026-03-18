@@ -10,7 +10,7 @@ interface AboutPageProps {
 }
 
 const FloatingOrb: React.FC<{ className?: string }> = ({ className }) => (
-    <div className={`absolute rounded-full blur-3xl opacity-20 pointer-events-none animate-pulse ${className}`} />
+    <div className={`absolute rounded-full blur-3xl pointer-events-none animate-pulse-slow opacity-25 dark:opacity-10 ${className}`} />
 );
 
 export const AboutPage: React.FC<AboutPageProps> = ({ ui, onStartSurvey }) => {
@@ -117,23 +117,23 @@ export const AboutPage: React.FC<AboutPageProps> = ({ ui, onStartSurvey }) => {
             {/* CTA */}
             <section className="py-8">
                 <div className="mx-auto text-center">
-                    <div className="relative bg-[#1a1825] border border-white/10 rounded-[2.5rem] p-12 overflow-hidden">
-                        <FloatingOrb className="w-64 h-64 bg-purple-500 -top-16 -right-16 opacity-40" />
-                        <FloatingOrb className="w-48 h-48 bg-blue-500 -bottom-12 -left-12 opacity-25" />
+                    <div className="relative bg-brand-ink dark:bg-brand-paper-accent border border-brand-ink/20 dark:border-white/10 rounded-[2.5rem] p-12 overflow-hidden shadow-xl">
+                        <FloatingOrb className="w-64 h-64 bg-brand-clay -top-16 -right-16 opacity-30 dark:opacity-20" />
+                        <FloatingOrb className="w-48 h-48 bg-white/20 -bottom-12 -left-12 opacity-15 dark:opacity-10" />
                         <div className="relative z-10">
-                            <Sparkles className="w-8 h-8 text-amber-300 mx-auto mb-4" />
-                            <h2 className="text-2xl md:text-3xl font-serif font-bold text-white mb-3 tracking-tight">
+                            <Sparkles className="w-8 h-8 text-amber-300 mx-auto mb-4 animate-pulse" />
+                            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4 tracking-tight">
                                 {ui.aboutCtaTitle}
                             </h2>
-                            <p className="text-white/50 text-sm leading-relaxed mb-8 max-w-sm mx-auto font-sans">
+                            <p className="text-white/80 text-sm leading-relaxed mb-10 max-w-sm mx-auto font-sans">
                                 {ui.aboutCtaDesc}
                             </p>
                             <button
                                 onClick={onStartSurvey}
-                                className="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-ink text-brand-graphite rounded-2xl text-sm font-bold uppercase tracking-widest hover:shadow-soft hover:scale-105 transition-all"
+                                className="inline-flex items-center gap-3 px-10 py-4 bg-white text-brand-ink rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-stone-200 dark:hover:bg-brand-paper transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                             >
                                 {ui.start}
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
