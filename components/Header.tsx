@@ -228,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className="absolute inset-0 bg-brand-graphite/40 backdrop-blur-sm transition-opacity duration-300" 
                         onClick={() => setMobileMenuOpen(false)} 
                     />
-                    <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 z-[1001]">
+                    <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] h-screen bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 z-[1001]">
                         <div className="p-5 border-b border-stone-line flex items-center justify-between bg-white">
                             <div className="flex items-center gap-2">
                                 <div className="bg-brand-ink p-1.5 rounded-lg">
