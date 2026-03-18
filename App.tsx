@@ -1087,14 +1087,19 @@ const ResultsWrapper: React.FC<any> = ({
     if (!profile && profileId && profileId !== 'admin' && !publicProfile && !errorStatus) {
       setLoading(true);
       const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
-      fetch(`${apiUrl}/results/${profileId}`)
+      const fetchUrl = `${apiUrl}/api/public-results/${profileId}`;
+      console.log(`[ResultsWrapper] Fetching public result from: ${fetchUrl}`);
+      
+      fetch(fetchUrl)
         .then(async res => {
+          console.log(`[ResultsWrapper] Fetch response status: ${res.status}`);
           if (res.ok) return res.json();
           setErrorStatus(res.status);
           return null;
         })
         .then(data => {
           if (data) {
+            console.log(`[ResultsWrapper] Public result data received for user: ${data.user_id}`);
             setPublicProfile({
               id: data.user_id,
               isPublicView: true,
@@ -1106,10 +1111,18 @@ const ResultsWrapper: React.FC<any> = ({
               recommendations: data.gemini_recommendations,
               badges: data.badges
             });
+          } else {
+             console.warn(`[ResultsWrapper] No data returned from ${fetchUrl}`);
           }
         })
-        .catch(() => setErrorStatus(500))
+        .catch((err) => {
+          console.error(`[ResultsWrapper] Fetch error:`, err);
+          setErrorStatus(500);
+        })
         .finally(() => setLoading(false));
+    } else {
+       if (profile) console.log(`[ResultsWrapper] Using local profile: ${profile.id}`);
+       if (publicProfile) console.log(`[ResultsWrapper] Already have public profile`);
     }
   }, [profileId, profile, publicProfile, errorStatus]);
 

@@ -334,6 +334,27 @@ async def update_profile_settings(data: ProfileUpdate, conn: asyncpg.Connection 
             
     return {"status": "success"}
 
+@app.get("/api/public-results/{user_id}")
+async def get_public_result_data(user_id: str, conn: asyncpg.Connection = Depends(get_db)):
+    """Explicit JSON endpoint for public results to avoid Accept header ambiguity."""
+    query = "SELECT * FROM public_profiles WHERE user_id = $1"
+    row = await conn.fetchrow(query, user_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    
+    if not row['is_public']:
+        raise HTTPException(status_code=403, detail="Profile is private")
+        
+    return {
+        "user_id": row['user_id'],
+        "public_nickname": row['public_nickname'],
+        "test_type": row['test_type'],
+        "scores": json.loads(row['scores']) if row['scores'] else {},
+        "answers": json.loads(row['answers']) if row['answers'] else {},
+        "gemini_recommendations": json.loads(row['gemini_recommendations']) if row['gemini_recommendations'] else {},
+        "badges": json.loads(row['badges']) if row['badges'] else []
+    }
+
 @app.get("/results/{user_id}")
 async def get_public_result_page(request: Request, user_id: str, conn: asyncpg.Connection = Depends(get_db)):
     """Serve public profile data OR HTML with OG metadata for social crawlers."""
