@@ -7,6 +7,7 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - backend_data:/app/data
+      - frontend_dist:/app/frontend_dist:ro
     command: uvicorn main:app --host 0.0.0.0 --port 8000
     env_file:
       - .env
@@ -44,8 +45,12 @@ services:
       - "${PROD_PORT:-80}:80"
     depends_on:
       - backend
+      - db
+    volumes:
+      - frontend_dist:/usr/share/nginx/html
     restart: always
 
 volumes:
   backend_data:
   postgres_data:
+  frontend_dist:

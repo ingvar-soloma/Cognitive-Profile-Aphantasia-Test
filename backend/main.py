@@ -385,14 +385,14 @@ async def get_public_result_page(request: Request, user_id: str, conn: asyncpg.C
     ua = request.headers.get("User-Agent", "").lower()
     if "text/html" in accept or any(bot in ua for bot in ["linkedin", "reddit", "facebook", "twitter", "whatsapp", "slack", "discord", "bot"]):
         # serve index.html with injected tags
-        index_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "index.html")
+        index_path = "/app/frontend_dist/index.html"
         if os.path.exists(index_path):
             async with aiofiles.open(index_path, mode="r", encoding="utf-8") as f:
                 html = await f.read()
             
             test_names = {
                 "full_aphantasia_profile": "Full Cognitive Profile",
-                "express_aphantasia_diagnostics": "Express Diagnostics"
+                "express_demo": "Express Diagnostics"
             }
             test_type_raw = data.get("test_type", "unknown")
             test_name = test_names.get(test_type_raw, test_type_raw.replace("_", " ").title())
