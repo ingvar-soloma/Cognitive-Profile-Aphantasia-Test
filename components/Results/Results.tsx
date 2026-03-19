@@ -28,6 +28,7 @@ interface ResultsProps {
   badges?: Badge[];
   isPublicView?: boolean;
   publicNickname?: string;
+  initialShareId?: string | null;
 }
 
 const RadarIcon = ({ className }: { className?: string }) => (
@@ -72,11 +73,21 @@ export const BadgeIcon = ({ badge, size = "md" }: { badge: Badge, size?: "sm" | 
 
 export const Results: React.FC<ResultsProps> = ({
   answers, onReset, onGoHome, ui, lang, filenamePrefix, user, targetUser, surveyId, survey, initialRecommendations = {}, badges = [],
-  isPublicView, publicNickname
+  isPublicView,
+  publicNickname,
+  initialShareId
 }) => {
   const navigate = useNavigate();
   const { isEnabled } = useFeatureFlags();
-  const [geminiRecs, setGeminiRecs] = useState<string | null>(null);
+  const targetSurveyId = surveyId || initialRecommendations?.test_type || 'full_aphantasia_profile';
+  const getInitialRec = () => {
+    if (!initialRecommendations) return null;
+    if (typeof initialRecommendations === 'string') return initialRecommendations;
+    return initialRecommendations[targetSurveyId] || null;
+  };
+
+  const [geminiRecs, setGeminiRecs] = useState<string | null>(getInitialRec());
+  const [shareId, setShareId] = useState<string | null>(initialShareId || null);
   const [isSaving, setIsSaving] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showActions, setShowActions] = useState(false);
@@ -100,6 +111,7 @@ export const Results: React.FC<ResultsProps> = ({
         if (data) {
           setIsPublic(data.is_public || false);
           setNickname(data.public_nickname || '');
+          if (data.share_id) setShareId(data.share_id);
           const realName = `${user.first_name} ${user.last_name || ''}`.trim();
           setUseRealName(!!data.public_nickname && data.public_nickname === realName);
         }
@@ -107,25 +119,58 @@ export const Results: React.FC<ResultsProps> = ({
     }
   }, [user, isPublicView]);
 
-  const handleUpdatePrivacy = async () => {
+  // SEO Handling
+  useEffect(() => {
+    if (isPublicView) {
+      // Add noindex tag dynamically
+      const meta = document.createElement('meta');
+      meta.name = "robots";
+      meta.content = "noindex, nofollow";
+      document.head.appendChild(meta);
+      return () => { document.head.removeChild(meta); };
+    }
+  }, [isPublicView]);
+
+  const handleUpdatePrivacy = async (forcedState?: boolean | any) => {
+    let newState = isPublic;
+    
+    // If forcedState is boolean, use it (e.g. from onShareStart)
+    if (forcedState === true || forcedState === false) {
+      newState = forcedState;
+    } else if (!showShareModal) {
+      // If called from a direct toggle button (and modal is not open), toggle it
+      newState = !isPublic;
+    }
+    
+    // Privacy warning when turning off public access
+    if (isPublic && !newState) {
+      const confirmed = window.confirm(lang === 'uk' 
+        ? "Ви впевнені? Всі посилання, які ви публікували раніше, перестануть працювати, і інші не зможуть бачити ваші результати."
+        : "Are you sure? All links you previously shared will stop working, and others won't be able to see your results.");
+      if (!confirmed) return;
+    }
+
     const finalNickname = useRealName ? `${user.first_name} ${user.last_name || ''}`.trim() : (nickname || null);
     const authDataString = localStorage.getItem('auth_token');
     if (!authDataString) return;
     
     try {
+      setIsPublic(newState); // Optimistic update
       await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/me/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           auth_data: JSON.parse(authDataString).user || JSON.parse(authDataString),
-          is_public: isPublic,
+          is_public: newState,
           public_nickname: finalNickname
         })
       });
-      setShowShareModal(false);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error("Failed to update privacy", e);
+      setIsPublic(!newState); // Rollback
+    }
+    setShowShareModal(false);
   };
-
   const currentSurvey = survey || AVAILABLE_SURVEYS.find(s => s.id === surveyId);
   const surveyAnswers = useMemo(() => {
     if (!currentSurvey) return answers;
@@ -193,6 +238,8 @@ export const Results: React.FC<ResultsProps> = ({
                 existingRecForThisTest = existingResult.gemini_recommendations[targetSurveyId];
               }
             }
+
+            if (result && result.share_id) setShareId(result.share_id);
 
             if (existingRecForThisTest && existingRecForThisTest.trim().length > 0) {
               setGeminiRecs(existingRecForThisTest);
@@ -335,23 +382,31 @@ export const Results: React.FC<ResultsProps> = ({
                       <User className="w-8 h-8" />
                     </div>
                   )}
-                  <div className="text-left">
-                    <h1 className="text-2xl font-bold tracking-tight">
-                      {isPublicView ? (publicNickname || 'Anonymous') : (targetUser?.first_name || user?.first_name) + ' ' + (targetUser?.last_name || user?.last_name || '')}
-                    </h1>
-                    {(!isPublicView && (targetUser?.username || user?.username)) && (
-                      <p className="text-white/60 text-xs font-mono">@{targetUser?.username || user?.username}</p>
-                    )}
-                  </div>
+                  <div className="space-y-2 flex flex-col items-center">
+                  <h1 className="text-xl md:text-2xl font-serif font-bold text-white tracking-tight">
+                    {isPublicView ? (publicNickname || 'Anonymous') : (nickname || 'Anonymous')}
+                  </h1>
+                  {!isPublicView && (
+                    <div className="flex items-center gap-2">
+                       <button 
+                         onClick={() => setShowShareModal(true)}
+                         className={`px-3 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-widest border transition-all flex items-center gap-1.5 ${isPublic ? 'bg-green-500/10 border-green-500/30 text-green-300' : 'bg-brand-paper/10 border-white/20 text-brand-paper/40'}`}
+                       >
+                         <div className={`w-1.5 h-1.5 rounded-full ${isPublic ? 'bg-green-400 animate-pulse' : 'bg-white/40'}`}></div>
+                         {isPublic ? ui.publicProfile : ui.privateProfile}
+                         <Settings className="w-3 h-3 ml-1 opacity-60" />
+                       </button>
+                    </div>
+                  )}
                 </div>
-                
-                {badges.length > 0 && (
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {badges.map(b => (
-                      <BadgeIcon key={b.code} badge={b} />
-                    ))}
-                  </div>
-                )}
+              </div>
+              {badges.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-3">
+                  {badges.map(b => (
+                    <BadgeIcon key={b.code} badge={b} />
+                  ))}
+                </div>
+              )}
               </div>
             )}
             
@@ -365,7 +420,7 @@ export const Results: React.FC<ResultsProps> = ({
         </div>
 
         <div className="p-6 md:p-12">
-          {surveyId === 'express_demo' && (
+          {(surveyId === 'express_demo' || isPublicView) && (
             <div className="mb-12 p-8 md:p-10 bg-gradient-to-br from-brand-ink/5 via-brand-paper to-brand-clay/5 rounded-[2rem] border border-brand-ink/10 shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-clay/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-brand-clay/10 transition-colors"></div>
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-ink/5 rounded-full blur-3xl -ml-16 -mb-16 group-hover:bg-brand-ink/10 transition-colors"></div>
@@ -374,21 +429,21 @@ export const Results: React.FC<ResultsProps> = ({
                 <div className="flex-1">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-clay/10 text-brand-clay rounded-full text-[9px] font-bold tracking-[0.2em] uppercase mb-4">
                     <Sparkles className="w-3 h-3" />
-                    {ui.readyForAnalysis}
+                    {isPublicView ? ui.cognitiveAssessment : ui.readyForAnalysis}
                   </div>
                   <h3 className="text-2xl md:text-3xl font-serif font-bold text-brand-graphite mb-2">
-                    {ui.demoCtaTitle}
+                    {isPublicView ? ui.visitorCtaTitle : ui.demoCtaTitle}
                   </h3>
                   <p className="text-stone-500 text-base max-w-xl font-sans leading-relaxed">
-                    {ui.demoCtaDesc}
+                    {isPublicView ? ui.visitorCtaDesc : ui.demoCtaDesc}
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate('/survey/full_aphantasia_profile')}
+                  onClick={() => navigate(isPublicView ? '/survey/express_demo' : '/survey/full_aphantasia_profile')}
                   className="shrink-0 h-14 px-8 bg-brand-ink text-white rounded-2xl text-xs font-bold uppercase tracking-widest hover:shadow-soft transition-all flex items-center justify-center gap-3 group/btn"
                 >
                   <BrainCircuit className="w-5 h-5 transition-transform group-hover/btn:scale-110" />
-                  {ui.demoCtaButton}
+                  {isPublicView ? ui.visitorCtaButton : ui.demoCtaButton}
                   <ChevronRight className="w-4 h-4 opacity-70 transition-transform group-hover/btn:translate-x-1" />
                 </button>
               </div>
@@ -440,6 +495,8 @@ export const Results: React.FC<ResultsProps> = ({
                   )}
                 </div>
               </div>
+            ) : isPublicView ? (
+               null
             ) : (
               <div className="bg-brand-paper/50 backdrop-blur-md p-12 md:p-16 rounded-[2.5rem] border-2 border-dashed border-stone-line text-center space-y-8 shadow-card relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-paper-accent/0 via-brand-paper-accent/0 to-brand-ink/[0.02] pointer-events-none"></div>
@@ -461,8 +518,8 @@ export const Results: React.FC<ResultsProps> = ({
             )}
           </div>
           
-          {/* Share Section - Feature Flagged */}
-          {isEnabled('share') && (
+          {/* Share Section - Feature Flagged - Only for owner */}
+          {isEnabled('share') && !isPublicView && user && (
             <AppShare 
               ui={ui}
               lang={lang}
@@ -472,6 +529,10 @@ export const Results: React.FC<ResultsProps> = ({
               currentSurvey={currentSurvey}
               profileTypeLabel={profileTypeLabel}
               onShowSettings={() => setShowShareModal(true)}
+              shareId={shareId}
+              onShareStart={() => {
+                if (!isPublic) handleUpdatePrivacy(true);
+              }}
             />
           )}
 
@@ -538,64 +599,65 @@ export const Results: React.FC<ResultsProps> = ({
               </div>
             </div>
           </div>
-
-          <div className="border-t border-stone-line pt-12 mb-12">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-10 h-10 rounded-xl bg-stone-bg border border-stone-line flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-stone-400" />
+          {!isPublicView && (
+            <div className="border-t border-stone-line pt-12 mb-12">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-stone-bg border border-stone-line flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-stone-400" />
+                </div>
+                <h3 className="text-3xl font-serif font-bold text-brand-graphite tracking-tight">{ui.notesTitle}</h3>
               </div>
-              <h3 className="text-3xl font-serif font-bold text-brand-graphite tracking-tight">{ui.notesTitle}</h3>
-            </div>
 
-            {textAnswers.length === 0 ? (
-              <div className="p-12 text-center bg-stone-bg/50 rounded-3xl border border-stone-line border-dashed">
-                <p className="text-stone-400 italic font-sans">{ui.noNotes}</p>
-              </div>
-            ) : (
-              <div className="grid gap-8 md:grid-cols-2">
-                {Object.values(surveyAnswers).map((ans: any) => {
-                  const q = SURVEY_DATA.flatMap(c => c.questions).find(q => q.id === ans.questionId);
-                  const isDrawing = q?.type === QuestionType.DRAWING && (ans.value as string)?.startsWith('data:image/');
-                  const hasNote = ans.note && ans.note.trim() !== '';
+              {textAnswers.length === 0 ? (
+                <div className="p-12 text-center bg-stone-bg/50 rounded-3xl border border-stone-line border-dashed">
+                  <p className="text-stone-400 italic font-sans">{ui.noNotes}</p>
+                </div>
+              ) : (
+                <div className="grid gap-8 md:grid-cols-2">
+                  {Object.values(surveyAnswers).map((ans: any) => {
+                    const q = SURVEY_DATA.flatMap(c => c.questions).find(q => q.id === ans.questionId);
+                    const isDrawing = q?.type === QuestionType.DRAWING && (ans.value as string)?.startsWith('data:image/');
+                    const hasNote = ans.note && ans.note.trim() !== '';
 
-                  if (!isDrawing && !hasNote && q?.type !== QuestionType.TEXT) return null;
-                  if (q?.type === QuestionType.TEXT && !ans.value && !ans.note) return null;
+                    if (!isDrawing && !hasNote && q?.type !== QuestionType.TEXT) return null;
+                    if (q?.type === QuestionType.TEXT && !ans.value && !ans.note) return null;
 
-                  return (
-                    <div key={ans.questionId} className="bg-brand-paper-accent/60 backdrop-blur-sm p-6 rounded-[2rem] border border-stone-line shadow-sm hover:shadow-md transition-shadow flex flex-col gap-6">
-                      <div className="space-y-1">
-                        <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{q?.subCategory?.en || 'Perspective'}</div>
-                        <p className="font-serif font-bold text-brand-graphite leading-tight text-lg">{q?.text[lang]}</p>
+                    return (
+                      <div key={ans.questionId} className="bg-brand-paper-accent/60 backdrop-blur-sm p-6 rounded-[2rem] border border-stone-line shadow-sm hover:shadow-md transition-shadow flex flex-col gap-6">
+                        <div className="space-y-1">
+                          <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{q?.subCategory?.en || 'Perspective'}</div>
+                          <p className="font-serif font-bold text-brand-graphite leading-tight text-lg">{q?.text[lang]}</p>
+                        </div>
+
+                        {isDrawing && (
+                          <div className="rounded-2xl overflow-hidden border border-stone-line bg-white/50 dark:bg-stone-bg/20 p-4 shadow-inner">
+                            <img
+                              src={ans.value as string}
+                              alt={q?.text[lang]}
+                              className="w-full h-auto max-h-[250px] object-contain mx-auto mix-blend-multiply dark:mix-blend-normal dark:invert dark:brightness-150 dark:hue-rotate-180 opacity-90 transition-transform hover:scale-105 duration-500"
+                            />
+                          </div>
+                        )}
+
+                        {hasNote && (
+                          <div className="bg-stone-bg/80 p-5 rounded-2xl border border-stone-line/50 relative">
+                            <div className="absolute top-4 left-0 w-1 h-8 bg-brand-clay/20 rounded-r-full"></div>
+                            <p className="text-stone-400 text-sm leading-relaxed italic">
+                              "{ans.note}"
+                            </p>
+                          </div>
+                        )}
+
+                        {q?.type === QuestionType.TEXT && ans.value && !isDrawing && (
+                          <p className="text-stone-400 leading-relaxed text-sm">{ans.value}</p>
+                        )}
                       </div>
-
-                      {isDrawing && (
-                        <div className="rounded-2xl overflow-hidden border border-stone-line bg-white/50 dark:bg-stone-bg/20 p-4 shadow-inner">
-                          <img
-                            src={ans.value as string}
-                            alt={q?.text[lang]}
-                            className="w-full h-auto max-h-[250px] object-contain mx-auto mix-blend-multiply dark:mix-blend-normal dark:invert dark:brightness-150 dark:hue-rotate-180 opacity-90 transition-transform hover:scale-105 duration-500"
-                          />
-                        </div>
-                      )}
-
-                      {hasNote && (
-                        <div className="bg-stone-bg/80 p-5 rounded-2xl border border-stone-line/50 relative">
-                          <div className="absolute top-4 left-0 w-1 h-8 bg-brand-clay/20 rounded-r-full"></div>
-                          <p className="text-stone-400 text-sm leading-relaxed italic">
-                            "{ans.note}"
-                          </p>
-                        </div>
-                      )}
-
-                      {q?.type === QuestionType.TEXT && ans.value && !isDrawing && (
-                        <p className="text-stone-400 leading-relaxed text-sm">{ans.value}</p>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="mt-20 p-10 bg-brand-paper/50 backdrop-blur-sm rounded-[2rem] border border-brand-clay/10 text-[11px] text-stone-400 leading-relaxed max-w-4xl mx-auto shadow-sm">
             <div className="flex items-center gap-3 mb-4">
@@ -659,6 +721,8 @@ export const Results: React.FC<ResultsProps> = ({
         nickname={nickname}
         setNickname={setNickname}
         userId={user?.id}
+        publicId={user?.public_id}
+        shareId={shareId}
         onSave={handleUpdatePrivacy}
       />
     </div>

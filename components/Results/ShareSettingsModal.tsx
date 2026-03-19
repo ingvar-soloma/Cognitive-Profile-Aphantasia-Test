@@ -13,6 +13,8 @@ interface ShareSettingsModalProps {
   nickname: string;
   setNickname: (val: string) => void;
   userId?: string;
+  publicId?: string;
+  shareId?: string | null;
   onSave: () => void;
 }
 
@@ -27,6 +29,8 @@ export const ShareSettingsModal: React.FC<ShareSettingsModalProps> = ({
   nickname,
   setNickname,
   userId,
+  publicId,
+  shareId,
   onSave
 }) => {
   if (!show) return null;
@@ -91,12 +95,12 @@ export const ShareSettingsModal: React.FC<ShareSettingsModalProps> = ({
                 <input 
                   type="text" 
                   readOnly 
-                  value={`${window.location.origin}/results/${userId}?ref=${userId}`}
+                  value={`${window.location.origin}/results/${shareId || userId}?ref=${publicId || userId}`}
                   className="flex-1 px-4 py-3 bg-brand-paper-accent/30 rounded-xl border border-stone-line text-xs font-mono text-stone-500 overflow-hidden text-ellipsis"
                 />
                 <button 
                   onClick={() => {
-                    window.navigator.clipboard.writeText(`${window.location.origin}/results/${userId}?ref=${userId}`);
+                    window.navigator.clipboard.writeText(`${window.location.origin}/results/${shareId || userId}?ref=${publicId || userId}`);
                   }}
                   className="px-4 py-3 bg-brand-paper border border-stone-line rounded-xl text-brand-ink hover:bg-brand-paper-accent transition-colors"
                 >

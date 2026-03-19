@@ -1003,7 +1003,7 @@ const ResultsWrapper: React.FC<any> = ({
 }) => {
   const { profileId } = useParams();
   const [searchParams] = useSearchParams();
-  const surveyIdFromQuery = searchParams.get('surveyId');
+  const surveyIdFromQuery = searchParams.get('t') || searchParams.get('surveyId');
   const userIdFromQuery = searchParams.get('userId');
   const navigate = useNavigate();
 
@@ -1087,7 +1087,7 @@ const ResultsWrapper: React.FC<any> = ({
     if (!profile && profileId && profileId !== 'admin' && !publicProfile && !errorStatus) {
       setLoading(true);
       const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
-      const fetchUrl = `${apiUrl}/api/public-results/${profileId}`;
+      const fetchUrl = `${apiUrl}/api/public-results/${profileId}${surveyIdFromQuery ? `?t=${surveyIdFromQuery}` : ''}`;
       console.log(`[ResultsWrapper] Fetching public result from: ${fetchUrl}`);
       
       fetch(fetchUrl)
@@ -1148,10 +1148,41 @@ const ResultsWrapper: React.FC<any> = ({
 
   if (errorStatus === 403) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-8">
-        <ShieldAlert className="w-12 h-12 text-brand-clay mb-4" />
-        <h2 className="text-2xl font-serif font-bold text-brand-graphite mb-2">This profile is private.</h2>
-        <button onClick={() => navigate('/')} className="btn-primary px-8 mt-4">{ui.goHome}</button>
+      <div className="min-h-[80vh] flex flex-col items-center justify-center text-center p-8 bg-brand-paper">
+        <div className="max-w-xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-full bg-stone-bg shadow-soft flex items-center justify-center border border-stone-line">
+              <ShieldAlert className="w-10 h-10 text-brand-clay" />
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <h2 className="text-3xl font-serif font-bold text-brand-graphite">{ui.privateProfileTitle}</h2>
+            <p className="text-stone-500 text-lg leading-relaxed">
+              {ui.privateProfileDesc}
+            </p>
+          </div>
+
+          <div className="p-8 bg-brand-paper-accent/40 rounded-[2.5rem] border border-stone-line/50 space-y-6">
+            <p className="text-brand-ink text-sm font-medium leading-relaxed">
+              {ui.privateProfileCTA}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => navigate('/survey/express_demo')}
+                className="px-8 py-3 bg-brand-ink text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                {ui.tryExpressTest}
+              </button>
+              <button 
+                onClick={() => navigate('/')}
+                className="px-8 py-3 bg-white text-stone-500 border border-stone-line rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:bg-stone-bg transition-all duration-300"
+              >
+                {ui.readMore}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1177,6 +1208,7 @@ const ResultsWrapper: React.FC<any> = ({
       badges={activeProfile.badges}
       isPublicView={activeProfile.isPublicView}
       publicNickname={activeProfile.public_nickname}
+      initialShareId={activeProfile.share_id}
     />
   );
 }

@@ -14,6 +14,7 @@ import re
 import aiofiles
 import jwt
 import asyncpg
+import uuid
 from datetime import datetime, timezone
 from google import genai
 from telegram import Bot
@@ -243,17 +244,27 @@ async def save_result(data: SaveResult, conn: asyncpg.Connection = Depends(get_d
         
         # Increment referral count for the referrer if this is a new conversion
         if data.referred_by:
-            await conn.execute("UPDATE aphantasia_users SET referral_count = referral_count + 1 WHERE id = $1", data.referred_by)
+            # Resolve referred_by from public_id if it's a UUID
+            target_referrer_id = data.referred_by
+            try:
+                uuid.UUID(data.referred_by)
+                resolved_id = await conn.fetchval("SELECT id FROM aphantasia_users WHERE public_id = $1", data.referred_by)
+                if resolved_id:
+                    target_referrer_id = resolved_id
+            except ValueError:
+                pass
+                
+            await conn.execute("UPDATE aphantasia_users SET referral_count = referral_count + 1 WHERE id = $1", target_referrer_id)
             
             # Check for Node Expander badge
-            ref_row = await conn.fetchrow("SELECT referral_count FROM aphantasia_users WHERE id = $1", data.referred_by)
+            ref_row = await conn.fetchrow("SELECT referral_count FROM aphantasia_users WHERE id = $1", target_referrer_id)
             if ref_row and ref_row['referral_count'] >= 3:
                 badge = await conn.fetchrow("SELECT id FROM badges WHERE code = 'node_expander'")
                 if badge:
                     await conn.execute('''
                         INSERT INTO user_badges (user_id, badge_id) 
                         VALUES ($1, $2) ON CONFLICT DO NOTHING
-                    ''', data.referred_by, badge['id'])
+                    ''', target_referrer_id, badge['id'])
         
         # Award 'early_adopter' automatically for new users (or anyone saving)
         early_badge = await conn.fetchrow("SELECT id FROM badges WHERE code = 'early_adopter'")
@@ -309,7 +320,15 @@ async def save_result(data: SaveResult, conn: asyncpg.Connection = Depends(get_d
     async with aiofiles.open(file_path, mode="w", encoding="utf-8") as f:
         await f.write(json.dumps(result_data, ensure_ascii=False, indent=2))
 
-    return {"status": "success"}
+    # Manage Share ID
+    share_id = await conn.fetchval(
+        "INSERT INTO test_results (user_id, test_type) VALUES ($1, $2) ON CONFLICT (user_id, test_type) DO UPDATE SET created_at = CURRENT_TIMESTAMP RETURNING share_id",
+        user_id, data.test_type
+    )
+    if not share_id:
+        share_id = await conn.fetchval("SELECT share_id FROM test_results WHERE user_id = $1 AND test_type = $2", user_id, data.test_type)
+
+    return {"status": "success", "share_id": str(share_id)}
 
 @app.post("/api/me/profile")
 async def update_profile_settings(data: ProfileUpdate, conn: asyncpg.Connection = Depends(get_db)):
@@ -334,9 +353,22 @@ async def update_profile_settings(data: ProfileUpdate, conn: asyncpg.Connection 
             
     return {"status": "success"}
 
-@app.get("/api/public-results/{user_id}")
-async def get_public_result_data(user_id: str, conn: asyncpg.Connection = Depends(get_db)):
-    """Explicit JSON endpoint for public results using file-based storage confirmed by DB."""
+@app.get("/api/public-results/{id_or_share_id}")
+async def get_public_result_data(id_or_share_id: str, t: Optional[str] = None, conn: asyncpg.Connection = Depends(get_db)):
+    """Explicit JSON endpoint for public results via user_id OR anonymous share_id."""
+    user_id = id_or_share_id
+    test_type = t
+    
+    # Check if id_or_share_id is a share_id (UUID)
+    try:
+        uuid.UUID(id_or_share_id)
+        share_lookup = await conn.fetchrow("SELECT user_id, test_type FROM test_results WHERE share_id = $1", id_or_share_id)
+        if share_lookup:
+            user_id = share_lookup['user_id']
+            test_type = t or share_lookup['test_type']
+    except ValueError:
+        pass # Not a UUID, assume user_id
+
     # 1. Check user public status in DB
     user = await conn.fetchrow("SELECT id, is_public, public_nickname FROM aphantasia_users WHERE id = $1", user_id)
     if not user:
@@ -353,19 +385,51 @@ async def get_public_result_data(user_id: str, conn: asyncpg.Connection = Depend
     async with aiofiles.open(file_path, mode="r", encoding="utf-8") as f:
         data = json.loads(await f.read())
         
+    final_test_type = test_type or data.get("test_type", "full_aphantasia_profile")
+    all_answers = data.get("answers", {})
+    all_scores = data.get("scores", {})
+    
+    # Filter to specific test if possible
+    raw_answers = all_answers.get(final_test_type, {}) if isinstance(all_answers.get(final_test_type), dict) else all_answers
+    
+    # Strip notes for public view
+    answers = {}
+    for q_id, q_data in raw_answers.items():
+        if isinstance(q_data, dict):
+            # Create a copy without the note field
+            answers[q_id] = {k: v for k, v in q_data.items() if k != 'note'}
+        else:
+            answers[q_id] = q_data # Fallback for primitive values
+
+    scores = all_scores.get(final_test_type, {}) if isinstance(all_scores.get(final_test_type), dict) else all_scores
+
     return {
         "user_id": user_id,
         "public_nickname": user['public_nickname'],
-        "test_type": data.get("test_type", "full_aphantasia_profile"),
-        "scores": data.get("scores", {}),
-        "answers": data.get("answers", {}),
+        "test_type": final_test_type,
+        "scores": scores,
+        "answers": answers,
         "gemini_recommendations": data.get("gemini_recommendations", {}),
-        "badges": await get_user_badges(user_id, conn)
+        "badges": await get_user_badges(user_id, conn),
+        "share_id": id_or_share_id if user_id != id_or_share_id else None
     }
 
-@app.get("/results/{user_id}")
-async def get_public_result_page(request: Request, user_id: str, conn: asyncpg.Connection = Depends(get_db)):
-    """Serve public profile data OR HTML with OG metadata for social crawlers."""
+@app.get("/results/{id_or_share_id}")
+async def get_public_result_page(request: Request, id_or_share_id: str, conn: asyncpg.Connection = Depends(get_db)):
+    """Serve public profile data OR HTML with OG metadata for social crawlers via user_id OR share_id."""
+    user_id = id_or_share_id
+    test_type_from_query = request.query_params.get("t")
+    
+    # Check if id_or_share_id is a share_id (UUID)
+    try:
+        uuid.UUID(id_or_share_id)
+        share_lookup = await conn.fetchrow("SELECT user_id, test_type FROM test_results WHERE share_id = $1", id_or_share_id)
+        if share_lookup:
+            user_id = share_lookup['user_id']
+            test_type_from_query = test_type_from_query or share_lookup['test_type']
+    except ValueError:
+        pass
+
     user = await conn.fetchrow("SELECT id, is_public, public_nickname FROM aphantasia_users WHERE id = $1", user_id)
     if not user or not user['is_public']:
         raise HTTPException(status_code=403, detail="Profile is private.")
@@ -378,7 +442,8 @@ async def get_public_result_page(request: Request, user_id: str, conn: asyncpg.C
         data = json.loads(await f.read())
 
     # Determine profile title for OG tags
-    test_type = data.get("test_type", "Cognitive")
+    test_type_raw = test_type_from_query or data.get("test_type", "unknown")
+    
     nickname = user['public_nickname'] or "Anonymous"
     
     accept = request.headers.get("accept", "").lower()
@@ -394,16 +459,17 @@ async def get_public_result_page(request: Request, user_id: str, conn: asyncpg.C
                 "full_aphantasia_profile": "Full Cognitive Profile",
                 "express_demo": "Express Diagnostics"
             }
-            test_type_raw = data.get("test_type", "unknown")
             test_name = test_names.get(test_type_raw, test_type_raw.replace("_", " ").title())
             
             og_title = f"I discovered my {test_name}. What's yours?"
-            og_desc = f"I just mapped my sensory architecture. My profile: {test_name}. Explore your own cognitive spectrum and see how you perceive the world!"
+            og_desc = f"I just mapped my sensory architecture via {test_name}. My nickname: {nickname}. Explore your own cognitive spectrum!"
             
             # Dynamic Radar Chart Image via QuickChart
-            scores = data.get("scores", {})
-            labels = list(scores.keys())
-            values = list(scores.values())
+            all_scores = data.get("scores", {})
+            test_scores = all_scores.get(test_type_raw, {}) if isinstance(all_scores.get(test_type_raw), dict) else all_scores
+            
+            labels = list(test_scores.keys())
+            values = list(test_scores.values())
             
             chart_config = {
                 "type": "radar",
@@ -556,6 +622,12 @@ async def get_my_result(auth_data: UserAuth, conn: asyncpg.Connection = Depends(
         data["gemini_recommendations"] = {data.get("test_type", "unknown"): recs} if recs.strip() else {}
 
     data["badges"] = await get_user_badges(user_id, conn)
+    
+    # Include share_id for the current test type if it exists
+    share_id = await conn.fetchval("SELECT share_id FROM test_results WHERE user_id = $1 AND test_type = $2", user_id, data.get("test_type"))
+    if share_id:
+        data["share_id"] = str(share_id)
+        
     return data
 
 @app.get("/api/results")

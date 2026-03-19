@@ -106,7 +106,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <button
-                            onClick={onStartSurvey}
+                            onClick={() => navigate('/survey/express_demo')}
                             className="group inline-flex items-center gap-3 px-8 py-4 bg-brand-ink text-white rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-brand-inkHover hover:shadow-lg hover:scale-105 transition-all duration-300"
                         >
                             {ui.landingCtaButton}
@@ -217,7 +217,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
                                 {ui.aboutCtaDesc}
                             </p>
                             <button
-                                onClick={onStartSurvey}
+                                onClick={() => navigate('/survey/express_demo')}
                                 className="inline-flex items-center gap-3 px-10 py-4 bg-white text-brand-ink rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-stone-200 dark:hover:bg-brand-paper transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                             >
                                 {ui.start}

@@ -212,6 +212,11 @@ export interface UIStrings {
   mediaRecsDesc: string;
   creativityRecsDesc: string;
   selectTestTitle: string;
+  tryExpressTest: string;
+  privateProfileTitle: string;
+  privateProfileDesc: string;
+  privateProfileCTA: string;
+  readMore: string;
   whyTakeTest: string;
   marketingTitle: string;
   marketingPoint1Title: string;
@@ -338,6 +343,16 @@ export interface UIStrings {
   shareDescription: string;
   shareReddit: string;
   shareLinkedIn: string;
+  publicProfile: string;
+  privateProfile: string;
+  editProfileSettings: string;
+  previewPublic: string;
+  visitorCtaTitle: string;
+  visitorCtaDesc: string;
+  visitorCtaButton: string;
+  settingsNicknameLabel: string;
+  settingsPrivacyLabel: string;
+  settingsPrivacyDesc: string;
 }
 
 export enum ProfileType {

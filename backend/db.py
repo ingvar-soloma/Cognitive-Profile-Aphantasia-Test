@@ -52,6 +52,8 @@ async def init_db():
         await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS is_guest BOOLEAN DEFAULT FALSE")
         await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT FALSE")
         await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS public_nickname VARCHAR(255)")
+        await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS public_id UUID DEFAULT gen_random_uuid()")
+        await conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_id ON aphantasia_users(public_id)")
         await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS referral_count INTEGER DEFAULT 0")
         await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS referred_by VARCHAR(255)")
 
@@ -89,6 +91,18 @@ async def init_db():
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+
+        # Test Results / Share IDs Table
+        await conn.execute('''
+            CREATE TABLE IF NOT EXISTS test_results (
+                share_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id VARCHAR(255) REFERENCES aphantasia_users(id) ON DELETE CASCADE,
+                test_type VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, test_type)
+            )
+        ''')
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_test_results_user ON test_results(user_id)")
 
         logger.info("Async PostgreSQL Database initialized correctly")
         await seed_badges(conn)

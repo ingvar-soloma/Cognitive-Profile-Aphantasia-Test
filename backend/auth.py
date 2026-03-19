@@ -27,8 +27,10 @@ async def create_guest_session(conn: asyncpg.Connection = Depends(get_db)):
                        user_id, "Guest")
 
     auth_secret = os.getenv("AUTH_SECRET", os.getenv("TELEGRAM_BOT_TOKEN", "default-secret-for-hmac"))
+    public_id = await conn.fetchval("SELECT public_id FROM aphantasia_users WHERE id = $1", user_id)
     auth_data = {
         "id": user_id,
+        "public_id": str(public_id),
         "first_name": "Guest",
         "is_guest": True,
         "auth_date": int(time.time())
@@ -86,8 +88,10 @@ async def exchange_google_code(req: GoogleExchangeRequest, conn: asyncpg.Connect
 
         auth_secret = os.getenv("AUTH_SECRET", os.getenv("TELEGRAM_BOT_TOKEN", "default-secret-for-hmac"))
         
+        public_id = await conn.fetchval("SELECT public_id FROM aphantasia_users WHERE id = $1", user_id)
         auth_data = {
             "id": user_id,
+            "public_id": str(public_id),
             "first_name": first_name,
             "last_name": last_name,
             "username": username,
