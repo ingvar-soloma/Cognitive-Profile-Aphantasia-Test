@@ -7,7 +7,7 @@ import logging
 import asyncio
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
-from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
+from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import re
@@ -447,6 +447,199 @@ async def get_public_result_data(id_or_share_id: str, t: Optional[str] = None, c
         "share_id": id_or_share_id
     }
 
+@app.get("/api/og-image/{id_or_share_id}")
+async def get_og_image(id_or_share_id: str, conn: asyncpg.Connection = Depends(get_db)):
+    """Generate a premium, multi-panel OG image using QuickChart Canvas API."""
+    try:
+        user_id = None
+        test_type = "full_aphantasia_profile"
+        
+        # 1. Look up user and results
+        try:
+            uuid.UUID(id_or_share_id)
+            share_lookup = await conn.fetchrow("SELECT user_id, test_type FROM test_results WHERE share_id = $1", id_or_share_id)
+            if share_lookup:
+                user_id = share_lookup['user_id']
+                test_type = share_lookup['test_type']
+        except ValueError:
+            user_id = id_or_share_id
+            
+        user = await conn.fetchrow("SELECT public_nickname, is_public, photo_url FROM aphantasia_users WHERE id = $1", user_id)
+        if not user or not user['is_public']:
+            return RedirectResponse(url="https://quickchart.io/chart?c={%22type%22:%22radar%22,%22data%22:{%22labels%22:[%22Private%22],%22datasets%22:[{%22data%22:[0]}]}}")
+
+        file_path = get_result_file_path(user_id)
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404)
+
+        async with aiofiles.open(file_path, mode="r", encoding="utf-8") as f:
+            data = json.loads(await f.read())
+
+        # 2. Extract specific data
+        nickname = user['public_nickname'] or "Anonymous"
+        all_scores = data.get("scores", {})
+        test_scores = all_scores.get(test_type, {}) if isinstance(all_scores.get(test_type), dict) else all_scores
+        
+        labels = [l.replace("_demo", "").replace("_", " ").strip().upper() for l in test_scores.keys()]
+        values = list(test_scores.values())
+
+        # Extract Architecture and Summary from AI analysis
+        recs = data.get("gemini_recommendations", {})
+        full_text = recs.get(test_type, "") if isinstance(recs, dict) else ""
+        architecture = "The Neuro-Architect"
+        summary = "Analytical deconstruction of cognitive patterns and sensory architecture."
+        
+        arch_match = re.search(r"## 🧩.*?: (.*?Architecture)", full_text)
+        if arch_match: architecture = arch_match.group(1)
+            
+        summary_sections = full_text.split("### 1. Executive Summary")
+        if len(summary_sections) > 1:
+            summary_raw = summary_sections[1].strip().split("\n\n")[0]
+            summary = (summary_raw[:160] + '...') if len(summary_raw) > 160 else summary_raw
+
+        # Escape strings for JS injection
+        js_nickname = nickname.replace("'", "\\'")
+        js_architecture = architecture.replace("'", "\\'")
+        js_summary = summary.replace("'", "\\'").replace("\n", " ")
+
+        # 3. Build Advanced Chart Config (Direct Canvas Drawing)
+        chart_config = {
+            "type": "radar",
+            "data": {
+                "labels": labels,
+                "datasets": [{
+                    "data": values,
+                    "backgroundColor": "rgba(108, 92, 231, 0.25)",
+                    "borderColor": "#6c5ce7",
+                    "borderWidth": 4,
+                    "pointRadius": 4,
+                    "pointBackgroundColor": "#6c5ce7",
+                    "fill": True
+                }]
+            },
+            "options": {
+                "legend": {"display": False},
+                "layout": {
+                    "padding": { "left": 750, "right": 50, "top": 120, "bottom": 80 }
+                },
+                "scale": {
+                    "ticks": { "min": 0, "max": 5, "display": False },
+                    "gridLines": { "color": "rgba(255, 255, 255, 0.05)" },
+                    "angleLines": { "color": "rgba(255, 255, 255, 0.1)" },
+                    "pointLabels": { "fontSize": 14, "fontColor": "#94a3b8", "fontStyle": "bold" }
+                },
+                "plugins": {
+                    "datalabels": { "display": False }
+                }
+            }
+        }
+
+        # 4. Inject JavaScript Plugin for Custom UI Drawing
+        js_plugin = f"""{{
+            id: 'custom_ui',
+            beforeDraw: (chart) => {{
+                const ctx = chart.ctx;
+                const width = chart.width;
+                const height = chart.height;
+
+                // 1. Background
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, width, height);
+
+                // 2. Top Gradient Flare
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(108, 92, 231, 0.3)');
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, 300);
+
+                // 3. Left Panel Content
+                // Avatar Placeholder
+                ctx.fillStyle = '#2d3436';
+                ctx.beginPath();
+                ctx.arc(100, 100, 40, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#6c5ce7';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Name
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillText('{js_nickname}', 160, 95);
+
+                // Public Profile Badge
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+                ctx.fillRect(160, 110, 120, 22);
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText('PUBLIC PROFILE', 170, 125);
+
+                // Title
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 64px serif';
+                ctx.fillText('Full Cognitive', 80, 240);
+                ctx.fillText('Profile', 80, 310);
+
+                // Architecture Badge
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.fillRect(80, 350, 450, 45, 22);
+                ctx.fillStyle = '#a5b4fc';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillText('ARCHITECTURE:', 100, 378);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 20px sans-serif';
+                ctx.fillText('{js_architecture}', 230, 378);
+
+                // Summary Quote
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'italic 20px sans-serif';
+                const words = '{js_summary}'.split(' ');
+                let line = '';
+                let y = 440;
+                for(let n = 0; n < words.length; n++) {{
+                    let testLine = line + words[n] + ' ';
+                    if (testLine.length > 50) {{
+                        ctx.fillText(line, 80, y);
+                        line = words[n] + ' ';
+                        y += 30;
+                    }} else {{ line = testLine; }}
+                }}
+                ctx.fillText(line, 80, y);
+
+                // Footer Metadata
+                ctx.fillStyle = '#475569';
+                ctx.font = '12px monospace';
+                ctx.fillText('NEUROPROFILE_V4.0', 80, 580);
+
+                // 4. Right Panel Highlights
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+                ctx.fillRect(720, 0, 480, height);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.beginPath();
+                ctx.moveTo(720, 0); ctx.lineTo(720, height);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#6c5ce7';
+                ctx.font = 'bold italic 16px sans-serif';
+                ctx.fillText('NEUROPROFILE.AI', 950, 580);
+            }}
+        }}"""
+
+        import urllib.parse
+        config_str = json.dumps(chart_config)
+        # QuickChart uses custom JSON merging for plugins
+        config_with_plugin = config_str[:-1] + f', "plugins": [{js_plugin}]' + '}'
+        
+        final_url = f"https://quickchart.io/chart?c={urllib.parse.quote(config_with_plugin)}&width=1200&height=630&backgroundColor=white"
+        
+        return RedirectResponse(url=final_url)
+    except Exception as e:
+        logger.error(f"Error generating OG image: {e}")
+        return RedirectResponse(url="https://quickchart.io/chart?c={%22type%22:%22radar%22,%22data%22:{%22labels%22:[%22Error%22],%22datasets%22:[{%22data%22:[0]}]}}")
+
+
 @app.get("/results/{id_or_share_id}")
 async def get_public_result_page(request: Request, id_or_share_id: str, conn: asyncpg.Connection = Depends(get_db)):
     """Serve public profile data OR HTML with OG metadata for social crawlers via anonymous share_id (UUID) ONLY."""
@@ -485,8 +678,21 @@ async def get_public_result_page(request: Request, id_or_share_id: str, conn: as
     ua = request.headers.get("User-Agent", "").lower()
     if "text/html" in accept or any(bot in ua for bot in ["linkedin", "reddit", "facebook", "twitter", "whatsapp", "slack", "discord", "bot"]):
         # serve index.html with injected tags
-        index_path = "/app/frontend_dist/index.html"
-        if os.path.exists(index_path):
+        # Check multiple possible paths for index.html (Docker mount or prod dist)
+        possible_paths = [
+            "/app/frontend_dist/index.html",
+            "/app/frontend_source/index.html",
+            "/app/index.html",
+            os.path.join(os.path.dirname(__file__), "..", "index.html")
+        ]
+        
+        index_path = None
+        for p in possible_paths:
+            if os.path.exists(p):
+                index_path = p
+                break
+
+        if index_path:
             async with aiofiles.open(index_path, mode="r", encoding="utf-8") as f:
                 html = await f.read()
             
@@ -501,38 +707,9 @@ async def get_public_result_page(request: Request, id_or_share_id: str, conn: as
             og_desc = f"I just mapped my sensory and memory architecture via {test_name}. Explore your own cognitive spectrum!"
             
             # Dynamic Radar Chart Image via QuickChart
-            all_scores = data.get("scores", {})
-            test_scores = all_scores.get(test_type_raw, {}) if isinstance(all_scores.get(test_type_raw), dict) else all_scores
-            
-            labels = [l.replace("_demo", "").replace("_", " ").strip().upper() for l in test_scores.keys()]
-            values = list(test_scores.values())
-            
-            chart_config = {
-                "type": "radar",
-                "data": {
-                    "labels": labels,
-                    "datasets": [{
-                        "data": values,
-                        "backgroundColor": "rgba(43, 30, 82, 0.4)",
-                        "borderColor": "#2B1E52",
-                        "borderWidth": 3,
-                        "pointRadius": 4,
-                        "pointBackgroundColor": "#2B1E52"
-                    }]
-                },
-                "options": {
-                    "legend": {"display": False},
-                    "scale": {
-                        "ticks": {"min": 0, "max": 5, "display": False},
-                        "angleLines": {"color": "rgba(43, 30, 82, 0.1)"},
-                        "gridLines": {"color": "rgba(43, 30, 82, 0.1)"},
-                        "pointLabels": {"fontSize": 14, "fontStyle": "bold", "fontColor": "#2B1E52"}
-                    }
-                }
-            }
-            import urllib.parse
-            config_json = json.dumps(chart_config)
-            og_image = f"https://quickchart.io/chart?c={urllib.parse.quote(config_json)}&width=800&height=800"
+            # We use our own API endpoint to generate a consistent, branded OG image
+            base_url = str(request.base_url).rstrip('/')
+            og_image = f"{base_url}/api/og-image/{id_or_share_id}"
             
             # Injection
             tags = f'''
@@ -541,7 +718,7 @@ async def get_public_result_page(request: Request, id_or_share_id: str, conn: as
                 <meta property="og:image" content="{og_image}" />
                 <meta property="og:url" content="{request.url}" />
                 <meta property="og:type" content="article" />
-                <meta property="og:site_name" content="Cognitive Profile" />
+                <meta property="og:site_name" content="NeuroProfile" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="{og_title}" />
                 <meta name="twitter:description" content="{og_desc}" />

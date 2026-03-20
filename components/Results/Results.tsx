@@ -133,6 +133,55 @@ export const Results: React.FC<ResultsProps> = ({
   const radarData = useMemo(() => {
     if (!currentSurvey) return [];
 
+    // Special grouping for full aphantasia profile to match the 5 main categories in the express test
+    if (currentSurvey.id === 'full_aphantasia_profile') {
+      const mapping = [
+        {
+          key: 'Visual',
+          subject: { uk: 'Візуальна', en: 'Visual', ru: 'Визуальная' }[lang],
+          criteria: ['Visual', 'Visual Reconstruction', 'Detailing', 'Construction', 'Dreams', 'Faces']
+        },
+        {
+          key: 'Auditory',
+          subject: { uk: 'Аудіальна', en: 'Auditory', ru: 'Аудиальная' }[lang],
+          criteria: ['Auditory']
+        },
+        {
+          key: 'Thinking',
+          subject: { uk: 'Мислення', en: 'Thinking', ru: 'Мышление' }[lang],
+          criteria: ['Abstract Thinking', 'Conceptualization', 'Logic', 'Mechanisms', 'Semantic', 'Learning', 'Decision Making', 'Argument', 'Episodic', 'Tactile', 'Gustatory', 'Olfactory', 'Empathy', 'Social']
+        },
+        {
+          key: 'Inner voice',
+          subject: { uk: 'Внутрішній голос', en: 'Inner voice', ru: 'Внутренний голос' }[lang],
+          criteria: ['Dialogue', 'Speech', 'Working Memory']
+        },
+        {
+          key: 'Schema',
+          subject: { uk: 'Схема', en: 'Schema', ru: 'Схема' }[lang],
+          criteria: ['Spatial Manipulation', 'Spatial Memory', 'Map', 'Navigation', 'Kinesthetics']
+        }
+      ];
+
+      return mapping.map(group => {
+        let total = 0;
+        let count = 0;
+        group.criteria.forEach(c => {
+          const score = ProfileService.calculateCategoryScore(surveyAnswers, c);
+          if (score > 0) {
+            total += score;
+            count++;
+          }
+        });
+        return {
+          key: group.key,
+          subject: group.subject,
+          A: count > 0 ? Number((total / count).toFixed(1)) : 0,
+          fullMark: 5
+        };
+      });
+    }
+
     // If survey has multiple categories, use them
     if (currentSurvey.categories.length > 1) {
       return currentSurvey.categories.map(cat => ({
