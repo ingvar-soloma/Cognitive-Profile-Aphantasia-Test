@@ -142,6 +142,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ ui, lang, onView
                          {res.username && (
                            <span className="text-[10px] text-brand-ink/70 font-sans font-medium hover:underline cursor-pointer">@{res.username}</span>
                          )}
+                         {res.email && (
+                           <span className="text-[10px] text-stone-400 font-sans italic">{res.email}</span>
+                         )}
                       </div>
                       
                       {res.badges && res.badges.length > 0 && (

@@ -1,0 +1,2808 @@
+[
+  {
+    "id": "full_aphantasia_profile",
+    "title": {
+      "uk": "Повний Когнітивний Профіль",
+      "en": "Full Cognitive Profile",
+      "ru": "Полный Когнитивный Профиль"
+    },
+    "description": {
+      "uk": "Поглиблений аналіз вашої уяви та сприйняття.",
+      "en": "In-depth analysis of your imagination and perception.",
+      "ru": "Углубленный анализ вашего воображения и восприятия."
+    },
+    "categories": [
+      {
+        "id": "cat1",
+        "title": {
+          "uk": "Категорія 1: Сенсорна Уява",
+          "en": "Category 1: Sensory Imagination",
+          "ru": "Категория 1: Сенсорное Воображение"
+        },
+        "description": {
+          "uk": "Оцініть яскравість образів за шкалою від 1 (Повна відсутність) до 5 (Гіперфантазія).",
+          "en": "Rate the vividness of images on a scale from 1 (Total absence) to 5 (Hyperphantasia).",
+          "ru": "Оцените яркость образов по шкале от 1 (Полное отсутствие) до 5 (Гиперфантазия)."
+        },
+        "questions": [
+          {
+            "id": "1_A_1",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Візуальна",
+              "en": "Visual",
+              "ru": "Визуальная"
+            },
+            "text": {
+              "uk": "Уявіть червоний трикутник. Наскільки чітко Ви його \"бачите\"?",
+              "en": "Imagine a red triangle. How clearly do you \"see\" it?",
+              "ru": "Представьте красный треугольник. Насколько четко вы его \"видите\"?"
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "1_A_2",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Візуальна",
+              "en": "Visual",
+              "ru": "Визуальная"
+            },
+            "text": {
+              "uk": "Уявіть обличчя близької людини. Чи бачите Ви його, чи просто знаєте його особливості?",
+              "en": "Imagine the face of a loved one. Do you see it, or just know its features?",
+              "ru": "Представьте лицо близкого человека. Вы видите его или просто знаете его особенности?"
+            },
+            "type": "TEXT",
+            "placeholder": {
+              "uk": "Опишіть ваш досвід...",
+              "en": "Describe your experience...",
+              "ru": "Опишите ваш опыт..."
+            }
+          },
+          {
+            "id": "1_A_3",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Візуальна",
+              "en": "Visual",
+              "ru": "Визуальная"
+            },
+            "text": {
+              "uk": "Коли Ви читаєте художній опис природи, чи \"розгортається\" у Вашій голові картина?",
+              "en": "When reading a descriptive passage of nature, does a scene \"unfold\" in your mind?",
+              "ru": "Когда вы читаете художественное описание природы, \"разворачивается\" ли в вашей голове картина?"
+            },
+            "hint": {
+              "uk": "Приклад: Ви \"бачите\" зелений ліс і сонячні промені як у фільмі, чи просто розумієте факт \"тут описано ліс\" без візуалізації?",
+              "en": "Example: Do you \"see\" a green forest and sunbeams like a movie, or just understand the fact \"a forest is described\" without visualizing?",
+              "ru": "Пример: Вы \"видите\" зеленый лес и солнечные лучи как в фильме, или просто понимаете факт \"здесь описан лес\" без визуализации?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Так",
+                  "en": "Yes",
+                  "ru": "Да"
+                },
+                "value": "yes"
+              },
+              {
+                "label": {
+                  "uk": "Ні",
+                  "en": "No",
+                  "ru": "Нет"
+                },
+                "value": "no"
+              },
+              {
+                "label": {
+                  "uk": "Частково (як схема)",
+                  "en": "Partially (like a schema)",
+                  "ru": "Частично (как схема)"
+                },
+                "value": "partial"
+              }
+            ]
+          },
+          {
+            "id": "1_B_1",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Аудіальна",
+              "en": "Auditory",
+              "ru": "Аудиальная"
+            },
+            "text": {
+              "uk": "Уявіть мелодію улюбленої пісні. Наскільки чітко Ви її \"чуєте\"?",
+              "en": "Imagine the melody of your favorite song. How clearly do you \"hear\" it?",
+              "ru": "Представьте мелодию любимой песни. Насколько четко вы ее \"слышите\"?"
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "1_B_2",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Аудіальна",
+              "en": "Auditory",
+              "ru": "Аудиальная"
+            },
+            "text": {
+              "uk": "Уявіть голос друга/родича. Ви чуєте його тон чи просто знаєте його тембр?",
+              "en": "Imagine the voice of a friend/relative. Do you hear the tone or just know the timbre?",
+              "ru": "Представьте голос друга/родственника. Вы слышите его тон или просто знаете его тембр?"
+            },
+            "type": "TEXT",
+            "placeholder": {
+              "uk": "Опишіть, чи чуєте ви інтонації...",
+              "en": "Describe if you hear intonations...",
+              "ru": "Опишите, слышите ли вы интонации..."
+            }
+          },
+          {
+            "id": "1_B_3",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Аудіальна",
+              "en": "Auditory",
+              "ru": "Аудиальная"
+            },
+            "text": {
+              "uk": "Спробуйте уявити звук водоспаду. Наскільки реалістично це звучить?",
+              "en": "Try to imagine the sound of a waterfall. How realistic does it sound?",
+              "ru": "Попробуйте представить звук водопада. Насколько реалистично это звучит?"
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "1_C_1",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Тактильна",
+              "en": "Tactile",
+              "ru": "Тактильная"
+            },
+            "text": {
+              "uk": "Уявіть, як гладите кота. Чи відчуваєте Ви його хутро (текстуру, тепло)?",
+              "en": "Imagine petting a cat. Do you feel the fur (texture, warmth)?",
+              "ru": "Представьте, как гладите кота. Чувствуете ли вы его мех (текстуру, тепло)?"
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "1_C_2",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Смакова",
+              "en": "Gustatory",
+              "ru": "Вкусовая"
+            },
+            "text": {
+              "uk": "Уявіть смак лимона. Чи відчуваєте Ви кислоту?",
+              "en": "Imagine the taste of a lemon. Do you feel the sourness?",
+              "ru": "Представьте вкус лимона. Чувствуете ли вы кислоту?"
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "1_C_3",
+            "category": "Sensory",
+            "subCategory": {
+              "uk": "Нюхова",
+              "en": "Olfactory",
+              "ru": "Обонятельная"
+            },
+            "text": {
+              "uk": "Уявіть запах скошеної трави. Чи відчуваєте Ви аромат?",
+              "en": "Imagine the smell of cut grass. Do you smell the scent?",
+              "ru": "Представьте запах скошенной травы. Чувствуете ли вы аромат?"
+            },
+            "type": "SCALE"
+          }
+        ]
+      },
+      {
+        "id": "cat2",
+        "title": {
+          "uk": "Категорія 2: Процеси Уяви",
+          "en": "Category 2: Imagination Processes",
+          "ru": "Категория 2: Процессы Воображения"
+        },
+        "description": {
+          "uk": "Як саме ваш мозок конструює образи та думки.",
+          "en": "How exactly your brain constructs images and thoughts.",
+          "ru": "Как именно ваш мозг конструирует образы и мысли."
+        },
+        "questions": [
+          {
+            "id": "2_1",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Конструювання",
+              "en": "Construction",
+              "ru": "Конструирование"
+            },
+            "text": {
+              "uk": "Процес конструювання (Візуальний): Як з'являється у свідомості складний об'єкт (наприклад, стілець)?",
+              "en": "Construction process (Visual): How does a complex object (e.g., a chair) appear in your mind?",
+              "ru": "Процесс конструирования (Визуальный): Как появляется в сознании сложный объект (например, стул)?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Виникає миттєво і цілісно",
+                  "en": "Appears instantly and wholly",
+                  "ru": "Возникает мгновенно и целостно"
+                },
+                "value": "instant"
+              },
+              {
+                "label": {
+                  "uk": "Поступово конструюється (по частинах)",
+                  "en": "Constructed gradually (part by part)",
+                  "ru": "Постепенно конструируется (по частям)"
+                },
+                "value": "gradual"
+              },
+              {
+                "label": {
+                  "uk": "Не бачу, але аналізую властивості",
+                  "en": "I don't see, but analyze properties",
+                  "ru": "Не вижу, но анализирую свойства"
+                },
+                "value": "analytical"
+              }
+            ]
+          },
+          {
+            "id": "2_2",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Абстрактне мислення",
+              "en": "Abstract Thinking",
+              "ru": "Абстрактное мышление"
+            },
+            "text": {
+              "uk": "Формат абстрактного мислення: У якому форматі відбувається Ваше мислення, коли розмірковуєте про складну проблему?",
+              "en": "Abstract thinking format: In what format does your thinking occur when pondering a complex problem?",
+              "ru": "Формат абстрактного мышления: В каком формате происходит ваше мышление, когда размышляете о сложной проблеме?"
+            },
+            "hint": {
+              "uk": "Приклад: Ви ведете внутрішній монолог (\"так, спершу це...\"), уявляєте візуальні схеми/структури, чи просто \"знаєте\" зв'язки без слів і картинок?",
+              "en": "Example: Do you have an inner monologue (\"ok, first this...\"), imagine visual schemas/structures, or just \"know\" connections without words/images?",
+              "ru": "Пример: Вы ведете внутренний монолог (\"так, сперва это...\"), представляете визуальные схемы/структуры, или просто \"знаете\" связи без слов и картинок?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Внутрішній діалог (слова)",
+                  "en": "Inner dialogue (words)",
+                  "ru": "Внутренний диалог (слова)"
+                },
+                "value": "verbal"
+              },
+              {
+                "label": {
+                  "uk": "Абстрактні символи/концепції",
+                  "en": "Abstract symbols/concepts",
+                  "ru": "Абстрактные символы/концепции"
+                },
+                "value": "abstract"
+              },
+              {
+                "label": {
+                  "uk": "Схеми, діаграми",
+                  "en": "Schemas, diagrams",
+                  "ru": "Схемы, диаграммы"
+                },
+                "value": "schematic"
+              }
+            ]
+          },
+          {
+            "id": "2_3",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Кінестетика",
+              "en": "Kinesthetics",
+              "ru": "Кинестетика"
+            },
+            "text": {
+              "uk": "Домінування уяви руху: Коли уявляєте фізичну дію (кидаєте м'яч), що чіткіше?",
+              "en": "Movement imagination dominance: When imagining a physical action (throwing a ball), what is clearer?",
+              "ru": "Доминирование воображения движения: Когда представляете физическое действие (бросаете мяч), что четче?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Візуальна картинка",
+                  "en": "Visual picture",
+                  "ru": "Визуальная картинка"
+                },
+                "value": "visual"
+              },
+              {
+                "label": {
+                  "uk": "Кінестетичне відчуття (м'язи)",
+                  "en": "Kinesthetic sensation (muscles)",
+                  "ru": "Кинестетическое ощущение (мышцы)"
+                },
+                "value": "kinesthetic"
+              },
+              {
+                "label": {
+                  "uk": "Обидва рівнозначно",
+                  "en": "Both equally",
+                  "ru": "Оба равнозначно"
+                },
+                "value": "both"
+              },
+              {
+                "label": {
+                  "uk": "Нічого",
+                  "en": "Nothing",
+                  "ru": "Ничего"
+                },
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "id": "2_4",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Деталізація",
+              "en": "Detailing",
+              "ru": "Детализация"
+            },
+            "text": {
+              "uk": "Швидкість та зусилля деталізації: Якщо образ нечіткий, скільки часу потрібно, щоб додати деталі?",
+              "en": "Speed and effort of detailing: If an image is vague, how long does it take to add details?",
+              "ru": "Скорость и усилия детализации: Если образ нечеткий, сколько времени нужно, чтобы добавить детали?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Деталі додаються одразу",
+                  "en": "Details added instantly",
+                  "ru": "Детали добавляются сразу"
+                },
+                "value": "instant"
+              },
+              {
+                "label": {
+                  "uk": "Потрібно кілька секунд зусиль",
+                  "en": "Takes a few seconds of effort",
+                  "ru": "Нужно несколько секунд усилий"
+                },
+                "value": "effort"
+              },
+              {
+                "label": {
+                  "uk": "Зусилля не допомагають",
+                  "en": "Effort does not help",
+                  "ru": "Усилия не помогают"
+                },
+                "value": "impossible"
+              }
+            ]
+          },
+          {
+            "id": "2_5",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Концептуалізація",
+              "en": "Conceptualization",
+              "ru": "Концептуализация"
+            },
+            "text": {
+              "uk": "Опишіть різницю між \"знанням\" про об'єкт та \"баченням\" його у голові. Чи відчуваєте Ви цю різницю?",
+              "en": "Describe the difference between \"knowing\" about an object and \"seeing\" it in your head. Do you feel this difference?",
+              "ru": "Опишите разницу между \"знанием\" об объекте и \"видением\" его в голове. Чувствуете ли вы эту разницу?"
+            },
+            "type": "TEXT"
+          },
+          {
+            "id": "2_6",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Просторова Маніпуляція",
+              "en": "Spatial Manipulation",
+              "ru": "Пространственная Манипуляция"
+            },
+            "text": {
+              "uk": "Як Ви уявляєте обертання складного 3D-об'єкта (наприклад, неіснуючого механізму)?",
+              "en": "How do you imagine rotating a complex 3D object (e.g., a non-existent mechanism)?",
+              "ru": "Как вы представляете вращение сложного 3D-объекта (например, несуществующего механизма)?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Бачу, як він обертається, як у відео",
+                  "en": "I see it rotating like a video",
+                  "ru": "Вижу, как он вращается, как в видео"
+                },
+                "value": "visual_rotate"
+              },
+              {
+                "label": {
+                  "uk": "Знаю його нову позицію, використовуючи логіку/правила",
+                  "en": "I know its new position using logic/rules",
+                  "ru": "Знаю его новую позицию, используя логику/правила"
+                },
+                "value": "logic_rules"
+              },
+              {
+                "label": {
+                  "uk": "Відчуваю рух як кінестетичне відчуття",
+                  "en": "I feel the movement as a kinesthetic sensation",
+                  "ru": "Ощущаю движение как кинестетическое чувство"
+                },
+                "value": "kinesthetic"
+              }
+            ]
+          },
+          {
+            "id": "2_7",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Робоча Пам'ять",
+              "en": "Working Memory",
+              "ru": "Рабочая Память"
+            },
+            "text": {
+              "uk": "Коли Ви утримуєте в пам'яті список із 7-10 слів, Ви їх:",
+              "en": "When holding a list of 7-10 words in memory, you are:",
+              "ru": "Когда вы удерживаете в памяти список из 7-10 слов, вы их:"
+            },
+            "hint": {
+              "uk": "Приклад: Ви постійно їх проговорюєте внутрішнім голосом, чи уявляєте, що вони написані на дошці?",
+              "en": "Example: Are you constantly repeating them with an inner voice, or do you imagine them written on a board?",
+              "ru": "Пример: Вы постоянно их проговариваете внутренним голосом, или представляете, что они написаны на доске?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Постійно проговорюєте внутрішнім діалогом",
+                  "en": "Constantly repeating them via inner dialogue",
+                  "ru": "Постоянно проговариваете внутренним диалогом"
+                },
+                "value": "verbal_loop"
+              },
+              {
+                "label": {
+                  "uk": "Уявляєте, що вони написані/позначені",
+                  "en": "Imagine them written/labeled",
+                  "ru": "Представляете, что они написаны/обозначены"
+                },
+                "value": "visual_labels"
+              },
+              {
+                "label": {
+                  "uk": "Перетворюєте на концепції, щоб \"знати\" їх",
+                  "en": "Convert them into concepts to \"know\" them",
+                  "ru": "Превращаете в концепции, чтобы \"знать\" их"
+                },
+                "value": "conceptual"
+              }
+            ]
+          },
+          {
+            "id": "2_DRAW_1",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Візуальна Реконструкція",
+              "en": "Visual Reconstruction",
+              "ru": "Визуальная Реконструкция"
+            },
+            "text": {
+              "uk": "Завдання на малювання: Намалюйте велосипед з пам'яті настільки детально, наскільки можете.",
+              "en": "Drawing Task: Draw a bicycle from memory as detailed as you can.",
+              "ru": "Задание на рисование: Нарисуйте велосипед по памяти настолько детально, насколько сможете."
+            },
+            "hint": {
+              "uk": "Не хвилюйтеся про художні навички. Важливо те, які саме деталі (спиці, ланцюг, рама) Ви пам'ятаєте візуально.",
+              "en": "Don't worry about artistic skills. What matters is which details (spokes, chain, frame) you remember visually.",
+              "ru": "Не беспокойтесь о художественных навыках. Важно то, какие именно детали (спицы, цепь, рама) Вы помните визуально."
+            },
+            "type": "DRAWING"
+          },
+          {
+            "id": "2_DRAW_2",
+            "category": "Process",
+            "subCategory": {
+              "uk": "Просторова Пам'ять",
+              "en": "Spatial Memory",
+              "ru": "Пространственная Память"
+            },
+            "text": {
+              "uk": "Завдання на малювання: Намалюйте схематичне планування Вашої кімнати (де знаходяться вікна, двері, меблі).",
+              "en": "Drawing Task: Draw a schematic layout of your room (windows, doors, furniture locations).",
+              "ru": "Задание на рисование: Нарисуйте схематичную планировку Вашей комнаты (окна, двери, мебель)."
+            },
+            "hint": {
+              "uk": "Це допомагає зрозуміти різницю між візуалізацією об'єктів та знанням просторових зв'язків.",
+              "en": "This helps understand the difference between object visualization and spatial relationship knowledge.",
+              "ru": "Это помогает понять разницу между визуализацией объектов и знанием пространственных связей."
+            },
+            "type": "DRAWING"
+          }
+        ]
+      },
+      {
+        "id": "cat3",
+        "title": {
+          "uk": "Категорія 3: Стратегії та Пам'ять",
+          "en": "Category 3: Strategies and Memory",
+          "ru": "Категория 3: Стратегии и Память"
+        },
+        "description": {
+          "uk": "Аналіз стилю мислення, пам'яті та соціальної взаємодії.",
+          "en": "Analysis of thinking style, memory, and social interaction.",
+          "ru": "Анализ стиля мышления, памяти и социального взаимодействия."
+        },
+        "questions": [
+          {
+            "id": "3_A_1",
+            "category": "Strategy",
+            "subCategory": {
+              "uk": "Логіка",
+              "en": "Logic",
+              "ru": "Логика"
+            },
+            "text": {
+              "uk": "Обробка абстрактної логіки: Як Ви вирішуєте складну логічну задачу? (Словами, схемами, відчуттям?)",
+              "en": "Abstract logic processing: How do you solve a complex logic problem? (Words, schemas, feeling?)",
+              "ru": "Обработка абстрактной логики: Как вы решаете сложную логическую задачу? (Словами, схемами, ощущением?)"
+            },
+            "hint": {
+              "uk": "Приклад: Ви будуєте ментальну модель/графік, проговорюєте логічний ланцюжок словами, чи покладаєтесь на інтуїтивне відчуття правильності?",
+              "en": "Example: Do you build a mental model/graph, speak the logic chain in words, or rely on an intuitive feeling of correctness?",
+              "ru": "Пример: Вы строите ментальную модель/график, проговариваете логическую цепочку словами, или полагаетесь на интуитивное ощущение правильности?"
+            },
+            "type": "TEXT"
+          },
+          {
+            "id": "3_A_2",
+            "category": "Strategy",
+            "subCategory": {
+              "uk": "Мовлення",
+              "en": "Speech",
+              "ru": "Речь"
+            },
+            "text": {
+              "uk": "Коли Ви говорите, чи формулюєте Ви речення послідовно в голові, чи слова просто \"з'являються\"?",
+              "en": "When you speak, do you formulate sentences sequentially in your head, or do words just \"appear\"?",
+              "ru": "Когда вы говорите, формулируете ли вы предложения последовательно в голове, или слова просто \"появляются\"?"
+            },
+            "type": "TEXT"
+          },
+          {
+            "id": "3_A_3",
+            "category": "Strategy",
+            "subCategory": {
+              "uk": "Діалог",
+              "en": "Dialogue",
+              "ru": "Диалог"
+            },
+            "text": {
+              "uk": "Чи використовуєте Ви внутрішній діалог (розмова із собою у голові) часто і детально?",
+              "en": "Do you use inner dialogue (talking to yourself in your head) often and in detail?",
+              "ru": "Используете ли вы внутренний диалог (разговор с собой в голове) часто и детально?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Так",
+                  "en": "Yes",
+                  "ru": "Да"
+                },
+                "value": "yes"
+              },
+              {
+                "label": {
+                  "uk": "Ні",
+                  "en": "No",
+                  "ru": "Нет"
+                },
+                "value": "no"
+              },
+              {
+                "label": {
+                  "uk": "Частково",
+                  "en": "Partially",
+                  "ru": "Частично"
+                },
+                "value": "partial"
+              }
+            ]
+          },
+          {
+            "id": "3_A_4",
+            "category": "Strategy",
+            "subCategory": {
+              "uk": "Механізми",
+              "en": "Mechanisms",
+              "ru": "Механизмы"
+            },
+            "text": {
+              "uk": "Коли Ви уявляєте, як щось працює (наприклад, двигун), Ви уявляєте це як 3D модель чи як список правил?",
+              "en": "When you imagine how something works (e.g., an engine), do you see it as a 3D model or a list of rules?",
+              "ru": "Когда вы представляете, как что-то работает (например, двигатель), вы представляете это как 3D модель или как список правил?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "3D Модель",
+                  "en": "3D Model",
+                  "ru": "3D Модель"
+                },
+                "value": "3d"
+              },
+              {
+                "label": {
+                  "uk": "Список функцій/правил",
+                  "en": "List of functions/rules",
+                  "ru": "Список функций/правил"
+                },
+                "value": "rules"
+              },
+              {
+                "label": {
+                  "uk": "Змішаний тип",
+                  "en": "Mixed type",
+                  "ru": "Смешанный тип"
+                },
+                "value": "mixed"
+              }
+            ]
+          },
+          {
+            "id": "3_B_1",
+            "category": "Memory",
+            "subCategory": {
+              "uk": "Епізодична",
+              "en": "Episodic",
+              "ru": "Эпизодическая"
+            },
+            "text": {
+              "uk": "Опишіть свій найяскравіший спогад дитинства. Наскільки яскрава візуальна картинка?",
+              "en": "Describe your most vivid childhood memory. How vivid is the visual picture?",
+              "ru": "Опишите свое самое яркое воспоминание детства. Насколько яркая визуальная картинка?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Як фільм (жива картина)",
+                  "en": "Like a movie (living picture)",
+                  "ru": "Как фильм (живая картина)"
+                },
+                "value": "movie"
+              },
+              {
+                "label": {
+                  "uk": "Як послідовність подій",
+                  "en": "Like a sequence of events",
+                  "ru": "Как последовательность событий"
+                },
+                "value": "sequence"
+              },
+              {
+                "label": {
+                  "uk": "Як сухий факт",
+                  "en": "Like a dry fact",
+                  "ru": "Как сухой факт"
+                },
+                "value": "fact"
+              }
+            ]
+          },
+          {
+            "id": "3_B_2",
+            "category": "Memory",
+            "subCategory": {
+              "uk": "Семантична",
+              "en": "Semantic",
+              "ru": "Семантическая"
+            },
+            "text": {
+              "uk": "Чи часто трапляється, що Ви знаєте факт, але не пам'ятаєте, коли/де про це дізналися?",
+              "en": "Does it happen often that you know a fact but don't remember when/where you learned it?",
+              "ru": "Часто ли случается, что вы знаете факт, но не помните, когда/где об этом узнали?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Так",
+                  "en": "Yes",
+                  "ru": "Да"
+                },
+                "value": "yes"
+              },
+              {
+                "label": {
+                  "uk": "Ні",
+                  "en": "No",
+                  "ru": "Нет"
+                },
+                "value": "no"
+              }
+            ]
+          },
+          {
+            "id": "3_B_3",
+            "category": "Memory",
+            "subCategory": {
+              "uk": "Обличчя",
+              "en": "Faces",
+              "ru": "Лица"
+            },
+            "text": {
+              "uk": "Чи легко Вам запам'ятовувати імена людей, порівняно з їхніми обличчями?",
+              "en": "Is it easy for you to remember people's names compared to their faces?",
+              "ru": "Легко ли вам запоминать имена людей по сравнению с их лицами?"
+            },
+            "type": "TEXT"
+          },
+          {
+            "id": "3_B_4",
+            "category": "Memory",
+            "subCategory": {
+              "uk": "Сновидіння",
+              "en": "Dreams",
+              "ru": "Сновидения"
+            },
+            "text": {
+              "uk": "Які Ваші сновидіння?",
+              "en": "What are your dreams like?",
+              "ru": "Какие у вас сновидения?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Чіткі, кольорові, реалістичні візуальні образи",
+                  "en": "Clear, colorful, realistic visual images",
+                  "ru": "Четкие, цветные, реалистичные визуальные образы"
+                },
+                "value": "visual_dreams"
+              },
+              {
+                "label": {
+                  "uk": "Невізуальні (діалог, відчуття, знання того, що відбувається)",
+                  "en": "Non-visual (dialogue, feelings, knowing what happens)",
+                  "ru": "Невизуальные (диалог, ощущения, знание происходящего)"
+                },
+                "value": "non_visual_dreams"
+              },
+              {
+                "label": {
+                  "uk": "Не пам'ятаю сновидінь",
+                  "en": "I do not remember dreams",
+                  "ru": "Не помню сновидений"
+                },
+                "value": "no_recall"
+              }
+            ]
+          },
+          {
+            "id": "3_C_1",
+            "category": "Navigation",
+            "subCategory": {
+              "uk": "Карта",
+              "en": "Map",
+              "ru": "Карта"
+            },
+            "text": {
+              "uk": "У великій будівлі Ви легко формуєте ментальну карту, чи орієнтуєтеся по кроках (\"наліво-прямо\")?",
+              "en": "In a large building, do you easily form a mental map, or navigate by steps (\"left, then straight\")?",
+              "ru": "В большом здании вы легко формируете ментальную карту, или ориентируетесь по шагам (\"налево-прямо\")?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Ментальна карта",
+                  "en": "Mental map",
+                  "ru": "Ментальная карта"
+                },
+                "value": "map"
+              },
+              {
+                "label": {
+                  "uk": "Послідовність кроків",
+                  "en": "Sequence of steps",
+                  "ru": "Последовательность шагов"
+                },
+                "value": "steps"
+              }
+            ]
+          },
+          {
+            "id": "3_D_1",
+            "category": "Social",
+            "subCategory": {
+              "uk": "Емпатія",
+              "en": "Empathy",
+              "ru": "Эмпатия"
+            },
+            "text": {
+              "uk": "Коли хтось розповідає про травму, Ви відчуваєте емоцію чи аналізуєте ситуацію?",
+              "en": "When someone talks about trauma, do you feel the emotion or analyze the situation?",
+              "ru": "Когда кто-то рассказывает о травме, вы чувствуете эмоцию или анализируете ситуацию?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Відчуваю емоцію (Співчуття)",
+                  "en": "Feel emotion (Compassion)",
+                  "ru": "Чувствую эмоцию (Сочувствие)"
+                },
+                "value": "emotional"
+              },
+              {
+                "label": {
+                  "uk": "Аналізую ситуацію (Когнітивна емпатія)",
+                  "en": "Analyze situation (Cognitive empathy)",
+                  "ru": "Анализирую ситуацию (Когнитивная эмпатия)"
+                },
+                "value": "cognitive"
+              },
+              {
+                "label": {
+                  "uk": "Обидва",
+                  "en": "Both",
+                  "ru": "Оба"
+                },
+                "value": "both"
+              }
+            ]
+          },
+          {
+            "id": "3_D_2",
+            "category": "Social",
+            "subCategory": {
+              "uk": "Суперечка",
+              "en": "Argument",
+              "ru": "Спор"
+            },
+            "text": {
+              "uk": "Що є Вашим головним інструментом у суперечці?",
+              "en": "What is your main tool in an argument?",
+              "ru": "Что является вашим главным инструментом в споре?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Логічні аргументи",
+                  "en": "Logical arguments",
+                  "ru": "Логические аргументы"
+                },
+                "value": "logic"
+              },
+              {
+                "label": {
+                  "uk": "Емоційна переконливість",
+                  "en": "Emotional persuasiveness",
+                  "ru": "Эмоциональная убедительность"
+                },
+                "value": "emotion"
+              }
+            ]
+          },
+          {
+            "id": "3_E_1",
+            "category": "Strategy",
+            "subCategory": {
+              "uk": "Навчання",
+              "en": "Learning",
+              "ru": "Обучение"
+            },
+            "text": {
+              "uk": "Що є найефективнішим для запам'ятовування нової інформації (наприклад, розділу підручника)?",
+              "en": "What is most effective for you to memorize new information (e.g., a textbook chapter)?",
+              "ru": "Что является наиболее эффективным для запоминания новой информации (например, раздела учебника)?"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Багаторазове читання/переказ вголос (фокус на словах)",
+                  "en": "Multiple reading/reciting aloud (focus on words)",
+                  "ru": "Многократное чтение/пересказ вслух (фокус на словах)"
+                },
+                "value": "verbal_repetition"
+              },
+              {
+                "label": {
+                  "uk": "Побудова ментальних схем, логічних карт (фокус на зв'язках)",
+                  "en": "Building mental schemas, logical maps (focus on connections)",
+                  "ru": "Построение ментальных схем, логических карт (фокус на связях)"
+                },
+                "value": "schematic_mapping"
+              },
+              {
+                "label": {
+                  "uk": "Спроба візуалізувати матеріал як сцену",
+                  "en": "Trying to visualize the material as a scene",
+                  "ru": "Попытка визуализировать материал как сцену"
+                },
+                "value": "visualize_scene"
+              }
+            ]
+          },
+          {
+            "id": "3_E_2",
+            "category": "Strategy",
+            "subCategory": {
+              "uk": "Ухвалення Рішень",
+              "en": "Decision Making",
+              "ru": "Принятие Решений"
+            },
+            "text": {
+              "uk": "При ухваленні важливого рішення Ви покладаєтесь на:",
+              "en": "When making an important decision, you rely on:",
+              "ru": "При принятии важного решения вы полагаетесь на:"
+            },
+            "type": "CHOICE",
+            "options": [
+              {
+                "label": {
+                  "uk": "Детальний логічний аналіз (плюси/мінуси)",
+                  "en": "Detailed logical analysis (pros/cons)",
+                  "ru": "Подробный логический анализ (плюсы/минусы)"
+                },
+                "value": "pure_logic"
+              },
+              {
+                "label": {
+                  "uk": "Швидке інтуїтивне \"відчуття\" правильності",
+                  "en": "Quick intuitive \"feeling\" of correctness",
+                  "ru": "Быстрое интуитивное \"чувство\" правильности"
+                },
+                "value": "intuition"
+              },
+              {
+                "label": {
+                  "uk": "Змішаний підхід, з перевагою логіки",
+                  "en": "Mixed approach, leaning towards logic",
+                  "ru": "Смешанный подход, с преобладанием логики"
+                },
+                "value": "mixed_logic"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "personality_test",
+    "title": {
+      "uk": "Тест Особистості",
+      "en": "Personality Test",
+      "ru": "Тест Личности"
+    },
+    "description": {
+      "uk": "Дізнайтеся більше про свій характер.",
+      "en": "Learn more about your character.",
+      "ru": "Узнайте больше о своем характере."
+    },
+    "categories": [
+      {
+        "id": "ocean_o",
+        "title": {
+          "uk": "Відкритість до досвіду (Openness)",
+          "en": "Openness to Experience",
+          "ru": "Открытость опыту (Openness)"
+        },
+        "description": {
+          "uk": "Ваша інтелектуальна допитливість, естетична чутливість та готовність до інновацій.",
+          "en": "Your intellectual curiosity, aesthetic sensitivity, and willingness to innovate.",
+          "ru": "Ваша интеллектуальная любознательность, эстетическая чувствительность и готовность к инновациям."
+        },
+        "questions": [
+          {
+            "id": "p_32",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Концептуальність",
+              "en": "Conceptual",
+              "ru": "Концептуальность"
+            },
+            "text": {
+              "uk": "Мене захоплюють складні, концептуальні та інноваційні ідеї.",
+              "en": "I'm fascinated by complex, conceptual and innovative ideas.",
+              "ru": "Меня восхищают сложные, концептуальные и инновационные идеи."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_46",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Глибина",
+              "en": "Depth",
+              "ru": "Глубина"
+            },
+            "text": {
+              "uk": "Мені подобається знаходити приховані або глибші сенси в інформації.",
+              "en": "I enjoy finding deeper meanings in information.",
+              "ru": "Мне нравится находить скрытые или глубокие смыслы в информации."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_58",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Абстракція",
+              "en": "Abstraction",
+              "ru": "Абстракция"
+            },
+            "text": {
+              "uk": "Я часто пояснюю свої ідеї за допомогою метафор або гіпотетичних сценаріїв.",
+              "en": "I often explain my ideas using metaphors or hypothetical scenarios.",
+              "ru": "Я часто объясняю свои идеи с помощью метафор или гипотетических сценариев."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_41",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Креативність",
+              "en": "Creativity",
+              "ru": "Креативность"
+            },
+            "text": {
+              "uk": "Я отримую задоволення від творчого самовираження (письмо, музика, дизайн тощо).",
+              "en": "I enjoy creative expression, such as writing, music, or design.",
+              "ru": "Я получаю удовольствие от творческого самовыражения (письмо, музыка, дизайн и т.д.)."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_33",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Інновації",
+              "en": "Innovation",
+              "ru": "Инновации"
+            },
+            "text": {
+              "uk": "Я ціную інноваційний проєкт, який зазнав невдачі, більше, ніж той, що став успішним завдяки дотриманню традицій.",
+              "en": "I appreciate an innovative project that fails over one that succeeds by sticking to tradition.",
+              "ru": "Я ценю инновационный проект, потерпевший неудачу, больше, чем тот, который стал успешным благодаря следованию традициям."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_29",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Бачення",
+              "en": "Vision",
+              "ru": "Видение"
+            },
+            "text": {
+              "uk": "Мені подобається розуміти загальну картину та те, як рішення вплинуть на майбутнє.",
+              "en": "I enjoy figuring out the big picture and how decisions will impact the future.",
+              "ru": "Мне нравится понимать общую картину и то, как решения повлияют на будущее."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_55",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Теорія",
+              "en": "Theory",
+              "ru": "Теория"
+            },
+            "text": {
+              "uk": "Вивчаючи щось нове, я волію починати з теорії та загальних концепцій.",
+              "en": "When learning something new, I like to start with the theory and general concepts.",
+              "ru": "Изучая что-то новое, я предпочитаю начинать с теории и общих концепций."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_07",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Інтелект",
+              "en": "Intellect",
+              "ru": "Интеллект"
+            },
+            "text": {
+              "uk": "Я відчуваю піднесення, коли можу логічно вирішувати складні інтелектуальні проблеми.",
+              "en": "I feel invigorated when I can solve complex intellectual problems logically.",
+              "ru": "Я чувствую воодушевление при логическом решении сложных интеллектуальных задач."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_47",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Середовище",
+              "en": "Environment",
+              "ru": "Среда"
+            },
+            "text": {
+              "uk": "Я волію працювати в творчому середовищі, а не в такому, де є лише чіткі інструкції.",
+              "en": "I prefer working in a creative environment over one with only clear guidelines.",
+              "ru": "Я предпочитаю работать в творческой среде, а не в такой, где есть только четкие инструкции."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_16",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Консерватизм",
+              "en": "Conservatism",
+              "ru": "Консерватизм"
+            },
+            "text": {
+              "uk": "Я схильний дотримуватися перевірених методів і надійної рутини.",
+              "en": "I tend to stick to proven methods and reliable routines.",
+              "ru": "Я склонен придерживаться проверенных методов и надежной рутины."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_22",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Традиції",
+              "en": "Tradition",
+              "ru": "Традиции"
+            },
+            "text": {
+              "uk": "Я волію, щоб командна робота ґрунтувалася на методах, які вже довели свою ефективність.",
+              "en": "I prefer team grounding in methods that have already proven effective.",
+              "ru": "Я предпочитаю, чтобы командная работа основывалась на методах, которые уже доказали свою эффективность."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_26",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Традиції",
+              "en": "Tradition",
+              "ru": "Традиции"
+            },
+            "text": {
+              "uk": "Я віддаю перевагу замовленню улюблених страв, а не спробам чогось нового.",
+              "en": "I prefer ordering my favorite dishes rather than trying something new.",
+              "ru": "Я предпочитаю заказывать любимые блюда, а не пробовать что-то новое."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_30",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Практичність",
+              "en": "Practicality",
+              "ru": "Практичность"
+            },
+            "text": {
+              "uk": "Вирішуючи проблеми, я спочатку розглядаю існуючі умови та обмеження.",
+              "en": "When solving problems, I start by considering the existing conditions and constraints.",
+              "ru": "Решая проблемы, я сначала рассматриваю существующие условия и ограничения."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_48",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Практичність",
+              "en": "Practicality",
+              "ru": "Практичность"
+            },
+            "text": {
+              "uk": "Я вважаю себе практичною людиною, яка твердо стоїть на землі.",
+              "en": "I consider myself a practical person who stands firmly on the ground.",
+              "ru": "Я считаю себя практичным человеком, который твердо стоит на земле."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_04",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Сприйняття",
+              "en": "Perception",
+              "ru": "Восприятие"
+            },
+            "text": {
+              "uk": "Я ціную мистецтво з чіткими темами, а не те, що залишає занадто багато простору для інтерпретації.",
+              "en": "I appreciate art with clear themes rather than that which leaves too much space for interpretation.",
+              "ru": "Я ценю искусство с четкими темами, а не то, что оставляет слишком много пространства для интерпретации."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_14",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Дослідження",
+              "en": "Exploration",
+              "ru": "Исследование"
+            },
+            "text": {
+              "uk": "Мені подобається ризикувати та досліджувати невідоме для пошуку нових рішень.",
+              "en": "I enjoy taking chances and exploring uncharted territories to discover new solutions.",
+              "ru": "Мне нравится рисковать и исследовать неизведанное для поиска новых решений."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_50",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Уява",
+              "en": "Imagination",
+              "ru": "Воображение"
+            },
+            "text": {
+              "uk": "Я часто занурююсь у свої думки про майбутні проєкти, навіть коли зараз працюю над чимось іншим.",
+              "en": "I often get lost in thoughts about future projects, even when currently working on something else.",
+              "ru": "Я часто погружаюсь в свои мысли о будущих проектах, даже когда сейчас работаю над чем-то другим."
+            },
+            "type": "SCALE"
+          }
+        ]
+      },
+      {
+        "id": "ocean_c",
+        "title": {
+          "uk": "Сумлінність (Conscientiousness)",
+          "en": "Conscientiousness",
+          "ru": "Добросовестность (Conscientiousness)"
+        },
+        "description": {
+          "uk": "Ваша здатність до самоконтролю, планування, організованості та наполегливості.",
+          "en": "Your capacity for self-control, planning, organization, and persistence.",
+          "ru": "Ваша способность к самоконтролю, планированию, организованности и настойчивости."
+        },
+        "questions": [
+          {
+            "id": "p_05",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Планування",
+              "en": "Planning",
+              "ru": "Планирование"
+            },
+            "text": {
+              "uk": "Я отримую задоволення від досягнення цілей шляхом систематичного планування.",
+              "en": "I find joy in achieving set goals through systematic planning.",
+              "ru": "Я получаю удовольствие от достижения целей путем систематического планирования."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "100",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Робочий стиль",
+              "en": "Work style",
+              "ru": "Рабочий стиль"
+            },
+            "text": {
+              "uk": "Я досягаю поставлених цілей завдяки методичному дотриманню плану.",
+              "en": "I reach my set goals through methodical adherence to a plan.",
+              "ru": "Я достигаю поставленных целей благодаря методичному следованию плану."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_40",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Порядок",
+              "en": "Orderliness",
+              "ru": "Порядок"
+            },
+            "text": {
+              "uk": "Я часто складаю списки та розклади, щоб організувати свої справи.",
+              "en": "I often make lists and schedules to organize my activities.",
+              "ru": "Я часто составляю списки и расписания, чтобы организовать свои дела."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_49",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Передбачливість",
+              "en": "Foresight",
+              "ru": "Предусмотрительность"
+            },
+            "text": {
+              "uk": "Зазвичай я складаю плани на кілька днів наперед.",
+              "en": "I usually make plans days in advance.",
+              "ru": "Обычно я составляю планы на несколько дней вперед."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_51",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Обов'язок",
+              "en": "Dutifulness",
+              "ru": "Долг"
+            },
+            "text": {
+              "uk": "Працюючи над груповим проєктом, я закликаю до встановлення чітких ролей із самого початку.",
+              "en": "When working on a group project, I encourage setting clear roles from the beginning.",
+              "ru": "Работая над групповым проектом, я призываю к установлению четких ролей с самого начала."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_10",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Принциповість",
+              "en": "Dutifulness",
+              "ru": "Принципиальность"
+            },
+            "text": {
+              "uk": "Я вважаю, що помилки та порушення встановлених правил повинні мати чіткі наслідки.",
+              "en": "I think mistakes and rule-breaking should have clear consequences.",
+              "ru": "Я считаю, что ошибки и нарушения установленных правил должны иметь четкие последствия."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_01",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Стимул",
+              "en": "Spontaneity",
+              "ru": "Стимул"
+            },
+            "text": {
+              "uk": "Я найкраще працюю під тиском і часто виконую основні завдання в останню хвилину.",
+              "en": "I work best under pressure and often complete key tasks at the last minute.",
+              "ru": "Я лучше всего работаю под давлением и часто выполняю основные задачи в последнюю минуту."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_12",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Робота в стресі",
+              "en": "Stress work",
+              "ru": "Работа в стрессе"
+            },
+            "text": {
+              "uk": "Мені подобається адреналін і зосередженість, які з'являються під час термінової роботи.",
+              "en": "I enjoy the adrenaline and focus that come when working under a tight deadline.",
+              "ru": "Мне нравится адреналин и сосредоточенность, которые появляются при срочной работе."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_37",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Тиск",
+              "en": "Pressure",
+              "ru": "Давление"
+            },
+            "text": {
+              "uk": "Дедлайни стимулюють мою креативність більше, ніж завчасне планування.",
+              "en": "Deadlines stimulate my creativity more than early planning.",
+              "ru": "Дедлайны стимулируют мою креативность больше, чем заблаговременное планирование."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_59",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Гнучкість",
+              "en": "Flexibility",
+              "ru": "Гибкость"
+            },
+            "text": {
+              "uk": "Я віддаю перевагу дослідженню нових можливостей по ходу справи, не дотримуючись суворого графіка.",
+              "en": "I prefer exploring new possibilities as I go, without sticking to a strict schedule.",
+              "ru": "Я предпочитаю исследование новых возможностей по ходу дела, не следуя строгому графику."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_57",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Спонтанність",
+              "en": "Spontaneity",
+              "ru": "Спонтанность"
+            },
+            "text": {
+              "uk": "Я вважаю, що надмірне планування обмежує свободу та задоволення від життя.",
+              "en": "I find that too much planning limits freedom and the fun of life.",
+              "ru": "Я считаю, что избыточное планирование ограничивает свободу и удовольствие от жизни."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_03",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Гнучкість",
+              "en": "Flexibility",
+              "ru": "Гибкость"
+            },
+            "text": {
+              "uk": "Я знаходжу натхнення у відкритих підходах, а не в жорстких структурах.",
+              "en": "I find inspiration in open-ended approaches rather than rigid structures.",
+              "ru": "Я нахожу вдохновение в открытых подходах, а не в жестких структурах."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_20",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Процес",
+              "en": "Process",
+              "ru": "Процесс"
+            },
+            "text": {
+              "uk": "Мені подобається розпочинати проєкти імпульсивно, щоб побачити, куди мене заведе креативність.",
+              "en": "I like starting projects impulsively to see where my creativity leads me.",
+              "ru": "Мне нравится начинать проекты импульсивно, чтобы увидеть, куда меня заведет креативность."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_23",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Дисципліна",
+              "en": "Discipline",
+              "ru": "Дисциплина"
+            },
+            "text": {
+              "uk": "Я чітко розмежовую робочі завдання та особистий час.",
+              "en": "I clearly separate work tasks and personal time.",
+              "ru": "Я четко разграничиваю рабочие задачи и личное время."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_35",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Послідовність",
+              "en": "Consistency",
+              "ru": "Последовательность"
+            },
+            "text": {
+              "uk": "Я віддаю перевагу поетапному навчанню з чіткими та зрозумілими інструкціями.",
+              "en": "I prefer step-by-step learning with clear and easy-to-understand instructions.",
+              "ru": "Я предпочитаю поэтапное обучение с четкими и понятными инструкциями."
+            },
+            "type": "SCALE"
+          }
+        ]
+      },
+      {
+        "id": "ocean_e",
+        "title": {
+          "uk": "Екстраверсія (Extraversion)",
+          "en": "Extraversion",
+          "ru": "Экстраверсия (Extraversion)"
+        },
+        "description": {
+          "uk": "Ваша товариськість, активність, схильність до пошуку вражень та позитивні емоції.",
+          "en": "Your sociability, activity, sensation-seeking, and positive emotions.",
+          "ru": "Ваша общительность, активность, склонность к поиску впечатлений и позитивные эмоции."
+        },
+        "questions": [
+          {
+            "id": "p_02",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Впевненість",
+              "en": "Confidence",
+              "ru": "Уверенность"
+            },
+            "text": {
+              "uk": "Я почуваюся впевнено в соціальних ситуаціях, навіть із малознайомими людьми.",
+              "en": "I feel comfortable and confident in social situations, even with people I don't know well.",
+              "ru": "Я чувствую себя уверенно в социальных ситуациях, даже с малознакомыми людьми."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_25",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Товариськість",
+              "en": "Gregariousness",
+              "ru": "Общительность"
+            },
+            "text": {
+              "uk": "Мені подобається часто знайомитися та спілкуватися з новими людьми.",
+              "en": "I enjoy engaging with new people frequently.",
+              "ru": "Мне нравится часто знакомиться и общаться с новыми людьми."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_06",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Комунікація",
+              "en": "Communication",
+              "ru": "Коммуникация"
+            },
+            "text": {
+              "uk": "Мені подобаються короткі бесіди та часті контакти з людьми протягом дня.",
+              "en": "I enjoy quick chats and frequent check-ins with people throughout the day.",
+              "ru": "Мне нравятся короткие беседы и частые контакты с людьми в течение дня."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_54",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Комунікація",
+              "en": "Communication",
+              "ru": "Коммуникация"
+            },
+            "text": {
+              "uk": "Під час зустрічей мені подобається активно обговорювати питання та обмінюватися думками.",
+              "en": "During meetings, I like to actively discuss issues and exchange opinions.",
+              "ru": "Во время встреч мне нравится активно обсуждать вопросы и обмениваться мнениями."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_60",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Динаміка",
+              "en": "Energy",
+              "ru": "Динамика"
+            },
+            "text": {
+              "uk": "У розмовах я швидко відповідаю і насолоджуюся високим темпом спілкування.",
+              "en": "In conversations, I'm quick to respond and enjoy a high pace of communication.",
+              "ru": "В разговоре я быстро отвечаю и наслаждаюсь высоким темпом общения."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_601",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Зовнішнє мислення",
+              "en": "External thinking",
+              "ru": "Внешнее мышление"
+            },
+            "text": {
+              "uk": "Я часто обговорюю свої ідеї з іншими ще на етапі їх формування.",
+              "en": "I often discuss my ideas with others while they are still being formed.",
+              "ru": "Я часто обсуждаю свои идеи с другими еще на этапе их формирования."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_107",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Лідерство",
+              "en": "Assertiveness",
+              "ru": "Лидерство"
+            },
+            "text": {
+              "uk": "Я зазвичай беру на себе ініціативу в групових обговореннях або проєктах.",
+              "en": "I usually take the lead in group discussions or projects.",
+              "ru": "Я обычно беру на себя инициативу в групповых обсуждениях или проектах."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_17",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Позитивність",
+              "en": "Positive emotions",
+              "ru": "Позитивность"
+            },
+            "text": {
+              "uk": "Мені подобається ділитися своїм захопленням і радістю з іншими людьми.",
+              "en": "I enjoy sharing my excitement and joy with other people.",
+              "ru": "Мне нравится делиться своим восторгом и радостью с другими людьми."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_27",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Активність",
+              "en": "Activity",
+              "ru": "Активность"
+            },
+            "text": {
+              "uk": "Я віддаю перевагу активному соціальному життю над спокійним проведенням часу.",
+              "en": "I prefer an active social life over quiet pastimes.",
+              "ru": "Я предпочитаю активную социальную жизнь спокойному времяпрепровождению."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_44",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Автономність",
+              "en": "Autonomy",
+              "ru": "Автономность"
+            },
+            "text": {
+              "uk": "Я найбільш продуктивний у тихій, незалежній обстановці.",
+              "en": "I am most productive in a quiet, independent setting.",
+              "ru": "Я наиболее продуктивен в тихой, независимой обстановке."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_15",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Спостереження",
+              "en": "Observation",
+              "ru": "Наблюдение"
+            },
+            "text": {
+              "uk": "У великих компаніях я схильний більше слухати, ніж говорити.",
+              "en": "In large groups, I tend to listen more than I speak.",
+              "ru": "В больших компаниях я склонен больше слушать, чем говорить."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_31",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Стриманість",
+              "en": "Reserve",
+              "ru": "Сдержанность"
+            },
+            "text": {
+              "uk": "Я волію залишатися на позиції слухача, поки не вивчу ситуацію в групі.",
+              "en": "I prefer to remain a listener until I have assessed the group situation.",
+              "ru": "Я предпочитаю оставаться на позиции слушателя, пока не изучу ситуацию в группе."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_36",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Виснаження",
+              "en": "Draining",
+              "ru": "Истощение"
+            },
+            "text": {
+              "uk": "Тривале інтенсивне спілкування викликає у мене потребу побути наодинці.",
+              "en": "Prolonged intense socialization makes me feel a need for solitude.",
+              "ru": "Длительное интенсивное общение вызывает у меня потребность побыть наедине."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_91",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Відновлення",
+              "en": "Recovery",
+              "ru": "Восстановление"
+            },
+            "text": {
+              "uk": "Мій найкращий відпочинок — це час, проведений наодинці з собою.",
+              "en": "My best rest is time spent alone with myself.",
+              "ru": "Мой лучший отдых — это время, проведенное наедине с собой."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_45",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Присутність",
+              "en": "Presence",
+              "ru": "Присутствие"
+            },
+            "text": {
+              "uk": "На соціальних заходах я почуваюся комфортніше, не привертаючи зайвої уваги.",
+              "en": "I feel more comfortable at social events when I don't draw unnecessary attention.",
+              "ru": "На социальных мероприятиях я чувствую себя комфортнее, не привлекая лишнего внимания."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_56",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Експресія",
+              "en": "Expression",
+              "ru": "Экспрессия"
+            },
+            "text": {
+              "uk": "Людям зазвичай легко зрозуміти, що я відчуваю, через мою поведінку.",
+              "en": "It is usually easy for people to tell how I am feeling from my behavior.",
+              "ru": "Людям обычно легко понять, что я чувствую, по моему поведению."
+            },
+            "type": "SCALE"
+          }
+        ]
+      },
+      {
+        "id": "ocean_a",
+        "title": {
+          "uk": "Доброзичливість (Agreeableness)",
+          "en": "Agreeableness",
+          "ru": "Доброжелательность (Agreeableness)"
+        },
+        "description": {
+          "uk": "Ваша здатність до співпраці, довіри, емпатії та готовність іти на компроміс.",
+          "en": "Your capacity for cooperation, trust, empathy, and willingness to compromise.",
+          "ru": "Ваша способность к сотрудничеству, доверию, эмпатии и готовность идти на компромисс."
+        },
+        "questions": [
+          {
+            "id": "p_43",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Емпатія",
+              "en": "Empathy",
+              "ru": "Эмпатия"
+            },
+            "text": {
+              "uk": "Я легко співпереживаю емоціям інших людей.",
+              "en": "I empathize easily with others' emotions.",
+              "ru": "Я легко сопереживаю эмоциям других людей."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_08",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Співчуття",
+              "en": "Compassion",
+              "ru": "Сострадание"
+            },
+            "text": {
+              "uk": "Мені важко залишатися байдужим, коли хтось поруч переживає сильні емоції.",
+              "en": "I find it hard to remain indifferent when someone nearby is experiencing strong emotions.",
+              "ru": "Мне трудно оставаться безразличным, когда кто-то рядом переживает сильные эмоции."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_19",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Альтруїзм",
+              "en": "Altruism",
+              "ru": "Альтруизм"
+            },
+            "text": {
+              "uk": "Я щиро насолоджуюся можливістю допомогти друзям у складні моменти.",
+              "en": "I genuinely enjoy the chance to help friends during difficult times.",
+              "ru": "Я искренне наслаждаюсь возможностью помочь друзьям в сложные моменты."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_18",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Гармонія",
+              "en": "Harmony",
+              "ru": "Гармония"
+            },
+            "text": {
+              "uk": "Прийнятність рішення для всіх учасників для мене важливіша за його суху логіку.",
+              "en": "The acceptability of a decision for all participants is more important to me than its dry logic.",
+              "ru": "Приемлемость решения для всех участников для меня важнее его сухой логики."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_11",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Поступливість",
+              "en": "Compliance",
+              "ru": "Уступчивость"
+            },
+            "text": {
+              "uk": "Я схильний уникати відкритої незгоди, щоб зберегти хороші стосунки.",
+              "en": "I tend to avoid open disagreement to maintain good relationships.",
+              "ru": "Я склонен избегать открытого несогласия, чтобы сохранить хорошие отношения."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_108",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Довіра",
+              "en": "Trust",
+              "ru": "Доверие"
+            },
+            "text": {
+              "uk": "Я схильний вірити, що більшість людей мають добрі наміри.",
+              "en": "I tend to believe that most people have good intentions.",
+              "ru": "Я склонен верить, что у большинства людей добрые намерения."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_21",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Кооперація",
+              "en": "Cooperation",
+              "ru": "Кооперация"
+            },
+            "text": {
+              "uk": "Спільне вирішення проблеми для мене завжди краще, ніж самостійний пошук виходу.",
+              "en": "Solving a problem together is always better for me than looking for a way out on my own.",
+              "ru": "Совместное решение проблемы для меня всегда лучше, чем самостоятельный поиск выхода."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_39",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Об'єктивність",
+              "en": "Objectivity",
+              "ru": "Объективность"
+            },
+            "text": {
+              "uk": "Я приймаю рішення на основі фактів та логіки, навіть якщо це комусь не сподобається.",
+              "en": "I make decisions based on facts and logic, even if it might displease someone.",
+              "ru": "Я принимаю решения на основе фактов и логики, даже если это кому-то не понравится."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_34",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Прямота",
+              "en": "Directness",
+              "ru": "Прямота"
+            },
+            "text": {
+              "uk": "Для мене істина важливіша за делікатність у спілкуванні.",
+              "en": "To me, the truth is more important than being delicate in communication.",
+              "ru": "Для меня истина важнее деликатности в общении."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_52",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Прагматизм",
+              "en": "Pragmatism",
+              "ru": "Прагматизм"
+            },
+            "text": {
+              "uk": "Ефективність результату для мене пріоритетніша за емоційний комфорт команди.",
+              "en": "The effectiveness of the result is more of a priority to me than the emotional comfort of the team.",
+              "ru": "Эффективность результата для меня приоритетнее эмоционального комфорта команды."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_42",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Дистанція",
+              "en": "Detachment",
+              "ru": "Дистанция"
+            },
+            "text": {
+              "uk": "Я волію зберігати емоційну дистанцію, щоб залишатися об'єктивним.",
+              "en": "I prefer to maintain emotional distance to remain objective.",
+              "ru": "Я предпочитаю сохранять эмоциональную дистанцию, чтобы оставаться объективным."
+            },
+            "type": "SCALE"
+          }
+        ]
+      },
+      {
+        "id": "ocean_n",
+        "title": {
+          "uk": "Нейротизм / Емоційна стабільність (Neuroticism)",
+          "en": "Neuroticism / Emotional Stability",
+          "ru": "Нейротизм / Эмоциональная устойчивость"
+        },
+        "description": {
+          "uk": "Ваша емоційна реактивність, схильність до тривоги та здатність зберігати спокій під тиском.",
+          "en": "Your emotional reactivity, tendency toward anxiety, and ability to remain calm under pressure.",
+          "ru": "Ваша эмоциональная реактивность, склонность к тревоге и способность сохранять спокойствие под давлением."
+        },
+        "questions": [
+          {
+            "id": "p_101",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Тривожність",
+              "en": "Anxiety",
+              "ru": "Тревожность"
+            },
+            "text": {
+              "uk": "Я часто хвилююся через події, які ще не відбулися.",
+              "en": "I often worry about events that haven't happened yet.",
+              "ru": "Я часто волнуюсь из-за событий, которые еще не произошли."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_102",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Реакція на стрес",
+              "en": "Stress reaction",
+              "ru": "Реакция на стресс"
+            },
+            "text": {
+              "uk": "Я легко втрачаю рівновагу в напружених або критичних ситуаціях.",
+              "en": "I easily lose my balance in tense or critical situations.",
+              "ru": "Я легко теряю равновесие в напряженных или критических ситуациях."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_103",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Мінливість",
+              "en": "Mood swings",
+              "ru": "Переменчивость"
+            },
+            "text": {
+              "uk": "Мій емоційний стан може різко змінитися без явної причини.",
+              "en": "My emotional state can change abruptly without an obvious reason.",
+              "ru": "Мое эмоциональное состояние может резко измениться без явной причины."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_104",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Вразливість",
+              "en": "Vulnerability",
+              "ru": "Уязвимость"
+            },
+            "text": {
+              "uk": "Під час суперечок мені важко контролювати своє хвилювання або роздратування.",
+              "en": "During arguments, I find it hard to control my worry or irritation.",
+              "ru": "Во время споров мне трудно контролировать свое волнение или раздражение."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_105",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Сприйняття критику",
+              "en": "Sensitivity",
+              "ru": "Критика"
+            },
+            "text": {
+              "uk": "Навіть конструктивна критика може зіпсувати мені настрій на тривалий час.",
+              "en": "Even constructive criticism can ruin my mood for a long time.",
+              "ru": "Даже конструктивная критика может испортить мне настроение на долгое время."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_109",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Соціальна тривога",
+              "en": "Self-consciousness",
+              "ru": "Социальная тревога"
+            },
+            "text": {
+              "uk": "Я часто переймаюся тим, яке враження справляю на оточуючих.",
+              "en": "I often worry about the impression I make on others.",
+              "ru": "Я часто беспокоюсь о том, какое впечатление произвожу на окружающих."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_106",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Песимізм",
+              "en": "Pessimism",
+              "ru": "Пессимизм"
+            },
+            "text": {
+              "uk": "Я схильний бачити можливі ризики та невдачі частіше, ніж позитивні перспективи.",
+              "en": "I tend to see potential risks and failures more often than positive prospects.",
+              "ru": "Я склонен видеть возможные риски и неудачи чаще, чем положительные перспективы."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "p_53",
+            "category": "Personality",
+            "subCategory": {
+              "uk": "Соціальний дискомфорт",
+              "en": "Social discomfort",
+              "ru": "Дискомфорт"
+            },
+            "text": {
+              "uk": "Необхідність спілкуватися з новими людьми часто викликає у мене внутрішню напругу.",
+              "en": "The need to interact with new people often causes internal tension for me.",
+              "ru": "Необходимость общаться с новыми людьми часто вызывает у меня внутреннее напряжение."
+            },
+            "type": "SCALE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "perfectionism_test",
+    "title": {
+      "uk": "Тест на Перфекціонізм",
+      "en": "Perfectionism Test",
+      "ru": "Тест на Перфекционизм"
+    },
+    "description": {
+      "uk": "Наскільки ви прагнете до ідеалу?",
+      "en": "How much do you strive for the ideal?",
+      "ru": "Насколько вы стремитесь к идеалу?"
+    },
+    "categories": [
+      {
+        "id": "rigid_perfectionism",
+        "title": {
+          "uk": "Жорсткий перфекціонізм (Спрямований на себе)",
+          "en": "Rigid Perfectionism (Self-Oriented)",
+          "ru": "Жесткий перфекционизм (Направленный на себя)"
+        },
+        "description": {
+          "uk": "Ваше власне прагнення до досконалості та високі вимоги до себе.",
+          "en": "Your own drive for perfection and high self-standards.",
+          "ru": "Ваше собственное стремление к совершенству и высокие требования к себе."
+        },
+        "questions": [
+          {
+            "id": "bp_01",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Прагнення до досконалості",
+              "en": "Striving for Perfection",
+              "ru": "Стремление к совершенству"
+            },
+            "text": {
+              "uk": "Я намагаюся бути настільки досконалим, наскільки це можливо.",
+              "en": "I try to be as perfect as possible.",
+              "ru": "Я стараюсь быть настолько совершенным, насколько это возможно."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_02",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Високі стандарти",
+              "en": "High Standards",
+              "ru": "Высокие стандарты"
+            },
+            "text": {
+              "uk": "Для себе я ніколи не погоджуюся на менше, ніж досконале.",
+              "en": "For myself, I never settle for less than perfect.",
+              "ru": "Для себя я никогда не соглашаюсь на меньшее, чем совершенное."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_03",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Важливість досконалості",
+              "en": "Importance of Perfection",
+              "ru": "Важность совершенства"
+            },
+            "text": {
+              "uk": "Для мене важливо бути досконалим в усьому, що я розпочинаю.",
+              "en": "It is important for me to be perfect in everything I start.",
+              "ru": "Для меня важно быть совершенным во всем, что я начинаю."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_04",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Все або нічого",
+              "en": "All or Nothing",
+              "ru": "Все или ничего"
+            },
+            "text": {
+              "uk": "Я роблю справу ідеально, або не роблю взагалі.",
+              "en": "I do things perfectly, or not at all.",
+              "ru": "Я делаю дело идеально, или не делаю вообще."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_05",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Відчуття правоти",
+              "en": "Sense of Rightness",
+              "ru": "Чувство правоты"
+            },
+            "text": {
+              "uk": "Мені завжди потрібно прагнути до ідеалу для того, щоб відчувати свою правоту.",
+              "en": "I always need to strive for the ideal to feel like I am in the right.",
+              "ru": "Мне всегда нужно стремиться к идеалу для того, чтобы чувствовать свою правоту."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_06",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Самоповага",
+              "en": "Self-Respect",
+              "ru": "Самоуважение"
+            },
+            "text": {
+              "uk": "Я не зможу себе поважати, якщо припиню прагнути досконалості.",
+              "en": "I will not be able to respect myself if I stop striving for perfection.",
+              "ru": "Я не смогу себя уважать, если перестану стремиться к совершенству."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_07",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Залежність самооцінки",
+              "en": "Self-Esteem Dependency",
+              "ru": "Зависимость самооценки"
+            },
+            "text": {
+              "uk": "Моя самооцінка залежить від можливості бути досконалим.",
+              "en": "My self-esteem depends on the ability to be perfect.",
+              "ru": "Моя самооценка зависит от возможности быть совершенным."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_08",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Потрібність",
+              "en": "Neediness",
+              "ru": "Нужность"
+            },
+            "text": {
+              "uk": "Прагнення вдосконалюватись, наскільки це можливо, дає мені відчуття потрібності.",
+              "en": "Striving to improve as much as possible gives me a sense of worthiness.",
+              "ru": "Стремление совершенствоваться, насколько это возможно, дает мне ощущение нужности."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_09",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Самооцінка",
+              "en": "Self-Esteem",
+              "ru": "Самооценка"
+            },
+            "text": {
+              "uk": "Моя самооцінка пов’язана з можливістю бути досконалим.",
+              "en": "My self-esteem is tied to the ability to be perfect.",
+              "ru": "Моя самооценка связана с возможностью быть совершенным."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_10",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Страх помилки",
+              "en": "Fear of Failure",
+              "ru": "Страх ошибки"
+            },
+            "text": {
+              "uk": "Коли я помиляюсь, то відчуваю себе невдахою.",
+              "en": "When I make a mistake, I feel like a failure.",
+              "ru": "Когда я ошибаюсь, то чувствую себя неудачником."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_11",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Тривога через помилки",
+              "en": "Anxiety over Mistakes",
+              "ru": "Тревога из-за ошибок"
+            },
+            "text": {
+              "uk": "Я відчуваю тривогу через можливість зробити помилку.",
+              "en": "I feel anxious about the possibility of making a mistake.",
+              "ru": "Я чувствую тревогу из-за возможности совершить ошибку."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_12",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Ляк помилки",
+              "en": "Dread of Mistakes",
+              "ru": "Боязнь ошибки"
+            },
+            "text": {
+              "uk": "Мене лякає сама навіть думка про помилку.",
+              "en": "Just the thought of making a mistake scares me.",
+              "ru": "Меня пугает сама даже мысль об ошибке."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_13",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Сором через помилки",
+              "en": "Shame over Mistakes",
+              "ru": "Стыд из-за ошибок"
+            },
+            "text": {
+              "uk": "Коли я помічаю, що зробив помилку, мені соромно.",
+              "en": "When I notice I made a mistake, I feel ashamed.",
+              "ru": "Когда я замечаю, что совершил ошибку, мне стыдно."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_14",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Реакція на незначне",
+              "en": "Minor Mistake Reaction",
+              "ru": "Реакция на незначительное"
+            },
+            "text": {
+              "uk": "Я засмучуюсь, зробивши навіть незначну помилку.",
+              "en": "I get upset even when I make a minor mistake.",
+              "ru": "Я расстраиваюсь, совершив даже незначительную ошибку."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_15",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Сумніви",
+              "en": "Doubts",
+              "ru": "Сомнения"
+            },
+            "text": {
+              "uk": "Я сумніваюсь у більшості своїх вчинків.",
+              "en": "I doubt most of my actions.",
+              "ru": "Я сомневаюсь в большинстве своих поступков."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_16",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Невпевненість",
+              "en": "Uncertainty",
+              "ru": "Неуверенность"
+            },
+            "text": {
+              "uk": "Я відчуваю невпевненість щодо більшості справ, які я роблю.",
+              "en": "I feel uncertain about most of the things I do.",
+              "ru": "Я чувствую неуверенность относительно большинства дел, которые я делаю."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_17",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Постійні сумніви",
+              "en": "Constant Doubts",
+              "ru": "Постоянные сомнения"
+            },
+            "text": {
+              "uk": "Я маю сумніви щодо всього, що б я не робив.",
+              "en": "I have doubts about everything I do.",
+              "ru": "У меня есть сомнения по поводу всего, что бы я ни делал."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_18",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Невпевненість у рішеннях",
+              "en": "Decision Uncertainty",
+              "ru": "Неуверенность в решениях"
+            },
+            "text": {
+              "uk": "Я завжди невпевнений у правильності своїх вчинків/рішень.",
+              "en": "I am always unsure about the correctness of my actions/decisions.",
+              "ru": "Я всегда неуверен в правильности своих поступков/решений."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_19",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Схильність до сумнівів",
+              "en": "Proneness to Doubt",
+              "ru": "Склонность к сомнениям"
+            },
+            "text": {
+              "uk": "Я схильний сумніватися у правильності своїх дій/вчинків.",
+              "en": "I am prone to doubting the correctness of my actions.",
+              "ru": "Я склонен сомневаться в правильности своих действий/поступков."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_20",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Самокритика",
+              "en": "Self-Criticism",
+              "ru": "Самокритика"
+            },
+            "text": {
+              "uk": "Я ставлюсь до себе критично, коли роблю щось недосконало.",
+              "en": "I am critical of myself when I do things imperfectly.",
+              "ru": "Я отношусь к себе критично, когда делаю что-то несовершенно."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_21",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Злість на себе",
+              "en": "Self-Directed Anger",
+              "ru": "Злость на себя"
+            },
+            "text": {
+              "uk": "Коли мій виступ недосколаний, зазвичай, я злюся на себе.",
+              "en": "When my performance is imperfect, I usually get angry at myself.",
+              "ru": "Когда мое выступление несовершенно, обычно я злюсь на себя."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_22",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Розчарування в собі",
+              "en": "Self-Disappointment",
+              "ru": "Разочарование в себе"
+            },
+            "text": {
+              "uk": "Я почуваюся розчарованим в собі, коли не роблю щось досить добре.",
+              "en": "I feel disappointed in myself when I don't do something well enough.",
+              "ru": "Я чувствую разочарование в себе, когда не делаю что-то достаточно хорошо."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_23",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Прощення себе",
+              "en": "Self-Forgiveness",
+              "ru": "Прощение себя"
+            },
+            "text": {
+              "uk": "Мені важко собі пробачити, коли моя робота недосконала.",
+              "en": "I find it hard to forgive myself when my work is imperfect.",
+              "ru": "Мне трудно себя простить, когда моя работа несовершенна."
+            },
+            "type": "SCALE"
+          }
+        ]
+      },
+      {
+        "id": "socially_prescribed_perfectionism",
+        "title": {
+          "uk": "Соціально зумовлений перфекціонізм",
+          "en": "Socially Prescribed Perfectionism",
+          "ru": "Социально обусловленный перфекционизм"
+        },
+        "description": {
+          "uk": "Ваше переконання, що інші люди очікують від вас досконалості.",
+          "en": "Your belief that others expect you to be perfect.",
+          "ru": "Ваше убеждение, что другие люди ожидают от вас совершенства."
+        },
+        "questions": [
+          {
+            "id": "bp_24",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Очікування від інших",
+              "en": "Expectations from Others",
+              "ru": "Ожидания от других"
+            },
+            "text": {
+              "uk": "Люди занадто багато очікують від мене.",
+              "en": "People expect too much from me.",
+              "ru": "Люди слишком многого ожидают от меня."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_25",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Розчарування оточуючих",
+              "en": "Disappointing Others",
+              "ru": "Разочарование окружающих"
+            },
+            "text": {
+              "uk": "Люди розчаровуються в мені, коли я роблю щось недосконало.",
+              "en": "People get disappointed in me when I do something imperfectly.",
+              "ru": "Люди разочаровываются во мне, когда я делаю что-то несовершенно."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_26",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Вимоги оточуючих",
+              "en": "Demands from Others",
+              "ru": "Требования окружающих"
+            },
+            "text": {
+              "uk": "Оточуючі занадто багато вимагають від мене.",
+              "en": "Others demand too much from me.",
+              "ru": "Окружающие слишком многого требуют от меня."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_27",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Тиск бути найкращим",
+              "en": "Pressure to be the Best",
+              "ru": "Давление быть лучшим"
+            },
+            "text": {
+              "uk": "Усі вважають, що я маю бути найкращим.",
+              "en": "Everyone thinks I should be the best.",
+              "ru": "Все считают, что я должен быть лучшим."
+            },
+            "type": "SCALE"
+          }
+        ]
+      },
+      {
+        "id": "narcissistic_perfectionism",
+        "title": {
+          "uk": "Нарцисичний перфекціонізм",
+          "en": "Narcissistic Perfectionism",
+          "ru": "Нарциссический перфекционизм"
+        },
+        "description": {
+          "uk": "Ваші очікування досконалості від інших та переконання у власній винятковості.",
+          "en": "Your expectations of perfection from others and belief in your own exceptionality.",
+          "ru": "Ваши ожидания совершенства от других и убежденность в собственной исключительности."
+        },
+        "questions": [
+          {
+            "id": "bp_28",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Вимоги до близьких",
+              "en": "Demands on Family/Friends",
+              "ru": "Требования к близким"
+            },
+            "text": {
+              "uk": "Я вимагаю досконалості від моєї родини та друзів.",
+              "en": "I demand perfection from my family and friends.",
+              "ru": "Я требую совершенства от моей семьи и друзей."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_29",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Бездоганність інших",
+              "en": "Flawlessness of Others",
+              "ru": "Безупречность других"
+            },
+            "text": {
+              "uk": "Все, що роблять інші, має бути бездоганним.",
+              "en": "Everything others do must be flawless.",
+              "ru": "Все, что делают другие, должно быть безупречным."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_30",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Досконалість близьких",
+              "en": "Perfection of Close Ones",
+              "ru": "Совершенство близких"
+            },
+            "text": {
+              "uk": "Я очікую, що близькі мені люди повинні бути досконалими.",
+              "en": "I expect people close to me to be perfect.",
+              "ru": "Я ожидаю, что близкие мне люди должны быть совершенными."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_31",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Скарги інших",
+              "en": "Others' Complaints",
+              "ru": "Жалобы других"
+            },
+            "text": {
+              "uk": "Люди скаржаться, що я очікую занадто багато від них.",
+              "en": "People complain that I expect too much from them.",
+              "ru": "Люди жалуются, что я ожидаю слишком многого от них."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_32",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Бездоганність роботи інших",
+              "en": "Flawless Work from Others",
+              "ru": "Безупречность работы других"
+            },
+            "text": {
+              "uk": "Для мене важливо, щоб оточуючі робили свою справу бездоганно.",
+              "en": "It is important to me that others do their work flawlessly.",
+              "ru": "Для меня важно, чтобы окружающие делали свое дело безупречно."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_33",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Критика інших",
+              "en": "Criticism of Others",
+              "ru": "Критика других"
+            },
+            "text": {
+              "uk": "Я схильний критикувати недоліки інших людей.",
+              "en": "I tend to criticize other people's flaws.",
+              "ru": "Я склонен критиковать недостатки других людей."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_34",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Розчарування в інших",
+              "en": "Disappointment in Others",
+              "ru": "Разочарование в других"
+            },
+            "text": {
+              "uk": "Я розчаровуюсь, коли інші люди припускаються помилок.",
+              "en": "I get disappointed when other people make mistakes.",
+              "ru": "Я разочаровываюсь, когда другие люди совершают ошибки."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_35",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Незадоволеність іншими",
+              "en": "Dissatisfaction with Others",
+              "ru": "Неудовлетворенность другими"
+            },
+            "text": {
+              "uk": "Я незадоволений людьми, навіть якщо вони зробили все, що могли.",
+              "en": "I am dissatisfied with people even if they have done their best.",
+              "ru": "Я недоволен людьми, даже если они сделали все, что могли."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_36",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Вказування на недоліки",
+              "en": "Pointing Out Flaws",
+              "ru": "Указание на недостатки"
+            },
+            "text": {
+              "uk": "Я одразу вказую на недоліки іншим людям.",
+              "en": "I immediately point out flaws in other people.",
+              "ru": "Я сразу указываю на недостатки другим людям."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_37",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Особливе ставлення",
+              "en": "Special Treatment",
+              "ru": "Особое отношение"
+            },
+            "text": {
+              "uk": "Я заслуговую на особливе ставлення до себе.",
+              "en": "I deserve special treatment.",
+              "ru": "Я заслуживаю особого отношения к себе."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_38",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Порушення правил",
+              "en": "Rule Breaking for Me",
+              "ru": "Нарушение правил для меня"
+            },
+            "text": {
+              "uk": "Я вважаю, що оточуючі повинні порушувати правила заради мене.",
+              "en": "I believe others should break rules for me.",
+              "ru": "Я считаю, что окружающие должны нарушать правила ради меня."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_39",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Помічання досконалості",
+              "en": "Noticing Perfection",
+              "ru": "Замечание совершенства"
+            },
+            "text": {
+              "uk": "Я бентежуся, коли інші люди не помічають мою досконалість.",
+              "en": "I get embarrassed/anxious when other people don't notice my perfection.",
+              "ru": "Меня смущает, когда другие люди не замечают мое совершенство."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_40",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Моє волевиявлення",
+              "en": "My Way",
+              "ru": "По-моему"
+            },
+            "text": {
+              "uk": "Я заслуговую на те, щоб завжди все було по-моєму.",
+              "en": "I deserve to always have things my way.",
+              "ru": "Я заслуживаю того, чтобы всегда все было по-моему."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_41",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Найкращий",
+              "en": "The Best",
+              "ru": "Лучший"
+            },
+            "text": {
+              "uk": "Я найкращий в тому, що я роблю.",
+              "en": "I am the best at what I do.",
+              "ru": "Я лучший в том, что я делаю."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_42",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Знання досконалості",
+              "en": "Knowing Perfection",
+              "ru": "Знание совершенства"
+            },
+            "text": {
+              "uk": "Я знаю, що я досконалий.",
+              "en": "I know that I am perfect.",
+              "ru": "Я знаю, что я совершенен."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_43",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Заздрість інших",
+              "en": "Others' Envy",
+              "ru": "Зависть других"
+            },
+            "text": {
+              "uk": "Інші люди таємно заздрять моїй досконалості.",
+              "en": "Other people secretly envy my perfection.",
+              "ru": "Другие люди втайне завидуют моему совершенству."
+            },
+            "type": "SCALE"
+          },
+          {
+            "id": "bp_44",
+            "category": "Perfectionism",
+            "subCategory": {
+              "uk": "Визнання переваги",
+              "en": "Superiority Recognition",
+              "ru": "Признание превосходства"
+            },
+            "text": {
+              "uk": "Інші люди визнають мою перевагу над ними.",
+              "en": "Other people recognize my superiority over them.",
+              "ru": "Другие люди признают мое превосходство над ними."
+            },
+            "type": "SCALE"
+          }
+        ]
+      }
+    ]
+  }
+]

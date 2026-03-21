@@ -39,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
 
     const [infoOpen, setInfoOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [adminStats, setAdminStats] = useState<{ online: number, total: number } | null>(null);
     const infoRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown on outside click
@@ -56,6 +57,37 @@ export const Header: React.FC<HeaderProps> = ({
     useEffect(() => {
         setMobileMenuOpen(false);
     }, [pathname]);
+
+    // Admin polling for online stats
+    useEffect(() => {
+        if (!isAdmin || !user) return;
+
+        const fetchStats = async () => {
+            try {
+                const storedAuth = localStorage.getItem('auth_token');
+                if (!storedAuth) return;
+                const auth = JSON.parse(storedAuth);
+                
+                const apiUrl = import.meta.env.VITE_API_URL || '';
+                const res = await fetch(`${apiUrl}/api/admin/online-stats?user_id=${auth.id}&hash=${auth.hash}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setAdminStats(data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch admin stats', err);
+            }
+        };
+
+        fetchStats();
+        const interval = setInterval(fetchStats, 60000); // Poll every minute
+        return () => clearInterval(interval);
+    }, [isAdmin, user]);
 
     const infoLinks = [
         { path: '/about', label: ui.navAbout, icon: Brain },
@@ -162,12 +194,22 @@ export const Header: React.FC<HeaderProps> = ({
 
                         {/* Admin */}
                         {isAdmin && (
-                            <button
-                                onClick={() => onNavigate('USERS')}
-                                className={navBtnClass(pathname === '/users')}
-                            >
-                                {ui.manageProfiles}
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => onNavigate('USERS')}
+                                    className={navBtnClass(pathname === '/users')}
+                                >
+                                    {ui.manageProfiles}
+                                </button>
+                                {adminStats && (
+                                    <div className="flex items-center gap-2 px-2 py-1 bg-brand-sage/10 rounded-full border border-brand-sage/20 animate-pulse">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-brand-sage shadow-[0_0_8px_rgba(132,153,135,0.8)]" />
+                                        <span className="text-[9px] font-bold text-brand-sage uppercase tracking-tighter">
+                                            {adminStats.online} / {adminStats.total}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </nav>
                 </div>

@@ -1,24 +1,38 @@
-import { AVAILABLE_SURVEYS } from '../constants';
 import { SurveyDefinition } from '../types';
 
-// Simulate network latency (in milliseconds) to test loading states
-const SIMULATED_DELAY = 1000;
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const SurveyService = {
-  // Get list of all available surveys (useful for menus or selection screens)
+  // Get list of all available surveys
   getAvailableSurveys: async (): Promise<SurveyDefinition[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(AVAILABLE_SURVEYS), SIMULATED_DELAY);
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/tests`);
+      if (!response.ok) throw new Error('Failed to fetch surveys');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('SurveyService.getAvailableSurveys error:', error);
+      return [];
+    }
   },
 
   // Get full details of a specific survey by its ID
   getSurveyById: async (surveyId: string): Promise<SurveyDefinition | undefined> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const survey = AVAILABLE_SURVEYS.find((s) => s.id === surveyId);
-        resolve(survey);
-      }, SIMULATED_DELAY);
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/tests/${surveyId}`);
+      if (!response.ok) {
+         if (response.status === 404) {
+            console.warn(`Survey ${surveyId} not found, fetching list to fallback...`);
+            const all = await SurveyService.getAvailableSurveys();
+            return all[0];
+         }
+         throw new Error('Failed to fetch survey details');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('SurveyService.getSurveyById error:', error);
+      return undefined;
+    }
   },
 };

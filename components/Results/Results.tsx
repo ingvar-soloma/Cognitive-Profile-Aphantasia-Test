@@ -346,14 +346,16 @@ export const Results: React.FC<ResultsProps> = ({
       const targetSurveyId = surveyId || initialRecommendations?.test_type || 'full_aphantasia_profile';
       
       try {
-        // Step 1: Check if we have recommendations in props - if yes, we're likely in public or admin view
-        const propRec = initialRecommendations[targetSurveyId];
-        if (propRec && propRec.trim().length > 0 && isPublicView) {
-          setGeminiRecs(propRec);
-          return;
+        // Step 1: Check if we are viewing another user's profile (Admin or Public View)
+        if (isPublicView || (isAdmin && targetUser)) {
+          const propRec = initialRecommendations[targetSurveyId];
+          if (propRec && propRec.trim().length > 0) {
+            setGeminiRecs(propRec);
+          }
+          return; // Stop here, do not fetch the current logged-in user's data
         }
 
-        // Step 2: Try to load EXISTING result from backend (this also fetches is_public/nickname settings)
+        // Step 2: Try to load EXISTING result from backend for the logged-in user
         if (user) {
           setIsSaving(true);
           const backendData = await ProfileService.loadResultFromBackend();

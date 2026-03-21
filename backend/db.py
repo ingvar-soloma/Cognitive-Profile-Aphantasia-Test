@@ -47,7 +47,8 @@ async def init_db():
                     referral_count INTEGER DEFAULT 0,
                     referred_by VARCHAR(255),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    last_login TIMESTAMP
+                    last_login TIMESTAMP,
+                    last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
             
@@ -59,6 +60,7 @@ async def init_db():
             await conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_id ON aphantasia_users(public_id)")
             await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS referral_count INTEGER DEFAULT 0")
             await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS referred_by VARCHAR(255)")
+            await conn.execute("ALTER TABLE aphantasia_users ADD COLUMN IF NOT EXISTS last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
 
             # Badges Table
             await conn.execute('''
@@ -101,11 +103,51 @@ async def init_db():
                     share_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                     user_id VARCHAR(255) REFERENCES aphantasia_users(id) ON DELETE CASCADE,
                     test_type VARCHAR(255) NOT NULL,
+                    answers JSONB,
+                    scores JSONB,
+                    recommendations JSONB,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(user_id, test_type)
                 )
             ''')
-            await conn.execute("CREATE INDEX IF NOT EXISTS idx_test_results_user ON test_results(user_id)")
+            # Tests Table
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS tests (
+                    id VARCHAR(255) PRIMARY KEY,
+                    title JSONB NOT NULL,
+                    description JSONB,
+                    metadata JSONB,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
+            # Test Categories
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS test_categories (
+                    id VARCHAR(255) PRIMARY KEY,
+                    test_id VARCHAR(255) REFERENCES tests(id) ON DELETE CASCADE,
+                    title JSONB NOT NULL,
+                    description JSONB,
+                    order_index INTEGER DEFAULT 0
+                )
+            ''')
+
+            # Questions Table
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS questions (
+                    id VARCHAR(255) PRIMARY KEY,
+                    category_id VARCHAR(255) REFERENCES test_categories(id) ON DELETE CASCADE,
+                    text JSONB NOT NULL,
+                    hint JSONB,
+                    placeholder JSONB,
+                    type VARCHAR(50) NOT NULL,
+                    options JSONB,
+                    metadata JSONB,
+                    order_index INTEGER DEFAULT 0
+                )
+            ''')
+            
+            # --- Existing Tables ---
 
             # News Table
             await conn.execute('''
