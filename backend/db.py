@@ -110,6 +110,13 @@ async def init_db():
                     UNIQUE(user_id, test_type)
                 )
             ''')
+            # Add missing test_results columns for existing databases (Production migration)
+            try:
+                await conn.execute("ALTER TABLE test_results ADD COLUMN IF NOT EXISTS answers JSONB")
+                await conn.execute("ALTER TABLE test_results ADD COLUMN IF NOT EXISTS scores JSONB")
+                await conn.execute("ALTER TABLE test_results ADD COLUMN IF NOT EXISTS recommendations JSONB")
+            except Exception as alt_e:
+                logger.warning(f"Could not alter test_results table: {alt_e}")
             # Tests Table
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS tests (
