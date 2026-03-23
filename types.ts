@@ -161,6 +161,7 @@ export interface UIStrings {
   contactTitle: string;
   contactText: string;
   privacyPolicy: string;
+  legalInfo: string;
   dataUsage: string;
   deleteData: string;
   emailTemplateTitle: string;

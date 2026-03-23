@@ -100,9 +100,9 @@ export const Header: React.FC<HeaderProps> = ({
     ];
 
     const mainLinks = [
-        { state: 'INTRO', label: ui.navTests, active: pathname === '/' && !!user || appState === 'SURVEY' },
-        { state: 'DASHBOARD_RESULTS', label: ui.navResults, active: pathname.startsWith('/results') || pathname.startsWith('/history') },
-        { state: 'RECOMMENDATIONS', label: ui.navRecommendations, active: pathname === '/recommendations', soon: true },
+        { path: '/', label: ui.navTests, active: pathname === '/' || appState === 'SURVEY' },
+        { path: '/results', label: ui.navResults, active: pathname.startsWith('/results') || pathname.startsWith('/history') },
+        { path: '/recommendations', label: ui.navRecommendations, active: pathname === '/recommendations', soon: true },
     ];
 
     const infoPathnames = infoLinks.map(l => l.path);
@@ -143,9 +143,9 @@ export const Header: React.FC<HeaderProps> = ({
 
                     <nav className="hidden md:flex ml-4 lg:ml-8 bg-stone-bg/80 p-1 rounded-full border border-stone-line gap-0.5 lg:gap-1">
                         {mainLinks.map(link => (
-                            <button
-                                key={link.state}
-                                onClick={() => onNavigate(link.state)}
+                            <Link
+                                key={link.path}
+                                to={link.path}
                                 className={navBtnClass(link.active)}
                             >
                                 {link.label}
@@ -154,7 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
                                         {ui.soon}
                                     </span>
                                 )}
-                            </button>
+                            </Link>
                         ))}
 
                         {/* Info dropdown */}
@@ -317,9 +317,10 @@ export const Header: React.FC<HeaderProps> = ({
                                 <h3 className="px-3 text-[11px] font-bold text-stone-400 uppercase tracking-[0.2em] mb-3">{ui.navTests}</h3>
                                 <div className="space-y-1">
                                     {mainLinks.map(link => (
-                                        <button
-                                            key={link.state}
-                                            onClick={() => { onNavigate(link.state); setMobileMenuOpen(false); }}
+                                        <Link
+                                            key={link.path}
+                                            to={link.path}
+                                            onClick={() => setMobileMenuOpen(false)}
                                             className={`w-full flex items-center px-4 py-3.5 rounded-xl text-sm font-bold transition-all ${
                                                 link.active ? 'bg-brand-ink/10 text-brand-ink ring-1 ring-brand-ink/20' : 'text-brand-graphite hover:bg-stone-bg'
                                             }`}
@@ -330,7 +331,7 @@ export const Header: React.FC<HeaderProps> = ({
                                                     {ui.soon}
                                                 </span>
                                             )}
-                                        </button>
+                                        </Link>
                                     ))}
                                 </div>
                             </div>

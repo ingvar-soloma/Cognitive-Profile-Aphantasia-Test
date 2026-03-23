@@ -3,6 +3,7 @@ import { Answer, LocalizedCategoryData, Language, SurveyDefinition, LocalizedSca
 import { SurveyService } from './services/SurveyService';
 import { Results } from '@/components/Results/Results';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { Intro } from './components/Home/Intro';
 import { Survey } from './components/Survey/Survey';
 import { ProfileManager } from './components/Home/ProfileManager';
@@ -1141,6 +1142,11 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
+      {/* Persistence / Footer Area */}
+      {appState !== AppState.SURVEY && (
+          <Footer ui={ui} language={language} />
+      )}
 
       <FinishConfirmationModal
         isOpen={showFinishConfirmation}

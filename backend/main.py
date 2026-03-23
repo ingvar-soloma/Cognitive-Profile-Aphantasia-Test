@@ -1457,9 +1457,13 @@ async def catch_all_static(request: Request, full_path: str):
         <meta name="twitter:description" content="{og_desc}" />
     '''
     
-    # Remove existing title if present to avoid duplicates
-    html_content = re.sub(r'<title>.*?</title>', '', html_content)
-    html_content = html_content.replace("<head>", f"<head>{tags}")
+    # Remove existing title and description if present to avoid duplicates
+    html_content = re.sub(r'<title>.*?</title>', '', html_content, flags=re.IGNORECASE)
+    html_content = re.sub(r'<meta\s+name=["\']description["\'].*?>', '', html_content, flags=re.IGNORECASE)
+    
+    # Inject tags into head
+    if re.search(r'<head>', html_content, re.IGNORECASE):
+        html_content = re.sub(r'<head>', f'<head>{tags}', html_content, count=1, flags=re.IGNORECASE)
     
     return HTMLResponse(content=html_content)
 
