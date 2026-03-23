@@ -27,16 +27,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
     useEffect(() => {
         const hero = heroRef.current;
         if (!hero) return;
+        
+        let rafId: number;
         const handleMove = (e: MouseEvent) => {
-            const { clientX, clientY } = e;
-            const { innerWidth, innerHeight } = window;
-            const dx = (clientX / innerWidth - 0.5) * 20;
-            const dy = (clientY / innerHeight - 0.5) * 20;
-            hero.style.setProperty('--hero-dx', `${dx}px`);
-            hero.style.setProperty('--hero-dy', `${dy}px`);
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(() => {
+                const { clientX, clientY } = e;
+                const { innerWidth, innerHeight } = window;
+                const dx = (clientX / innerWidth - 0.5) * 20;
+                const dy = (clientY / innerHeight - 0.5) * 20;
+                hero.style.setProperty('--hero-dx', `${dx}px`);
+                hero.style.setProperty('--hero-dy', `${dy}px`);
+            });
         };
-        window.addEventListener('mousemove', handleMove);
-        return () => window.removeEventListener('mousemove', handleMove);
+        window.addEventListener('mousemove', handleMove, { passive: true });
+        return () => {
+            window.removeEventListener('mousemove', handleMove);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
     }, []);
 
     const features = [

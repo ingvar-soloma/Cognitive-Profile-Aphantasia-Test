@@ -805,22 +805,30 @@ const App: React.FC = () => {
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (currentCategoryIndex < localizedCategories.length - 1) {
-      setCurrentCategoryIndex((prev) => prev + 1);
-    } else {
-      setShowFinishConfirmation(true);
-    }
+    
+    // Wrap state updates in setTimeout to yield to main thread for better INP
+    setTimeout(() => {
+      if (currentCategoryIndex < localizedCategories.length - 1) {
+        setCurrentCategoryIndex((prev) => prev + 1);
+      } else {
+        setShowFinishConfirmation(true);
+      }
+    }, 0);
   };
 
   const finalizeFinish = () => {
     setShowFinishConfirmation(false);
-    if (activeProfileId) {
-      ProfileService.updateProfile(activeProfileId, activeSurveyId, answers, undefined, tone, elapsedSeconds);
-      setProfiles(ProfileService.getProfiles());
-      navigate(`/results/${activeProfileId}`);
-    } else {
-      navigate('/results');
-    }
+    
+    // Yield to let the modal close smoothly before potentially heavy navigation/results rendering
+    setTimeout(() => {
+      if (activeProfileId) {
+        ProfileService.updateProfile(activeProfileId, activeSurveyId, answers, undefined, tone, elapsedSeconds);
+        setProfiles(ProfileService.getProfiles());
+        navigate(`/results/${activeProfileId}`);
+      } else {
+        navigate('/results');
+      }
+    }, 0);
   };
 
   const handleApplyImport = (profileId: string | null, loadedAnswers: Record<string, Answer>) => {

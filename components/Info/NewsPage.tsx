@@ -34,6 +34,26 @@ interface Article {
 /* eslint-disable max-len */
 // Articles are fetched from the database via /api/news
 
+const ArticleSkeleton: React.FC = () => (
+    <div className="bg-brand-paper-accent border border-stone-line rounded-[2rem] p-7 shadow-sm flex flex-col gap-4 animate-pulse-subtle">
+        <div className="flex items-center justify-between gap-3">
+            <div className="h-4 w-20 bg-stone-100 rounded-full"></div>
+            <div className="h-4 w-12 bg-stone-100 rounded-full"></div>
+        </div>
+        <div className="w-full aspect-video mb-2 overflow-hidden rounded-2xl bg-stone-100"></div>
+        <div className="space-y-3">
+            <div className="h-3 w-16 bg-stone-100 rounded"></div>
+            <div className="h-6 w-full bg-stone-100 rounded-lg"></div>
+            <div className="h-6 w-4/5 bg-stone-100 rounded-lg"></div>
+            <div className="h-4 w-full bg-stone-200/50 rounded mt-2"></div>
+            <div className="h-4 w-2/3 bg-stone-200/50 rounded"></div>
+        </div>
+        <div className="mt-auto pt-3 border-t border-stone-line flex items-center gap-1">
+            <div className="h-3 w-20 bg-stone-100 rounded"></div>
+        </div>
+    </div>
+);
+
 const ArticleCard: React.FC<{ article: Article; language: Language; onClick: () => void }> = ({ article, language, onClick }) => {
     const title = language === 'uk' ? article.title_uk : language === 'ru' ? article.title_ru : article.title_en;
     const excerpt = language === 'uk' ? article.excerpt_uk : language === 'ru' ? article.excerpt_ru : article.excerpt_en;
@@ -57,8 +77,8 @@ const ArticleCard: React.FC<{ article: Article; language: Language; onClick: () 
             </div>
 
             {article.imageUrl && (
-                <div className="w-full h-40 -mx-0 -mt-0 mb-2 overflow-hidden rounded-2xl border border-stone-line/50">
-                    <img src={article.imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <div className="w-full aspect-video -mx-0 -mt-0 mb-2 overflow-hidden rounded-2xl border border-stone-line/50 bg-stone-100">
+                    <img src={article.imageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
                 </div>
             )}
 
@@ -222,14 +242,14 @@ export const NewsPage: React.FC<NewsPageProps> = ({ ui, language, userEmail }) =
                     article={activeArticle}
                     language={language}
                     ui={ui}
-                    onBack={() => setActiveArticle(null)}
+                    onBack={() => setTimeout(() => setActiveArticle(null), 0)}
                 />
             </div>
         );
     }
 
     return (
-        <div className="animate-fade-in text-left pb-20">
+        <div className="animate-fade-in text-left pb-20 min-h-[800px]">
             <button
                 onClick={() => navigate(-1)}
                 className="flex items-center gap-2 text-stone-400 hover:text-brand-ink transition-colors mb-8 group"
@@ -283,18 +303,21 @@ export const NewsPage: React.FC<NewsPageProps> = ({ ui, language, userEmail }) =
                 </div>
             )}
 
-            <div className="grid sm:grid-cols-2 gap-6">
+            <div className="grid sm:grid-cols-2 gap-6 min-h-[400px]">
                 {loading ? (
-                    <div className="col-span-full py-20 text-center text-stone-400 font-sans italic">
-                        {language === 'uk' ? 'Завантаження новин...' : language === 'ru' ? 'Загрузка новостей...' : 'Loading news...'}
-                    </div>
+                    <>
+                        <ArticleSkeleton />
+                        <ArticleSkeleton />
+                        <ArticleSkeleton />
+                        <ArticleSkeleton />
+                    </>
                 ) : filteredArticles.length > 0 ? (
                     filteredArticles.map((article) => (
                         <ArticleCard
                             key={article.id}
                             article={article}
                             language={language}
-                            onClick={() => setActiveArticle(article)}
+                            onClick={() => setTimeout(() => setActiveArticle(article), 0)}
                         />
                     ))
                 ) : (
