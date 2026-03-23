@@ -20,14 +20,11 @@ jobs:
             set -e
             cd ${{ secrets.DEPLOY_PATH }}
             
-            # Fix directory ownership if it was cloned by a different user (e.g. root)
-            sudo chown -R $USER:$USER .
-            
-            # Update known_hosts to avoid interactive prompt
+            # Ensure proper SSH setup for pulling from GitHub
             mkdir -p ~/.ssh && chmod 700 ~/.ssh
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
             
-            # Start ssh-agent and try to add all standard keys
+            # Use ssh-agent to handle keys if they exist in the deployer's home
             eval $(ssh-agent -s)
             for key in id_rsa id_ed25519 id_ecdsa; do
               if [ -f ~/.ssh/$key ]; then
@@ -35,9 +32,16 @@ jobs:
               fi
             done
             
-            # Now we can safely pull and build
+            # Check for .env file (critical for docker-compose build/up)
+            if [ ! -f .env ]; then
+              echo "CRITICAL: .env file missing in $PWD. Build may fail or use development defaults."
+            fi
+            
+            # Update source code
             git fetch origin
+            git checkout main
             git pull origin main
             
+            # Build and restart containers using Makefile commands
             make prod-build
             make prod-up

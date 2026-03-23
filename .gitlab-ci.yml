@@ -13,15 +13,11 @@ deploy:
     - ssh $SSH_USER@$SSH_HOST "
         set -e;
         cd $DEPLOY_PATH;
-        # Fix directory ownership if it was cloned by a different user
-        sudo chown -R \$USER:\$USER .;
         
-        # Ensure hosts are known
+        # Ensure proper SSH setup for pulling from GitHub
         mkdir -p ~/.ssh && chmod 700 ~/.ssh;
-        ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts 2>/dev/null;
         ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null;
         
-        # Identity setup
         eval \$(ssh-agent -s);
         for key in id_rsa id_ed25519 id_ecdsa; do
           if [ -f ~/.ssh/\$key ]; then
@@ -29,8 +25,15 @@ deploy:
           fi
         done;
 
+        if [ ! -f .env ]; then
+            echo \"CRITICAL: .env file missing in \$PWD\";
+        fi
+
         git fetch origin;
+        git checkout main;
+        # git reset --hard origin/main; # Optional: force update if there are local changes
         git pull origin main;
+        
         make prod-build;
         make prod-up;
       "
