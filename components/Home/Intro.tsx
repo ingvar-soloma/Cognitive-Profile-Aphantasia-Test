@@ -20,6 +20,7 @@ interface IntroProps {
     hasExistingResults?: boolean;
     backendRecommendations?: Record<string, string>;
     onShowResults?: (surveyId?: string) => void;
+    isAdmin?: boolean;
 }
 
 export const Intro: React.FC<IntroProps> = ({
@@ -35,7 +36,8 @@ export const Intro: React.FC<IntroProps> = ({
     surveyProgress = {},
     hasExistingResults = false,
     backendRecommendations = {},
-    onShowResults
+    onShowResults,
+    isAdmin = false
 }) => {
     const navigate = useNavigate();
     const [showConsent, setShowConsent] = useState(false);
@@ -103,7 +105,8 @@ export const Intro: React.FC<IntroProps> = ({
                         {AVAILABLE_SURVEYS.filter(s => !s.parentId).map(survey => {
                             const isTestSupported = isEnabled(`survey_${survey.id}`);
                             // If flags are still loading, fallback to the hardcoded disabled property; otherwise, use flags.
-                            const isTestDisabled = flagsLoading ? !!survey.disabled : (survey.disabled || !isTestSupported);
+                            // Admins can see and start any test regardless of flags.
+                            const isTestDisabled = isAdmin ? !!survey.disabled : (flagsLoading ? !!survey.disabled : (survey.disabled || !isTestSupported));
                             
                             const progress = surveyProgress[survey.id] || { answered: 0, total: 0, percent: 0 };
                             const isActive = activeSurveyId === survey.id;
