@@ -35,7 +35,7 @@ export const Footer: React.FC<FooterProps> = ({ ui, language }) => {
                                 <BrainCircuit className="w-5 h-5 text-white" />
                             </div>
                             <span className="font-serif text-xl font-bold tracking-tight text-brand-graphite">
-                                NeuroProfile
+                                NP42 NeuroProfile
                             </span>
                         </Link>
                         <p className="text-stone-500 text-sm leading-relaxed mb-8 max-w-sm">
@@ -86,10 +86,10 @@ export const Footer: React.FC<FooterProps> = ({ ui, language }) => {
 
                 <div className="mt-20 pt-8 border-t border-stone-line flex flex-col sm:flex-row justify-between items-center gap-4">
                     <p className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-widest">
-                        &copy; {year} NeuroProfile. Project by Ingvar Soloma.
+                        &copy; {year} NP42 NeuroProfile. Project by Ingvar Soloma.
                     </p>
                     <p className="text-[10px] sm:text-xs text-stone-300 font-medium italic">
-                        Built for those who see beyond.
+                        Built for those who see beyond. Don't Panic.
                     </p>
                 </div>
             </div>

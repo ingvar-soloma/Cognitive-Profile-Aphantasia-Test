@@ -40,7 +40,7 @@ DATA_DIR = os.getenv("DATA_DIR", "/app/data/results")
 # AI_ENABLED_TESTS = {"full_aphantasia_profile", "express_demo"}
 
 # External URL for OG tags and sharing
-BASE_URL = os.getenv("VITE_BASE_URL", "https://cognitiveprofile.ingvarsoloma.dev").rstrip('/')
+BASE_URL = os.getenv("VITE_BASE_URL", "https://np42.dev").rstrip('/')
 
 # Initialize Telegram Bot Singleton
 bot = Bot(token=TELEGRAM_BOT_TOKEN) if TELEGRAM_BOT_TOKEN else None

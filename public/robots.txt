@@ -36,4 +36,4 @@ Disallow: /*?ref=
 Disallow: /*?auth_data=
 
 # Sitemaps
-Sitemap: https://cognitiveprofile.ingvarsoloma.dev/sitemap.xml
+Sitemap: https://np42.dev/sitemap.xml

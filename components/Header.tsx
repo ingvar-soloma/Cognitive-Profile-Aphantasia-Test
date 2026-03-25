@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
                             <BrainCircuit className="w-5 h-5 text-white" />
                         </div>
                         <span className="font-serif text-base sm:text-lg lg:text-xl font-bold tracking-tight text-brand-graphite hidden xs:block">
-                            NeuroProfile
+                            NP42 NeuroProfile
                         </span>
                     </Link>
 
@@ -296,7 +296,7 @@ export const Header: React.FC<HeaderProps> = ({
                                 <div className="bg-brand-ink p-1.5 rounded-lg">
                                     <BrainCircuit className="w-5 h-5 text-white" />
                                 </div>
-                                <span className="font-serif text-lg font-bold text-brand-graphite">NeuroProfile</span>
+                                <span className="font-serif text-lg font-bold text-brand-graphite">NP42 NeuroProfile</span>
                             </div>
                             <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-stone-500 hover:text-brand-clay">
                                 <X className="w-6 h-6" />

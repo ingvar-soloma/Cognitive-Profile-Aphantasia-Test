@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 const SITE_NAME = import.meta.env.VITE_SITE_NAME || 'NeuroProfile';
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://cognitiveprofile.ingvarsoloma.dev';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://np42.dev';
 
 interface SeoProps {
   title?: string;

@@ -4,43 +4,43 @@
   <!-- x-robots: index, follow -->
 
   <url>
-    <loc>https://cognitiveprofile.ingvarsoloma.dev/</loc>
+    <loc>https://np42.dev/</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://cognitiveprofile.ingvarsoloma.dev/how-it-works</loc>
+    <loc>https://np42.dev/how-it-works</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cognitiveprofile.ingvarsoloma.dev/about</loc>
+    <loc>https://np42.dev/about</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cognitiveprofile.ingvarsoloma.dev/faq</loc>
+    <loc>https://np42.dev/faq</loc>
     <lastmod>2026-03-21T18:41:00+04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cognitiveprofile.ingvarsoloma.dev/news</loc>
+    <loc>https://np42.dev/news</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cognitiveprofile.ingvarsoloma.dev/terms</loc>
+    <loc>https://np42.dev/terms</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://cognitiveprofile.ingvarsoloma.dev/privacy</loc>
+    <loc>https://np42.dev/privacy</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
