@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => {
           clientsClaim: true,
         },
         manifest: {
-          name: 'NeuroProfile: Cognitive & Aphantasia Test',
-          short_name: 'NeuroProfile',
+          name: 'NP42 | NeuroProfile',
+          short_name: 'NP42 | NeuroProfile',
           description: 'Evaluate your cognitive profile, sensory imagination, and SDAM.',
           theme_color: '#4f46e5',
           background_color: '#f8fafc',
