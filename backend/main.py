@@ -1355,7 +1355,7 @@ async def assign_badge_to_user(req: UserBadgeAssign, user_id: str, hash: str, co
 # SEO Meta Tag Injection for static pages
 SEO_TRANSLATIONS = {
     "en": {
-        "": {"title": "NeuroProfile: Cognitive & Aphantasia Test", "desc": "Discover your unique mental architecture through our science-based assessment."},
+        "": {"title": "NP42 | NeuroProfile", "desc": "Discover your unique mental architecture through our science-based assessment."},
         "about": {"title": "What is Aphantasia? | NeuroProfile", "desc": "A scientific explanation of the phenomenon of absent imagination and its place in the spectrum of cognitive traits."},
         "faq": {"title": "FAQ | NeuroProfile", "desc": "Answers to the most common questions about the test, results, and cognitive profiles."},
         "how-it-works": {"title": "How it works? | NeuroProfile", "desc": "From taking the test to a personalized cognitive profile — step by step."},
