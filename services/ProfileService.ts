@@ -513,4 +513,32 @@ export class ProfileService {
       this.saveProfiles(profiles);
     }
   }
+
+  static async trackInteraction(promptId: string, action: 'click' | 'copy' | 'navigate', testType: string = 'full_aphantasia_profile') {
+    const authDataString = localStorage.getItem('auth_token');
+    let userId = null;
+    if (authDataString) {
+      try {
+        const authData = JSON.parse(authDataString);
+        userId = (authData.user || authData)?.id;
+      } catch (e) { /* skip */ }
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/api/track-interaction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId ? String(userId) : null,
+          prompt_id: promptId,
+          action,
+          test_type: testType,
+        }),
+      });
+    } catch (e) {
+      console.warn('[ProfileService] Failed to track interaction', e);
+    }
+  }
 }

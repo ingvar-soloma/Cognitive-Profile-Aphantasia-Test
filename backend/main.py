@@ -130,6 +130,16 @@ class ErrorLog(BaseModel):
     userAgent: Optional[str] = None
     timestamp: Optional[str] = None
 
+class InteractionEvent(BaseModel):
+    user_id: Optional[str] = None
+    prompt_id: str
+    action: str  # 'click', 'copy', 'navigate'
+    test_type: Optional[str] = "full_aphantasia_profile"
+
+class EarlyAccessLead(BaseModel):
+    email: str
+    source: Optional[str] = "web"
+
 from auth import router as auth_router
 
 # FastAPI App
@@ -1472,6 +1482,34 @@ async def catch_all_static(request: Request, full_path: str):
         html_content = re.sub(r'<head>', f'<head>{tags}', html_content, count=1, flags=re.IGNORECASE)
     
     return HTMLResponse(content=html_content)
+
+@app.post("/api/track-interaction")
+async def track_interaction(event: InteractionEvent, conn: asyncpg.Connection = Depends(get_db)):
+    """Logs user interaction with a specific prompt (click, copy, or navigation to Gemini)."""
+    try:
+        await conn.execute("""
+            INSERT INTO interaction_logs (user_id, prompt_id, action, test_type)
+            VALUES ($1, $2, $3, $4)
+        """, event.user_id, event.prompt_id, event.action, event.test_type)
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Failed to track interaction: {e}")
+        # We don't want to break the UI if tracking fails
+        return {"status": "ignored"}
+
+@app.post("/api/early-access")
+async def register_early_access(lead: EarlyAccessLead, conn: asyncpg.Connection = Depends(get_db)):
+    """Registers a user's interest for early access to the product."""
+    try:
+        await conn.execute("""
+            INSERT INTO lead_emails (email, source)
+            VALUES ($1, $2)
+            ON CONFLICT (email) DO UPDATE SET created_at = CURRENT_TIMESTAMP
+        """, lead.email, lead.source)
+        return {"status": "success", "message": "Email registered successfully"}
+    except Exception as e:
+        logger.error(f"Failed to register lead: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.delete("/api/user-badges/{target_user_id}/{badge_id}")
 async def remove_badge_from_user(target_user_id: str, badge_id: int, user_id: str, hash: str, conn: asyncpg.Connection = Depends(get_db)):

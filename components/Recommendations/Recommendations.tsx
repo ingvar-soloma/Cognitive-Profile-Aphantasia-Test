@@ -49,13 +49,13 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ ui, isLocked, 
 
     const profileContext = useMemo(() => {
         if (!activeProfile) return { profileInfo: 'Unknown', scoresContext: '', analysisText: '' };
-        
+
         const recs = activeProfile.gemini_recommendations || {};
         let analysisText = '';
-        
+
         const versionsKey = `${FULL_TEST_ID}_versions`;
         const indexKey = `${FULL_TEST_ID}_current_index`;
-        
+
         if (recs[versionsKey] && Array.isArray(recs[versionsKey])) {
             const versions = recs[versionsKey];
             const currentIndex = typeof recs[indexKey] === 'number' ? recs[indexKey] : (versions.length - 1);
@@ -78,7 +78,7 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ ui, isLocked, 
                 }
             }
         }
-        
+
         let type = activeProfile.type;
         if (!type && hasFullProfile) {
             const visualScore = ProfileService.calculateCategoryScore(fullTestAnswers, 'Visual');
@@ -86,9 +86,9 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ ui, isLocked, 
                 type = ProfileService.getProfileType(visualScore);
             }
         }
-        
+
         const profileInfo = ProfileService.getProfileTypeLabel(type, lang) || 'Unknown';
-        
+
         let scoresContext = '';
         if (hasFullProfile) {
             scoresContext = Object.values(fullTestAnswers).map((ans: Answer) => {
@@ -97,7 +97,7 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ ui, isLocked, 
                 return `Q:${qId}: ${val}`;
             }).join(', ');
         }
-        
+
         return { profileInfo, scoresContext, analysisText };
     }, [activeProfile, fullTestAnswers, hasFullProfile, lang]);
 
@@ -422,6 +422,9 @@ ${ctx.analysisText}
             document.execCommand('copy');
             setCopied(true);
             toast.success(ui.promptCopied);
+            if (selectedCategory?.id) {
+                ProfileService.trackInteraction(selectedCategory.id, 'copy', FULL_TEST_ID);
+            }
             setTimeout(() => setCopied(false), 2000);
         } catch (e) {
             console.error('Copy failed', e);
@@ -430,11 +433,14 @@ ${ctx.analysisText}
     };
 
     const handleContinueToGemini = () => {
+        if (selectedCategory?.id) {
+            ProfileService.trackInteraction(selectedCategory.id, 'navigate', FULL_TEST_ID);
+        }
         window.open('https://gemini.google.com/app', '_blank');
     };
 
     return (
-        <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans selection:bg-indigo-500/30 -mx-6 md:-mx-12 -my-24 overflow-x-hidden transition-colors duration-300">
+        <div className="min-h-screen text-foreground p-6 md:p-12 font-sans selection:bg-indigo-500/30 -mx-6 md:-mx-12 -my-24 overflow-x-hidden transition-colors duration-300">
             <div className="max-w-6xl mx-auto mb-20 animate-fade-in pt-24 text-left">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-6">
                     <div>
@@ -508,9 +514,12 @@ ${ctx.analysisText}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ml-6">
                                 {section.cards.map((card) => (
-                                    <div 
+                                    <div
                                         key={card.id}
-                                        onClick={() => setSelectedCategory({ ...card, sectionColor: section.color })}
+                                        onClick={() => {
+                                            setSelectedCategory({ ...card, sectionColor: section.color });
+                                            ProfileService.trackInteraction(card.id, 'click', FULL_TEST_ID);
+                                        }}
                                         className={`group bg-card border-l-4 ${section.color} border-t border-r border-b border-border rounded-[2.5rem] p-8 cursor-pointer transition-all duration-300 hover:bg-muted/50 hover:border-border/50 flex flex-col min-h-[420px] relative text-left shadow-lg hover:shadow-2xl hover:-translate-y-1`}
                                     >
                                         <div className="absolute top-8 right-8">
@@ -581,7 +590,8 @@ ${ctx.analysisText}
                                         const typeLabel = { uk: 'Тип користувача', en: 'User Type', ru: 'Тип пользователя' }[lang];
                                         const scoresLabel = { uk: 'Бали', en: 'Scores', ru: 'Баллы' }[lang];
                                         const full = `${customPrompt}\n\n---\n${analysisLabel}:\n${profileContext.analysisText}\n---\n\n${typeLabel}: ${profileContext.profileInfo}. ${scoresLabel}: ${profileContext.scoresContext}`;
-                                        setSelectedCategory({ title: ui.customPromptTitle, template: () => full, isCustom: true, sectionColor: 'border-indigo-500' });
+                                        setSelectedCategory({ id: 'custom_prompt', title: ui.customPromptTitle, template: () => full, isCustom: true, sectionColor: 'border-indigo-500' });
+                                        ProfileService.trackInteraction('custom_prompt', 'click', FULL_TEST_ID);
                                     }}
                                     className="w-full lg:w-64 py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-xl shadow-2xl hover:bg-indigo-500 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:scale-100 flex items-center justify-center gap-4 group/btn"
                                 >
@@ -598,13 +608,13 @@ ${ctx.analysisText}
             {/* Modal Window */}
             {selectedCategory && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-2xl animate-in fade-in duration-500">
-                    <div 
+                    <div
                         className="absolute inset-0"
                         onClick={() => setSelectedCategory(null)}
                     />
-                    
+
                     <div className={`relative bg-card w-full max-w-3xl rounded-[40px] border-t-8 ${selectedCategory.sectionColor || 'border-indigo-600'} border-l border-r border-b border-border overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] dark:shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300`}>
-                        <button 
+                        <button
                             onClick={() => setSelectedCategory(null)}
                             className="absolute top-10 right-10 w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all hover:rotate-90 hover:bg-muted/50"
                         >
@@ -637,22 +647,20 @@ ${ctx.analysisText}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <button
                                     onClick={() => handleCopy(selectedCategory.template())}
-                                    className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all shadow-2xl ${
-                                        copied 
-                                        ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/30' 
-                                        : 'bg-foreground text-background hover:opacity-90 hover:scale-[1.02] active:scale-95'
-                                    }`}
+                                    className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all shadow-2xl ${copied
+                                            ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/30'
+                                            : 'bg-foreground text-background hover:opacity-90 hover:scale-[1.02] active:scale-95'
+                                        }`}
                                 >
                                     {copied ? <><Zap className="w-6 h-6 animate-pulse" /> {ui.copied}</> : <><Copy className="w-6 h-6" /> {ui.copyToClipboard}</>}
                                 </button>
-                                
+
                                 <button
                                     onClick={handleContinueToGemini}
-                                    className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all border-2 border-border ${
-                                        copied 
-                                        ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-500 hover:scale-[1.02] active:scale-95 shadow-lg' 
-                                        : 'bg-transparent text-muted-foreground cursor-not-allowed opacity-50'
-                                    }`}
+                                    className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all border-2 border-border ${copied
+                                            ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-500 hover:scale-[1.02] active:scale-95 shadow-lg'
+                                            : 'bg-transparent text-muted-foreground cursor-not-allowed opacity-50'
+                                        }`}
                                     disabled={!copied}
                                 >
                                     <ExternalLink className="w-6 h-6" /> {ui.continueToGemini}

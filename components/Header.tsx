@@ -90,6 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
     }, [isAdmin, user]);
 
     const infoLinks = [
+        { path: '/early-access', label: ui.navEarlyAccess, icon: Sparkles },
         { path: '/about', label: ui.navAbout, icon: Brain },
         { path: '/how-it-works', label: ui.navHowItWorks, icon: Zap },
         { path: '/blog', label: ui.navBlog, icon: BookOpen, soon: true },

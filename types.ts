@@ -400,6 +400,14 @@ export interface UIStrings {
   interpersonalDesc: string;
   newLabel: string;
   resultsToRecommendations: string;
+  navEarlyAccess: string;
+  earlyAccessTitle: string;
+  earlyAccessSubtitle: string;
+  earlyAccessConcept: string;
+  earlyAccessCta: string;
+  earlyAccessSuccess: string;
+  tryExpressFree: string;
+  expressDiagnosticsCta: string;
 }
 
 export enum ProfileType {

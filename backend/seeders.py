@@ -215,6 +215,35 @@ async def seed_news(conn: asyncpg.Connection):
                 'Также мы активно работаем над разделом «Рекомендации». Это не просто тексты, а интерактивные упражнения, разработанные совместно с психологами и нейробиологами, которые помогут людям с разными типами воображения лучше адаптироваться в быту и работе.',
                 'Одним из ключевых вызовов является улучшение точности AI-анализа. Мы тестируем новые версии Gemini, чтобы предоставить пользователям еще более релевантные инсайты на основе их уникальной сенсорной подписи.'
             ]
+        ),
+        (
+            'ai-recommendations', date(2026, 4, 10), 'AI',
+            'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-emerald-800/30',
+            5,
+            'Як працюють персоналізовані AI-рекомендації в NeuroProfile',
+            'How Personalized AI Recommendations Work in NeuroProfile',
+            'Как работают персонализированные AI-рекомендации в NeuroProfile',
+            'Ми запускаємо новий розділ рекомендацій, що використовує ваш унікальний когнітивний профіль для створення адаптивних стратегій.',
+            'We are launching a new recommendations section that uses your unique cognitive profile to create adaptive strategies.',
+            'Мы запускаем новый раздел рекомендаций, использующий ваш уникальный когнитивный профиль для создания адаптивных стратегий.',
+            [
+                'Рекомендації в NeuroProfile — це не просто статичні поради. Це результат глибокого аналізу ваших когнітивних особливостей через призму сучасної нейропсихології та можливостей Gemini 1.5 Flash.',
+                'Як це працює: ми беремо ваші бали за шістьма типами сенсорної уяви (візуальна, слухова, просторова тощо) та ваші текстові коментарі до тестів. AI аналізує не лише те, що ви бачите (або не бачите), а й те, як ви описуєте свої внутрішні процеси.',
+                'Ви отримуєте набір "Architecture-specific" промптів, які можна використовувати в Gemini, ChatGPT або Claude. Замість того, щоб давати AI загальні завдання, ці промпти явно вказують AI: "Я маю афантазію, тому описуй об\'єкти через функціональні зв\'язки та логічні структури, а не візуальні прикметники".',
+                'Для тих, хто хоче спробувати систему безкоштовно та швидше, ми рекомендуємо Express Diagnostics. Вона дає базове розуміння вашого профілю за лічені хвилини та відкриває доступ до перших персоналізованих інсайтів.'
+            ],
+            [
+                'Recommendations in NeuroProfile are not just static advice. They are the result of a deep analysis of your cognitive features through the lens of modern neuropsychology and the capabilities of Gemini 1.5 Flash.',
+                'How it works: we take your scores across six types of sensory imagination (visual, auditory, spatial, etc.) and your text comments from the tests. The AI analyzes not only what you see (or don\'t see) but also how you describe your internal processes.',
+                'You receive a set of "Architecture-specific" prompts that can be used in Gemini, ChatGPT, or Claude. Instead of giving the AI general tasks, these prompts explicitly tell the AI: "I have aphantasia, so describe objects through functional connections and logical structures, rather than visual adjectives."',
+                'For those who want to try the system for free and faster, we recommend Express Diagnostics. It gives a basic understanding of your profile in minutes and grants access to the first personalized insights.'
+            ],
+            [
+                'Рекомендации в NeuroProfile — это не просто статические советы. Это результат глубокого анализа ваших когнитивных особенностей через призму современной нейропсихологии и возможностей Gemini 1.5 Flash.',
+                'Как это работает: мы берем ваши баллы по шести типам сенсорного воображения (визуальное, слуховое, пространственное и т.д.) и ваши текстовые комментарии к тестам. AI анализирует не только то, что вы видите (или не видите), но и то, как вы описываете свои внутренние процессы.',
+                'Вы получаете набор "Architecture-specific" промптов, которые можно использовать в Gemini, ChatGPT или Claude. Вместо того, чтобы давать AI общие задачи, эти промпты явно указывают AI: "У меня афантазия, поэтому описывай объекты через функциональные связи и логические структуры, а не визуальные прилагательные".',
+                'Для тех, кто хочет попробовать систему бесплатно и быстрее, мы рекомендуем Express Diagnostics. Она дает базовое понимание вашего профиля в считанные минуты и открывает доступ к первым персонализированным инсайтам.'
+            ]
         )
     ]
     

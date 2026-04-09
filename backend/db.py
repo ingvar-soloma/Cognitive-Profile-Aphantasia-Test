@@ -194,6 +194,27 @@ async def init_db():
                 )
             ''')
 
+            # Interaction Logs Table
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS interaction_logs (
+                    id SERIAL PRIMARY KEY,
+                    user_id VARCHAR(255),
+                    prompt_id VARCHAR(255) NOT NULL,
+                    action VARCHAR(50) NOT NULL,
+                    test_type VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
+            # Early Access Leads Table
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS lead_emails (
+                    email VARCHAR(255) PRIMARY KEY,
+                    source VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
             logger.info("Async PostgreSQL Database initialized correctly")
             await seed_badges(conn)
             await seed_feature_flags(conn)
