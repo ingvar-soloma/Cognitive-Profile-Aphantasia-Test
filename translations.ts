@@ -320,6 +320,8 @@ export const UI_TRANSLATIONS: Record<Language, UIStrings> = {
     musicMastery: "Музика та Інструменти",
     musicMasteryDesc: "AI-стратегії навчання гри на основі вашої нейробіології",
     aiPromptLabel: "Налаштований промпт для ШІ:",
+    conflictTriggers: "Конфлікти та Сліпі Зони",
+    conflictTriggersDesc: "Аналіз ваших тригерів та межі ефективності самодопомоги",
   },
   en: {
     title: "NP42",
@@ -640,6 +642,8 @@ export const UI_TRANSLATIONS: Record<Language, UIStrings> = {
     musicMastery: "Music Mastery",
     musicMasteryDesc: "AI learning strategies based on your neurobiology",
     aiPromptLabel: "Configured AI prompt:",
+    conflictTriggers: "Conflicts and Blind Spots",
+    conflictTriggersDesc: "Analysis of your triggers and the boundaries of self-help efficiency",
   },
   ru: {
     title: "Оценка Когнитивного Профиля",
@@ -960,6 +964,7 @@ export const UI_TRANSLATIONS: Record<Language, UIStrings> = {
     musicMastery: "Музыка и Инструменты",
     musicMasteryDesc: "AI-стратегии обучения игре на основе вашей нейробиологии",
     aiPromptLabel: "Настроенный промпт для ИИ:",
+    conflictTriggers: "Конфликты и Слепые Зоны",
+    conflictTriggersDesc: "Анализ ваших триггеров и границы эффективности самопомощи",
   }
-
 };

@@ -180,7 +180,19 @@ ${ctx.analysisText}
 ${ctx.analysisText}
 ---
 
-Які можливі точки тертя або непорозуміння можуть виникати з іншими людьми? Що вони можуть не розуміти в моїй манері розмови, і що я можу пропускати у їхній? Як мені краще адаптувати свою комунікацію?`
+Які можливі точки тертя або непорозуміння можуть виникати з іншими людьми? Що вони можуть не розуміти в моїй манері розмови, і що я можу пропускати у їхній? Як мені краще адаптувати свою комунікацію?`,
+                conflictTriggers: `Проаналізуй мої когнітивні "сліпі зони" у стресових та конфліктних ситуаціях на основі мого профілю.
+ 
+ ---
+ КОГНІТИВНИЙ АНАЛІЗ:
+ ${ctx.analysisText}
+ ---
+ 
+ Мій тип: ${ctx.profileInfo}.
+ Виконай наступні дії:
+ 1. Опиши 2-3 типові сценарії конфліктів, у які я можу потрапляти через мій спосіб обробки інформації (наприклад, через брак емоційної візуалізації або надмірну структурність).
+ 2. Поясни, чому я можу не помічати своїх помилок у цих ситуаціях (мої "сліпі зони").
+ 3. Сформуй чіткий висновок про те, де закінчується ефективність самоаналізу і чому для вирішення цих глибинних патернів необхідна робота з живим фахівцем (психологом/терапевтом). Напиши це прямо і без ілюзій.`
             },
             en: {
                 resume: `Provide recommendations for creating or editing my resume based on my cognitive analysis. 
@@ -258,7 +270,19 @@ COGNITIVE ANALYSIS:
 ${ctx.analysisText}
 ---
 
-My type: ${ctx.profileInfo}. How does my brain process auditory and spatial information? Suggest specific methods for memorizing notes, chords, or rhythms, bypassing my weak points (e.g., visualization) and leveraging my strengths (muscle memory, mathematical patterns, auditory associations).`
+My type: ${ctx.profileInfo}. How does my brain process auditory and spatial information? Suggest specific methods for memorizing notes, chords, or rhythms, bypassing my weak points (e.g., visualization) and leveraging my strengths (muscle memory, mathematical patterns, auditory associations).`,
+                conflictTriggers: `Analyze my cognitive "blind spots" in stressful and conflict situations based on my profile.
+ 
+ ---
+ COGNITIVE ANALYSIS:
+ ${ctx.analysisText}
+ ---
+ 
+ My type: ${ctx.profileInfo}.
+ Perform the following:
+ 1. Describe 2-3 typical conflict scenarios I might fall into due to my information processing style (e.g., lack of emotional visualization or excessive structurality).
+ 2. Explain why I might not notice my mistakes in these situations (my "blind spots").
+ 3. Formulate a clear conclusion about where the effectiveness of self-analysis ends and why working with a live specialist (psychologist/therapist) is necessary to resolve these deep patterns. Write this directly and without illusions.`
             },
             ru: {
                 resume: `Предоставь рекомендации по созданию или редактированию моего резюме на основе моего когнитивного анализа. 
@@ -336,7 +360,19 @@ ${ctx.analysisText}
 ${ctx.analysisText}
 ---
 
-Мой тип: ${ctx.profileInfo}. Как мой мозг обрабатывает звуковую и пространственную информацию? Предложи конкретные методики запоминания нот, аккордов или ритмов, обходя мои слабые стороны (например, визуализацию) и опираясь на сильные (мышечная память, математические паттерны, аудиальные ассоциации).`
+Мой тип: ${ctx.profileInfo}. Как мой мозг обрабатывает звуковую и пространственную информацию? Предложи конкретные методики запоминания нот, аккордов или ритмов, обходя мои слабые стороны (например, визуализацию) и опираясь на сильные (мышечная память, математические паттерны, аудиальные ассоциации).`,
+                conflictTriggers: `Проанализируй мои когнитивные "слепые зоны" в стрессовых и конфликтных ситуациях на основе моего профиля.
+ 
+ ---
+ КОГНИТИВНЫЙ АНАЛИЗ:
+ ${ctx.analysisText}
+ ---
+ 
+ Мой тип: ${ctx.profileInfo}.
+ Выполни следующие действия:
+ 1. Опиши 2-3 типичных сценария конфликтов, в которые я могу попадать из-за моего способа обработки информации (например, из-за нехватки эмоциональной визуализации или избыточной структурности).
+ 2. Объясни, почему я могу не замечать своих ошибок в этих ситуациях (мои "слепые зоны").
+ 3. Сформулируй четкий вывод о том, где заканчивается эффективность самоанализа и почему для решения этих глубинных паттернов необходима работа с живым специалистом (психологом/терапевтом). Напиши это прямо и без иллюзий.`
             }
         };
 
@@ -439,6 +475,20 @@ ${ctx.analysisText}
                     title: ui.interpersonal,
                     icon: Users,
                     template: () => templates.relationships
+                },
+                {
+                    id: 'conflict-triggers',
+                    title: ui.conflictTriggers,
+                    icon: AlertCircle,
+                    template: () => templates.conflictTriggers,
+                    cta: {
+                        text: {
+                            uk: "ШІ бачить проблему, людина її вирішує. Підібрати фахівця для роботи з вашим профілем.",
+                            en: "AI sees the problem, a person solves it. Find a specialist to work with your profile.",
+                            ru: "ИИ видит проблему, человек ее решает. Подобрать специалиста для работы с вашим профилем."
+                        }[lang],
+                        link: "https://forms.gle/neuroprofile_psychologist_request" // Placeholder
+                    }
                 }
             ]
         }
@@ -675,7 +725,7 @@ ${ctx.analysisText}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className={`grid grid-cols-1 ${selectedCategory.cta ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-6`}>
                                 <button
                                     onClick={() => handleCopy(selectedCategory.template())}
                                     className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all shadow-2xl ${copied
@@ -696,6 +746,16 @@ ${ctx.analysisText}
                                 >
                                     <ExternalLink className="w-6 h-6" /> {ui.continueToGemini}
                                 </button>
+
+                                {selectedCategory.cta && (
+                                    <button
+                                        onClick={() => window.open(selectedCategory.cta.link, '_blank')}
+                                        className="flex items-center justify-center gap-4 py-6 bg-pink-600 hover:bg-pink-500 text-white rounded-[2rem] font-black text-lg transition-all shadow-2xl hover:scale-[1.02] active:scale-95 border-2 border-transparent"
+                                    >
+                                        <Users className="w-6 h-6" />
+                                        <span className="text-sm leading-tight px-4">{selectedCategory.cta.text}</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

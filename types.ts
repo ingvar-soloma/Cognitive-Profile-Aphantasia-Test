@@ -411,6 +411,8 @@ export interface UIStrings {
   musicMastery: string;
   musicMasteryDesc: string;
   aiPromptLabel: string;
+  conflictTriggers: string;
+  conflictTriggersDesc: string;
 }
 
 export enum ProfileType {
