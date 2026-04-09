@@ -408,6 +408,9 @@ export interface UIStrings {
   earlyAccessSuccess: string;
   tryExpressFree: string;
   expressDiagnosticsCta: string;
+  musicMastery: string;
+  musicMasteryDesc: string;
+  aiPromptLabel: string;
 }
 
 export enum ProfileType {

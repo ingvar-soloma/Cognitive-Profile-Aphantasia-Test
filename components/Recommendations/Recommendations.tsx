@@ -16,7 +16,8 @@ import {
     AlertCircle,
     Users,
     Activity,
-    Cpu
+    Cpu,
+    Music
 } from 'lucide-react';
 import { UIStrings, Profile, Language, Answer } from '@/types';
 import toast from 'react-hot-toast';
@@ -148,6 +149,14 @@ ${ctx.analysisText}
 КОГНІТИВНИЙ АНАЛІЗ:
 ${ctx.analysisText}
 ---`,
+                music: `Надай рекомендації щодо освоєння музичного інструменту або створення музики на основі мого когнітивного профілю.
+
+---
+КОГНІТИВНИЙ АНАЛІЗ:
+${ctx.analysisText}
+---
+
+Мій тип: ${ctx.profileInfo}. Як мій мозок обробляє звукову та просторову інформацію? Запропонуй конкретні методики запам'ятовування нот, акордів або ритмів, оминаючи мої слабкі сторони (наприклад, візуалізацію) та спираючись на сильні (м'язова пам'ять, математичні патерни, аудіальні асоціації).`,
                 audit: `Проведи когнітивний аудит мого процесу прийняття рішень на основі мого профілю.
 
 ---
@@ -241,7 +250,15 @@ COGNITIVE ANALYSIS:
 ${ctx.analysisText}
 ---
 
-What are the potential friction points or misunderstandings that might arise with others? What might they not understand about my way of talking, and what might I miss in theirs? How can I better adapt my communication?`
+What are the potential friction points or misunderstandings that might arise with others? What might they not understand about my way of talking, and what might I miss in theirs? How can I better adapt my communication?`,
+                music: `Provide recommendations for mastering a musical instrument or creating music based on my cognitive profile.
+
+---
+COGNITIVE ANALYSIS:
+${ctx.analysisText}
+---
+
+My type: ${ctx.profileInfo}. How does my brain process auditory and spatial information? Suggest specific methods for memorizing notes, chords, or rhythms, bypassing my weak points (e.g., visualization) and leveraging my strengths (muscle memory, mathematical patterns, auditory associations).`
             },
             ru: {
                 resume: `Предоставь рекомендации по созданию или редактированию моего резюме на основе моего когнитивного анализа. 
@@ -305,13 +322,21 @@ ${ctx.analysisText}
 
 Мой профиль: ${ctx.profileInfo}. Давай начнем брейншторм!`,
                 relationships: `Проанализируй динамику моего общения с другими людьми на основе моего когнитивного типа (${ctx.profileInfo}).
+ 
+ ---
+ КОГНИТИВНЫЙ АНАЛИЗ:
+ ${ctx.analysisText}
+ ---
+ 
+ Какие возможные точки трения или недопонимания могут возникать с другими людьми? Что они могут не понимать в моей манере общения, и что я могу упускать в их? Как мне лучше адаптировать свою коммуникацию?`,
+                music: `Предоставь рекомендации по освоению музыкального инструмента или созданию музыки на основе моего когнитивного профиля.
 
 ---
 КОГНИТИВНЫЙ АНАЛИЗ:
 ${ctx.analysisText}
 ---
 
-Какие возможные точки трения или недопонимания могут возникать с другими людьми? Что они могут не понимать в моей манере общения, и что я могу упускать в их? Как мне лучше адаптировать свою коммуникацию?`
+Мой тип: ${ctx.profileInfo}. Как мой мозг обрабатывает звуковую и пространственную информацию? Предложи конкретные методики запоминания нот, аккордов или ритмов, обходя мои слабые стороны (например, визуализацию) и опираясь на сильные (мышечная память, математические паттерны, аудиальные ассоциации).`
             }
         };
 
@@ -393,6 +418,12 @@ ${ctx.analysisText}
                     title: ui.brainstormPartner,
                     icon: Activity,
                     template: () => templates.brainstorm
+                },
+                {
+                    id: 'music',
+                    title: ui.musicMastery,
+                    icon: Music,
+                    template: () => templates.music
                 }
             ]
         },
@@ -636,7 +667,7 @@ ${ctx.analysisText}
                                 <div className="flex items-center justify-between mb-6">
                                     <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-black flex items-center gap-2">
                                         <Terminal className="w-4 h-4 opacity-30" />
-                                        Налаштований промпт для ШІ:
+                                        {ui.aiPromptLabel}
                                     </p>
                                 </div>
                                 <div className="bg-background border border-border rounded-3xl p-8 font-mono text-sm md:text-base text-foreground/80 leading-relaxed max-h-[350px] overflow-y-auto shadow-inner custom-scrollbar whitespace-pre-line ring-1 ring-border/5">

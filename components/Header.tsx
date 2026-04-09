@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BrainCircuit, Moon, Sun, ChevronDown, BookOpen, HelpCircle, FileText, Zap, Newspaper, Brain, Menu, X, Globe } from 'lucide-react';
+import { BrainCircuit, Moon, Sun, ChevronDown, BookOpen, HelpCircle, FileText, Zap, Newspaper, Brain, Menu, X, Globe, Sparkles } from 'lucide-react';
 import { Language, UIStrings } from '@/types';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
