@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
       react(),
       // viteSingleFile(), // Single file is usually incompatible with PWA service workers
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
