@@ -434,18 +434,18 @@ ${ctx.analysisText}
     };
 
     return (
-        <div className="min-h-screen bg-[#0D0D0D] text-white p-6 md:p-12 font-sans selection:bg-indigo-500/30 -mx-6 md:-mx-12 -my-24 overflow-x-hidden">
+        <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans selection:bg-indigo-500/30 -mx-6 md:-mx-12 -my-24 overflow-x-hidden transition-colors duration-300">
             <div className="max-w-6xl mx-auto mb-20 animate-fade-in pt-24 text-left">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-6">
                     <div>
                         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
                             {ui.jumpToGemini}
                         </h1>
-                        <p className="text-gray-400 max-w-2xl leading-relaxed text-sm md:text-lg">
+                        <p className="text-muted-foreground max-w-2xl leading-relaxed text-sm md:text-lg">
                             {ui.jumpToGeminiDesc.split('.')[0]}. {ui.jumpToGeminiDesc.split('.')[1] || ''}
                         </p>
                     </div>
-                    <div className="bg-[#1A1A1A] border border-white/10 px-6 py-3 rounded-full flex items-center gap-4 shadow-xl">
+                    <div className="bg-card border border-border px-6 py-3 rounded-full flex items-center gap-4 shadow-xl">
                         <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-bold text-white">₿</div>
                         <span className="text-base font-bold tracking-tight">{user?.credits ?? 0} {ui.credits}</span>
                     </div>
@@ -460,7 +460,7 @@ ${ctx.analysisText}
                             </div>
                             <div>
                                 <h4 className="text-2xl font-bold mb-2">{ui.recommendationsCTATitle}</h4>
-                                <p className="text-gray-400 text-sm md:text-base max-w-xl">{ui.recommendationsCTADesc}</p>
+                                <p className="text-muted-foreground text-sm md:text-base max-w-xl">{ui.recommendationsCTADesc}</p>
                             </div>
                         </div>
                         <button
@@ -474,16 +474,16 @@ ${ctx.analysisText}
             </div>
 
             {isLocked ? (
-                <div className="max-w-6xl mx-auto bg-[#1A1A1A] border border-white/5 border-dashed rounded-[40px] p-24 text-center shadow-2xl relative overflow-hidden">
+                <div className="max-w-6xl mx-auto bg-card border border-border border-dashed rounded-[40px] p-24 text-center shadow-2xl relative overflow-hidden">
                     <div className="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none" />
                     <div className="relative z-10 max-w-md mx-auto">
-                        <div className="w-20 h-20 bg-[#262626] border border-white/10 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-500 shadow-inner">
+                        <div className="w-20 h-20 bg-muted border border-border rounded-full flex items-center justify-center mx-auto mb-8 text-muted-foreground shadow-inner">
                             <Lock className="w-8 h-8" />
                         </div>
                         <h3 className="text-3xl md:text-4xl font-bold mb-6">
                             {ui.recommendationsLocked}
                         </h3>
-                        <p className="text-gray-400 leading-relaxed text-lg">
+                        <p className="text-muted-foreground leading-relaxed text-lg">
                             {ui.recommendationsLockedDesc}
                         </p>
                         <button
@@ -503,7 +503,7 @@ ${ctx.analysisText}
                                     <span className={`w-2 h-8 rounded-full ${section.color.replace('border-', 'bg-')}`} />
                                     {section.title}
                                 </h2>
-                                <p className="text-gray-500 text-lg ml-6">{section.subline}</p>
+                                <p className="text-muted-foreground text-lg ml-6">{section.subline}</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ml-6">
@@ -511,7 +511,7 @@ ${ctx.analysisText}
                                     <div 
                                         key={card.id}
                                         onClick={() => setSelectedCategory({ ...card, sectionColor: section.color })}
-                                        className={`group bg-[#1A1A1A] border-l-4 ${section.color} border-t border-r border-b border-white/5 rounded-[2.5rem] p-8 cursor-pointer transition-all duration-300 hover:bg-[#1f1f1f] hover:border-white/10 flex flex-col min-h-[420px] relative text-left shadow-lg hover:shadow-2xl hover:-translate-y-1`}
+                                        className={`group bg-card border-l-4 ${section.color} border-t border-r border-b border-border rounded-[2.5rem] p-8 cursor-pointer transition-all duration-300 hover:bg-muted/50 hover:border-border/50 flex flex-col min-h-[420px] relative text-left shadow-lg hover:shadow-2xl hover:-translate-y-1`}
                                     >
                                         <div className="absolute top-8 right-8">
                                             <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-bold uppercase tracking-widest border border-amber-500/20">
@@ -520,16 +520,16 @@ ${ctx.analysisText}
                                         </div>
 
                                         <div className="flex-1">
-                                            <div className={`w-14 h-14 bg-[#262626] rounded-2xl flex items-center justify-center mb-8 border border-white/5 group-hover:scale-110 transition-transform duration-500 ${section.iconColor}`}>
+                                            <div className={`w-14 h-14 bg-muted rounded-2xl flex items-center justify-center mb-8 border border-border group-hover:scale-110 transition-transform duration-500 ${section.iconColor}`}>
                                                 <card.icon className="w-7 h-7" />
                                             </div>
 
-                                            <h3 className="text-2xl font-bold mb-4 leading-tight group-hover:text-white transition-colors">
+                                            <h3 className="text-2xl font-bold mb-4 leading-tight group-hover:text-foreground transition-colors">
                                                 {card.title}
                                             </h3>
 
-                                            <div className="relative bg-[#0D0D0D] border border-white/5 rounded-2xl p-5 group-hover:border-white/10 transition-colors h-[120px] overflow-hidden">
-                                                <p className="text-gray-500 text-xs font-mono leading-relaxed line-clamp-4">
+                                            <div className="relative bg-background border border-border rounded-2xl p-5 group-hover:border-border/50 transition-colors h-[120px] overflow-hidden">
+                                                <p className="text-muted-foreground text-xs font-mono leading-relaxed line-clamp-4">
                                                     {card.template()}
                                                 </p>
                                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] to-transparent opacity-40" />
@@ -539,11 +539,11 @@ ${ctx.analysisText}
                                             </div>
                                         </div>
 
-                                        <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+                                        <div className="mt-8 pt-6 border-t border-border flex items-center justify-between">
                                             <span className="text-[10px] font-bold tracking-widest uppercase opacity-30 group-hover:opacity-60 transition-opacity">
                                                 {ui.readyToUse}
                                             </span>
-                                            <div className={`w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-[#262626] group-hover:bg-white group-hover:text-black transition-all shadow-lg`}>
+                                            <div className={`w-10 h-10 rounded-full border border-border flex items-center justify-center bg-muted group-hover:bg-foreground group-hover:text-background transition-all shadow-lg`}>
                                                 <ArrowRight className="w-5 h-5" />
                                             </div>
                                         </div>
@@ -554,7 +554,7 @@ ${ctx.analysisText}
                     ))}
 
                     {/* Custom Prompt Block */}
-                    <div className="bg-[#1A1A1A] border border-white/5 rounded-[40px] p-10 md:p-16 shadow-2xl relative overflow-hidden group text-left border-t-indigo-500/30">
+                    <div className="bg-card border border-border rounded-[40px] p-10 md:p-16 shadow-2xl relative overflow-hidden group text-left border-t-indigo-500/30">
                         <div className="relative z-10 flex flex-col lg:flex-row gap-12 items-start">
                             <div className="flex-1 space-y-6 w-full">
                                 <h3 className="text-3xl md:text-5xl font-black tracking-tight flex items-center gap-4">
@@ -566,7 +566,7 @@ ${ctx.analysisText}
                                         value={customPrompt}
                                         onChange={(e) => setCustomPrompt(e.target.value)}
                                         placeholder={ui.customPromptPlaceholder}
-                                        className="w-full bg-[#0D0D0D] border border-white/10 rounded-[2rem] p-8 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none min-h-[180px] text-lg text-white transition-all placeholder-gray-700 shadow-inner"
+                                        className="w-full bg-background border border-border rounded-[2rem] p-8 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none min-h-[180px] text-lg text-foreground transition-all placeholder-muted-foreground/50 shadow-inner"
                                     />
                                     <div className="absolute bottom-6 right-6 text-[10px] text-indigo-400 font-bold uppercase tracking-widest px-4 py-2 bg-indigo-500/10 rounded-full border border-indigo-500/20 backdrop-blur-md">
                                         + profile context
@@ -597,39 +597,39 @@ ${ctx.analysisText}
 
             {/* Modal Window */}
             {selectedCategory && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0D0D0D]/95 backdrop-blur-2xl animate-in fade-in duration-500">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/95 backdrop-blur-2xl animate-in fade-in duration-500">
                     <div 
                         className="absolute inset-0"
                         onClick={() => setSelectedCategory(null)}
                     />
                     
-                    <div className={`relative bg-[#1A1A1A] w-full max-w-3xl rounded-[40px] border-t-8 ${selectedCategory.sectionColor || 'border-indigo-600'} border-l border-r border-b border-white/10 overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300`}>
+                    <div className={`relative bg-card w-full max-w-3xl rounded-[40px] border-t-8 ${selectedCategory.sectionColor || 'border-indigo-600'} border-l border-r border-b border-border overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] dark:shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300`}>
                         <button 
                             onClick={() => setSelectedCategory(null)}
-                            className="absolute top-10 right-10 w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-gray-500 hover:text-white transition-all hover:rotate-90 hover:bg-white/10"
+                            className="absolute top-10 right-10 w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-all hover:rotate-90 hover:bg-muted/50"
                         >
                             <X className="w-6 h-6" />
                         </button>
 
                         <div className="p-10 md:p-16 text-left">
                             <div className="flex items-center gap-6 mb-10">
-                                <div className={`w-16 h-16 bg-[#262626] rounded-3xl flex items-center justify-center border border-white/5 shadow-inner`}>
+                                <div className={`w-16 h-16 bg-muted rounded-3xl flex items-center justify-center border border-border shadow-inner`}>
                                     {selectedCategory.icon ? <selectedCategory.icon className="w-8 h-8 text-indigo-400" /> : <Zap className="w-8 h-8 text-indigo-500" />}
                                 </div>
                                 <div>
                                     <h2 className="text-3xl md:text-4xl font-black tracking-tight">{selectedCategory.title}</h2>
-                                    <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-1">{ui.freeInBeta}</p>
+                                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1">{ui.freeInBeta}</p>
                                 </div>
                             </div>
 
                             <div className="mb-12">
                                 <div className="flex items-center justify-between mb-6">
-                                    <p className="text-[11px] text-gray-500 uppercase tracking-widest font-black flex items-center gap-2">
+                                    <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-black flex items-center gap-2">
                                         <Terminal className="w-4 h-4 opacity-30" />
                                         Налаштований промпт для ШІ:
                                     </p>
                                 </div>
-                                <div className="bg-[#0D0D0D] border border-white/10 rounded-3xl p-8 font-mono text-sm md:text-base text-indigo-100/60 leading-relaxed max-h-[350px] overflow-y-auto shadow-inner custom-scrollbar whitespace-pre-line ring-1 ring-white/5">
+                                <div className="bg-background border border-border rounded-3xl p-8 font-mono text-sm md:text-base text-foreground/80 leading-relaxed max-h-[350px] overflow-y-auto shadow-inner custom-scrollbar whitespace-pre-line ring-1 ring-border/5">
                                     {selectedCategory.template()}
                                 </div>
                             </div>
@@ -640,7 +640,7 @@ ${ctx.analysisText}
                                     className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all shadow-2xl ${
                                         copied 
                                         ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/30' 
-                                        : 'bg-white text-black hover:bg-gray-100 hover:scale-[1.02] active:scale-95'
+                                        : 'bg-foreground text-background hover:opacity-90 hover:scale-[1.02] active:scale-95'
                                     }`}
                                 >
                                     {copied ? <><Zap className="w-6 h-6 animate-pulse" /> {ui.copied}</> : <><Copy className="w-6 h-6" /> {ui.copyToClipboard}</>}
@@ -648,10 +648,10 @@ ${ctx.analysisText}
                                 
                                 <button
                                     onClick={handleContinueToGemini}
-                                    className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all border-2 border-white/10 ${
+                                    className={`flex items-center justify-center gap-4 py-6 rounded-[2rem] font-black text-lg transition-all border-2 border-border ${
                                         copied 
                                         ? 'bg-indigo-600 border-transparent text-white hover:bg-indigo-500 hover:scale-[1.02] active:scale-95 shadow-lg' 
-                                        : 'bg-transparent text-gray-700 cursor-not-allowed opacity-50'
+                                        : 'bg-transparent text-muted-foreground cursor-not-allowed opacity-50'
                                     }`}
                                     disabled={!copied}
                                 >
