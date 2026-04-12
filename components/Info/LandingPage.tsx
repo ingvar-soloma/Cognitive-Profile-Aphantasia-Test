@@ -3,6 +3,7 @@ import { Brain, Sparkles, ChevronRight, Eye, EyeOff, BarChart2, ArrowRight, Shie
 import { UIStrings } from '@/types';
 import { useNavigate } from 'react-router-dom';
 import { useSeoMetadata } from '@/hooks/useSeoMetadata';
+import { PrivacyPolicy } from '../Legal/PrivacyPolicy';
 
 interface LandingPageProps {
     ui: UIStrings;
@@ -212,21 +213,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
                 </div>
             </section>
 
-            {/* ── PRICING ─────────────────────────────── */}
-            <section className="py-16 px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-graphite mb-4">Pricing</h2>
-                    <p className="text-stone-500 mb-8 font-sans max-w-xl mx-auto">Access your full AI-powered cognitive profile. Billed once.</p>
-                    <div className="bg-brand-paper-accent border border-stone-line rounded-[2rem] p-10 shadow-sm max-w-sm mx-auto transition-transform hover:scale-105 duration-300">
-                        <div className="text-5xl font-serif font-bold text-brand-ink mb-2">$9.99</div>
-                        <div className="text-xs text-stone-400 mb-8 font-bold uppercase tracking-widest">One-time payment for full cognitive profile</div>
-                        <button 
-                            onClick={onStartSurvey}
-                            className="w-full px-8 py-4 bg-brand-ink text-white rounded-2xl text-sm font-bold uppercase tracking-widest hover:bg-brand-inkHover hover:shadow-lg transition-all duration-300"
-                        >
-                            Get Full Profile
-                        </button>
-                    </div>
+            {/* ── PRICING TEASER ─────────────────────────────── */}
+            <section className="py-16 px-4 bg-brand-paper-accent/30 border-t border-stone-line/30">
+                <div className="max-w-4xl mx-auto text-center space-y-6">
+                    <h2 className="text-2xl md:text-3xl font-serif font-bold text-brand-graphite">
+                        {ui.pricingTitle || "Access your full profile"}
+                    </h2>
+                    <p className="text-stone-500 max-w-xl mx-auto">
+                        We offer a flexible Free Tier for research contributions, and a Pro Tier for detailed self-exploration.
+                    </p>
+                    <button 
+                        onClick={() => navigate('/pricing')}
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-brand-ink text-white rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-brand-inkHover hover:shadow-lg transition-all"
+                    >
+                        View Pricing Options <ArrowRight className="w-4 h-4" />
+                    </button>
                 </div>
             </section>
 

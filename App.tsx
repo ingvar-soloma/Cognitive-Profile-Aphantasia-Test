@@ -19,6 +19,7 @@ import { LoginModal } from './components/Auth/LoginModal';
 import { Recommendations } from './components/Recommendations/Recommendations';
 import { DashboardResults } from './components/Results/DashboardResults';
 import { PrivacyPolicy } from './components/Legal/PrivacyPolicy';
+import { PricingPage } from './components/Info/PricingPage';
 import { RefundPolicy } from './components/Legal/RefundPolicy';
 import { Routes, Route, useNavigate, useLocation, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { FinishConfirmationModal } from './components/Survey/FinishConfirmationModal';
@@ -1152,6 +1153,8 @@ const App: React.FC = () => {
           } />
 
           <Route path="/early-access" element={<EarlyAccessPage ui={ui} />} />
+
+          <Route path="/pricing" element={<PricingPage ui={ui} language={language} onStartSurvey={() => handleStartSurvey()} />} />
 
           <Route path="/refund-policy" element={<RefundPolicy ui={ui} language={language} />} />
 

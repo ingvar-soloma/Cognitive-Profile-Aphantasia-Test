@@ -88,6 +88,17 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ ui, language }) =>
                 </section>
             </div>
 
+            <div className="bg-brand-sage/5 border border-brand-sage/20 rounded-[2rem] p-8 mb-16 shadow-sm">
+                <h3 className="text-xl font-bold text-brand-graphite mb-4 font-serif">
+                    Data Processing for Machine Learning Purposes
+                </h3>
+                <p className="text-sm text-stone-600 leading-relaxed max-w-3xl">
+                    For users on the Free Tier ("Data Harvester"), by providing explicit consent via our platform, you agree that your test results and interaction data may be anonymized, aggregated, and utilized to train, test, and improve our artificial intelligence algorithms and machine learning models. 
+                    <br/><br/>
+                    <strong>No Personally Identifiable Information (PII)</strong>—such as your name, email, or exact location—will be included in the training datasets. We enforce strict data de-identification protocols prior to any data entering our AI training pipelines. If you upgrade to our Pro or Business tiers, your data is ring-fenced and excluded from generalized model training datasets.
+                </p>
+            </div>
+
             <div className="prose prose-stone max-w-none text-stone-500 text-sm leading-relaxed">
                 <h3 className="text-brand-graphite font-serif text-lg mb-4">{ui.principles}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

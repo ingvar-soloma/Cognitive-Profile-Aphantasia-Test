@@ -104,6 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
         { path: '/', label: ui.navTests, active: pathname === '/' || appState === 'SURVEY' },
         { path: '/results', label: ui.navResults, active: pathname.startsWith('/results') || pathname.startsWith('/history') },
         { path: '/recommendations', label: ui.navRecommendations, active: pathname === '/recommendations', isNew: true },
+        { path: '/pricing', label: 'Pricing', active: pathname === '/pricing' },
     ];
 
     const infoPathnames = infoLinks.map(l => l.path);

@@ -11,6 +11,7 @@ interface ConsentModalProps {
 
 export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onAccept, ui }) => {
   const [hasConsented, setHasConsented] = useState(false);
+  const [hasMLConsented, setHasMLConsented] = useState(false);
 
   if (!isOpen) return null;
 
@@ -44,20 +45,37 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onA
             </div>
           </div>
 
-          <label className="flex gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors group">
-            <div className="relative flex items-center justify-center pt-0.5">
-              <input 
-                type="checkbox" 
-                className="peer h-5 w-5 appearance-none rounded border-2 border-slate-300 dark:border-slate-600 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
-                checked={hasConsented}
-                onChange={(e) => setHasConsented(e.target.checked)}
-              />
-              <Check className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
-            </div>
-            <span className="text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              {ui.consentCheckbox}
-            </span>
-          </label>
+          <div className="space-y-3">
+            <label className="flex gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors group">
+              <div className="relative flex items-center justify-center pt-0.5">
+                <input 
+                  type="checkbox" 
+                  className="peer h-5 w-5 appearance-none rounded border-2 border-slate-300 dark:border-slate-600 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                  checked={hasConsented}
+                  onChange={(e) => setHasConsented(e.target.checked)}
+                />
+                <Check className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+              </div>
+              <span className="text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                {ui.consentCheckbox}
+              </span>
+            </label>
+
+            <label className="flex gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors group">
+              <div className="relative flex items-center justify-center pt-0.5">
+                <input 
+                  type="checkbox" 
+                  className="peer h-5 w-5 appearance-none rounded border-2 border-slate-300 dark:border-slate-600 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
+                  checked={hasMLConsented}
+                  onChange={(e) => setHasMLConsented(e.target.checked)}
+                />
+                <Check className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+              </div>
+              <span className="text-sm text-slate-700 dark:text-slate-300 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                {ui.consentMLCheckbox || "I consent to the use of my depersonalized data to improve AI models."}
+              </span>
+            </label>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
@@ -67,10 +85,10 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose, onA
               {ui.back}
             </button>
             <button
-              disabled={!hasConsented}
+              disabled={!hasConsented || !hasMLConsented}
               onClick={onAccept}
               className={`flex-1 h-12 px-6 rounded-xl font-bold transition-all shadow-lg active:scale-95 order-1 sm:order-2 ${
-                hasConsented 
+                (hasConsented && hasMLConsented) 
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-500/30' 
                 : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
               }`}

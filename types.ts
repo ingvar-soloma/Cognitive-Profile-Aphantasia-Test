@@ -181,6 +181,18 @@ export interface UIStrings {
   accept: string;
   consentTitle: string;
   consentCheckbox: string;
+  consentMLCheckbox: string;
+  pricingTitle: string;
+  pricingDesc: string;
+  pricingFree: string;
+  pricingFreeDesc: string;
+  pricingFreeButton: string;
+  pricingPro: string;
+  pricingProDesc: string;
+  pricingBusiness: string;
+  pricingBusinessDesc: string;
+  pricingHowWeUseDataTitle: string;
+  pricingHowWeUseDataDesc: string;
   showResults: string;
   undo: string;
   redo: string;
