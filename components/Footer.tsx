@@ -20,6 +20,7 @@ export const Footer: React.FC<FooterProps> = ({ ui, language }) => {
     const legalLinks = [
         { path: '/terms', label: ui.navTerms },
         { path: '/privacy', label: ui.privacyPolicy },
+        { path: '/refund-policy', label: ui.refundPolicy },
     ];
 
     const year = new Date().getFullYear();
@@ -48,6 +49,9 @@ export const Footer: React.FC<FooterProps> = ({ ui, language }) => {
                             <a href="mailto:ingvar.soloma@gmail.com" className="w-10 h-10 rounded-xl bg-white dark:bg-brand-paper-accent border border-stone-line flex items-center justify-center text-stone-400 hover:text-brand-ink transition-all shadow-sm">
                                 <Mail className="w-5 h-5" />
                             </a>
+                            <div className="flex items-center text-[10px] text-stone-400 font-medium">
+                                Support: support@ingvarsoloma.dev
+                            </div>
                             <a href="https://t.me/ingvar_soloma" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white dark:bg-brand-paper-accent border border-stone-line flex items-center justify-center text-stone-400 hover:text-brand-ink transition-all shadow-sm">
                                 <MessageCircle className="w-5 h-5" />
                             </a>
@@ -87,10 +91,15 @@ export const Footer: React.FC<FooterProps> = ({ ui, language }) => {
                     </div>
                 </div>
 
-                <div className="mt-20 pt-8 border-t border-stone-line flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <p className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-widest">
-                        &copy; {year} NP42 NeuroProfile. Project by Ingvar Soloma.
-                    </p>
+                <div className="mt-20 pt-8 border-t border-stone-line flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex flex-col gap-1 items-start">
+                        <p className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-widest">
+                            &copy; {year} NP42 NeuroProfile. Operated by Individual Entrepreneur Ihor Solomianyi.
+                        </p>
+                        <p className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-widest">
+                            Identification Number: 304804362 | Registered in Georgia
+                        </p>
+                    </div>
                     <p className="text-[10px] sm:text-xs text-stone-300 font-medium italic">
                         Built for those who see beyond. Don't Panic.
                     </p>

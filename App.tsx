@@ -19,6 +19,7 @@ import { LoginModal } from './components/Auth/LoginModal';
 import { Recommendations } from './components/Recommendations/Recommendations';
 import { DashboardResults } from './components/Results/DashboardResults';
 import { PrivacyPolicy } from './components/Legal/PrivacyPolicy';
+import { RefundPolicy } from './components/Legal/RefundPolicy';
 import { Routes, Route, useNavigate, useLocation, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { FinishConfirmationModal } from './components/Survey/FinishConfirmationModal';
 import { AboutPage } from './components/Info/AboutPage';
@@ -1151,6 +1152,8 @@ const App: React.FC = () => {
           } />
 
           <Route path="/early-access" element={<EarlyAccessPage ui={ui} />} />
+
+          <Route path="/refund-policy" element={<RefundPolicy ui={ui} language={language} />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
