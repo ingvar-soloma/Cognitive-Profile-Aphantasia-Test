@@ -7,6 +7,17 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL !== undefined && import.meta.
 
 export class ProfileService {
   private static loadPromise: Promise<any> | null = null;
+  
+  static getProfiles(): Profile[] {
+    const saved = localStorage.getItem('neuroprofile_profiles');
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed.map(this.migrateLocalProfile.bind(this)) : [];
+    } catch {
+      return [];
+    }
+  }
 
   private static migrateLocalProfile(p: any): Profile {
     // If answers is already keyed (nested objects)
@@ -56,8 +67,8 @@ export class ProfileService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
-          auth_data: user,
           test_type: testType,
           answers: profile.answers[testType] || {},
           time_spent: profile.timeSpent ? (profile.timeSpent[testType] || 0) : 0,
@@ -100,8 +111,8 @@ export class ProfileService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
-          auth_data: user,
           test_type: testType,
           answers: profile.answers[testType] || {},
           scores: scores,
@@ -142,31 +153,14 @@ export class ProfileService {
     if (this.loadPromise) return this.loadPromise;
 
     this.loadPromise = (async () => {
-      const authDataString = localStorage.getItem('auth_token');
-      if (!authDataString) {
-        this.loadPromise = null;
-        return null;
-      }
-
       try {
-        const authData = JSON.parse(authDataString);
-        const user = authData.user || authData;
-
-        if (!user || !user.id || user.error) {
-          if (user?.error) {
-            console.warn('[ProfileService] Auth contains error:', user.error);
-          }
-          this.loadPromise = null;
-          return null;
-        }
-
-        console.log('[ProfileService] Loading result for user:', user.id);
+        console.log('[ProfileService] Loading result for current session...');
         const response = await fetch(`${API_BASE_URL}/api/me/result`, {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(user),
+          credentials: 'include',
         });
 
         if (response.status === 401) {
@@ -202,15 +196,12 @@ export class ProfileService {
     if (!authDataString) return [];
 
     try {
-      const authData = JSON.parse(authDataString);
-      const user = authData.user || authData;
-
-      let url = `${API_BASE_URL}/api/results?user_id=${user.id}&hash=${user.hash}`;
+      let url = `${API_BASE_URL}/api/results`;
       if (q) {
-        url += `&q=${encodeURIComponent(q)}`;
+        url += `?q=${encodeURIComponent(q)}`;
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, { credentials: 'include' });
       if (response.ok) {
         return await response.json();
       }
@@ -433,105 +424,16 @@ export class ProfileService {
     return ProfileType.PHANTASIA;
   }
 
-  static getProfiles(): Profile[] {
-    const saved = localStorage.getItem('neuroprofile_profiles');
-    if (!saved) return [];
-    try {
-      const data = JSON.parse(saved);
-      if (Array.isArray(data)) {
-        return data.map(p => this.migrateLocalProfile(p));
-      }
-      return [];
-    } catch (e) {
-      console.error('Failed to parse profiles', e);
-      return [];
-    }
-  }
-
-  static saveProfiles(profiles: Profile[]): void {
-    localStorage.setItem('neuroprofile_profiles', JSON.stringify(profiles));
-  }
-
-  static createProfile(name: string, surveyId: string, customId?: string): Profile {
-    const profiles = this.getProfiles();
-
-    // If customId provided, check if it already exists to avoid duplicates
-    if (customId) {
-      const existing = profiles.find(p => p.id === customId);
-      if (existing) return existing;
-    }
-
-    const newProfile: Profile = {
-      id: customId || 'profile_' + Math.random().toString(36).slice(2, 11) + '_' + Date.now().toString(36),
-      name,
-      answers: { [surveyId]: {} },
-      timeSpent: { [surveyId]: 0 },
-      lastUpdated: new Date().toISOString(),
-      surveyId,
-    };
-
-    profiles.push(newProfile);
-    this.saveProfiles(profiles);
-    return newProfile;
-  }
-
-  static updateProfile(profileId: string, surveyId: string, answers: Record<string, Answer>, type?: ProfileType, tone?: string, timeSpent?: Record<string, number>): void {
-    const profiles = this.getProfiles();
-    const index = profiles.findIndex(p => p.id === profileId);
-    if (index !== -1) {
-      if (!profiles[index].answers) profiles[index].answers = {};
-      profiles[index].answers[surveyId] = answers;
-      profiles[index].lastUpdated = new Date().toISOString();
-      if (type) profiles[index].type = type;
-      if (tone) profiles[index].tone = tone;
-      if (timeSpent) profiles[index].timeSpent = timeSpent;
-      this.saveProfiles(profiles);
-    }
-  }
-
-  static renameProfile(profileId: string, newName: string): void {
-    const profiles = this.getProfiles();
-    const index = profiles.findIndex(p => p.id === profileId);
-    if (index !== -1) {
-      profiles[index].name = newName;
-      profiles[index].lastUpdated = new Date().toISOString();
-      this.saveProfiles(profiles);
-    }
-  }
-
-  static deleteProfile(profileId: string): void {
-    const profiles = this.getProfiles().filter(p => p.id !== profileId);
-    this.saveProfiles(profiles);
-  }
-
-  static updateProfileSurveyId(profileId: string, surveyId: string): void {
-    const profiles = this.getProfiles();
-    const index = profiles.findIndex(p => p.id === profileId);
-    if (index !== -1) {
-      profiles[index].surveyId = surveyId;
-      profiles[index].lastUpdated = new Date().toISOString();
-      this.saveProfiles(profiles);
-    }
-  }
-
   static async trackInteraction(promptId: string, action: 'click' | 'copy' | 'navigate', testType: string = 'full_aphantasia_profile') {
-    const authDataString = localStorage.getItem('auth_token');
-    let userId = null;
-    if (authDataString) {
-      try {
-        const authData = JSON.parse(authDataString);
-        userId = (authData.user || authData)?.id;
-      } catch (e) { /* skip */ }
-    }
-
+    // Session is handled via HttpOnly cookies
     try {
       await fetch(`${API_BASE_URL}/api/track-interaction`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
-          user_id: userId ? String(userId) : null,
           prompt_id: promptId,
           action,
           test_type: testType,

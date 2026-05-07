@@ -1,5 +1,9 @@
 .PHONY: build up down restart logs ps prune dev prod test
 
+build:
+	docker compose build
+
+
 # Development commands
 dev:
 	docker compose up -d --build

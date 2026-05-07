@@ -29,3 +29,7 @@ backend/__pycache__
 .env
 /debug_results/
 /reports/
+
+# MCP Indexer
+mcp_indexer/venv/
+mcp_indexer/.lancedb_data/

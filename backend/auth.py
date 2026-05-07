@@ -1,7 +1,7 @@
 import os
 import httpx
 import jwt
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Request, Depends, Response
 from pydantic import BaseModel
 import time
 import uuid
@@ -44,7 +44,7 @@ async def create_guest_session(conn: asyncpg.Connection = Depends(get_db)):
     return auth_data
 
 @router.post("/auth/google/exchange")
-async def exchange_google_code(req: GoogleExchangeRequest, conn: asyncpg.Connection = Depends(get_db)):
+async def exchange_google_code(req: GoogleExchangeRequest, response: Response, conn: asyncpg.Connection = Depends(get_db)):
     client_id = os.getenv("VITE_GOOGLE_CLIENT_ID", "")
     logger.info(f"Exchanging Google code. Client ID: {client_id[:10]}... Length: {len(req.credential)}")
     try:
@@ -104,8 +104,15 @@ async def exchange_google_code(req: GoogleExchangeRequest, conn: asyncpg.Connect
         }
         
         token = jwt.encode(auth_data, auth_secret, algorithm="HS256")
-        auth_data["hash"] = token
-        auth_data["access_token"] = token
+        
+        response.set_cookie(
+            key="auth_token",
+            value=token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=30 * 24 * 3600 # 30 days
+        )
 
         return auth_data
     except Exception as e:
@@ -113,3 +120,23 @@ async def exchange_google_code(req: GoogleExchangeRequest, conn: asyncpg.Connect
         import traceback
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail=f"Invalid Google token: {str(e)}")
+
+@router.get("/auth/me")
+async def get_me(request: Request, conn: asyncpg.Connection = Depends(get_db)):
+    """Returns the current user based on the secure cookie."""
+    token = request.cookies.get("auth_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        auth_secret = os.getenv("AUTH_SECRET", os.getenv("TELEGRAM_BOT_TOKEN", "default-secret-for-hmac"))
+        payload = jwt.decode(token, auth_secret, algorithms=["HS256"])
+        return payload
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+@router.post("/auth/logout")
+async def logout(response: Response):
+    """Clears the auth cookie."""
+    response.delete_cookie(key="auth_token")
+    return {"status": "success"}

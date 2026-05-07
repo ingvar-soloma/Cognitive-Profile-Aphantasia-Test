@@ -39,7 +39,8 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
     return profiles.map(p => {
       let matches = 0;
       filledNewAnswersKeys.forEach(qId => {
-        const oldAns = p.answers[qId];
+        const surveyId = p.surveyId || 'full_aphantasia_profile';
+        const oldAns = p.answers[surveyId]?.[qId];
         const newAns = newAnswers[qId];
         if (oldAns && newAns && oldAns.value === newAns.value && oldAns.note === newAns.note) {
           matches++;
@@ -59,7 +60,8 @@ export const ImportManager: React.FC<ImportManagerProps> = ({
 
     Object.keys(newAnswers).forEach(qId => {
       const q = allQuestions.find(curr => curr.id === qId);
-      const oldAns = selectedProfile?.answers[qId];
+      const surveyId = selectedProfile?.surveyId || 'full_aphantasia_profile';
+      const oldAns = selectedProfile?.answers[surveyId]?.[qId];
       const newAns = newAnswers[qId];
 
       if (newAns?.value !== oldAns?.value || newAns?.note !== oldAns?.note) {

@@ -141,32 +141,8 @@ const App: React.FC = () => {
   }, [location.pathname]);
 
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, Answer>>(() => {
-    const path = globalThis.window?.location?.pathname;
-    let startingSurveyId = path?.startsWith('/survey/') ? path.split('/survey/')[1] : 'full_aphantasia_profile';
-    // Handle nested routes or trailing slashes
-    if (startingSurveyId?.includes('/')) startingSurveyId = startingSurveyId.split('/')[0];
-    
-    const loadedProfiles = ProfileService.getProfiles();
-    const storedProfileId = localStorage.getItem('neuroprofile_active_profile_id');
-    const activeId = storedProfileId && loadedProfiles.some(p => p.id === storedProfileId) 
-        ? storedProfileId 
-        : (loadedProfiles.length > 0 ? loadedProfiles[0].id : null);
-        
-    if (activeId && startingSurveyId) {
-      const profile = loadedProfiles.find(p => p.id === activeId);
-      if (profile) {
-        return profile.answers[startingSurveyId] || {};
-      }
-    }
-    return {};
-  });
-  const [elapsedSeconds, setElapsedSeconds] = useState<Record<string, number>>(() => {
-    const loadedProfiles = ProfileService.getProfiles();
-    const storedProfileId = localStorage.getItem('neuroprofile_active_profile_id');
-    const profile = (storedProfileId && loadedProfiles.find(p => p.id === storedProfileId)) || (loadedProfiles.length > 0 ? loadedProfiles[0] : null);
-    return profile?.timeSpent || {};
-  });
+  const [answers, setAnswers] = useState<Record<string, Answer>>({});
+  const [elapsedSeconds, setElapsedSeconds] = useState<Record<string, number>>({});
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('neuroprofile_language') as Language;
     if (saved && ['en', 'uk', 'ru'].includes(saved)) return saved;
@@ -195,18 +171,8 @@ const App: React.FC = () => {
   const [currentSurvey, setCurrentSurvey] = useState<SurveyDefinition | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [profiles, setProfiles] = useState<Profile[]>(() => ProfileService.getProfiles());
-  const [activeProfileId, setActiveProfileId] = useState<string | null>(() => {
-    const loadedProfiles = ProfileService.getProfiles();
-    const storedProfileId = localStorage.getItem('neuroprofile_active_profile_id');
-    if (storedProfileId && loadedProfiles.some(p => p.id === storedProfileId)) {
-      return storedProfileId;
-    } else if (loadedProfiles.length > 0) {
-      return loadedProfiles[0].id;
-    }
-    const anonProfile = ProfileService.createProfile('Особистий Профіль', activeSurveyId || 'full_aphantasia_profile', 'anonymous');
-    return anonProfile.id;
-  });
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 
   // Update HTML lang attribute and persist
   useEffect(() => {
@@ -234,25 +200,44 @@ const App: React.FC = () => {
       }
     }
   }, [location.pathname, activeSurveyId]);
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('auth_token') || localStorage.getItem('telegram_auth');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        const userData = data.user || data;
-        if (userData && userData.id && userData.hash && !userData.error) {
-          return userData;
+  const [user, setUser] = useState<User | null>(null);
+
+  const fetchMe = async () => {
+    try {
+      const data = await ProfileService.loadResultFromBackend();
+      if (data && data.user) {
+        setUser(data.user);
+        if (data.answers) {
+          setHasExistingResults(true);
+          const userProfileId = `g_${data.user.id}`;
+          const profile: Profile = {
+            id: userProfileId,
+            name: `${data.user.first_name} ${data.user.last_name || ''}`.trim(),
+            answers: data.answers,
+            timeSpent: data.time_spent,
+            lastUpdated: new Date().toISOString(),
+            surveyId: activeSurveyId,
+            badges: data.badges,
+            gemini_recommendations: data.gemini_recommendations
+          };
+          setProfiles([profile]);
+          setActiveProfileId(userProfileId);
+          if (data.answers[activeSurveyId]) {
+            setAnswers(data.answers[activeSurveyId]);
+          }
+          if (data.time_spent) {
+            setElapsedSeconds(data.time_spent);
+          }
         }
-        console.warn('[App] Invalid auth in localStorage found and cleared');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('telegram_auth');
-        return null;
-      } catch (e) {
-        return null;
       }
+    } catch (e) {
+      console.error('[App] Failed to fetch session:', e);
     }
-    return null;
-  });
+  };
+
+  useEffect(() => {
+    fetchMe();
+  }, []);
 
   // Auto-open login modal if redirected from a protected route
   useEffect(() => {
@@ -323,123 +308,6 @@ const App: React.FC = () => {
     }
   }, [location.pathname, activeSurveyId]);
 
-  // Sync profiles with User
-  useEffect(() => {
-    if (user) {
-      // If logged in, we only care about the profile for this user
-      const userProfileId = `g_${user.id}`;
-
-      // Use latest profiles from service to avoid stale state issues
-      const currentProfiles = ProfileService.getProfiles();
-      let profile = currentProfiles.find(p => p.id === userProfileId);
-
-      if (profile) {
-        // Even if profile exists, ensure state is synced
-        setProfiles(currentProfiles);
-      } else {
-        const name = `${user.first_name} ${user.last_name || ''}`.trim();
-        ProfileService.createProfile(name, activeSurveyId, userProfileId);
-        setProfiles(ProfileService.getProfiles());
-      }
-
-      const updatedProfiles = ProfileService.getProfiles();
-      if (activeProfileId && activeProfileId !== userProfileId) {
-        const prevProfile = updatedProfiles.find(p => p.id === activeProfileId);
-        if (prevProfile && prevProfile.answers) {
-          Object.entries(prevProfile.answers).forEach(([sId, ansMap]) => {
-            if (Object.keys(ansMap).length > 0) {
-              ProfileService.updateProfile(userProfileId, sId, ansMap, prevProfile.type, prevProfile.tone, prevProfile.timeSpent);
-            }
-          });
-          if (activeProfileId === 'anonymous') {
-             ProfileService.deleteProfile('anonymous');
-          }
-          setProfiles(ProfileService.getProfiles());
-        }
-      }
-
-      if (activeProfileId !== userProfileId) {
-        setActiveProfileId(userProfileId);
-      }
-
-      // Check if user already has results on backend
-      if (!initialLoadRef.current) {
-        initialLoadRef.current = true;
-        ProfileService.loadResultFromBackend().then(result => {
-          if (result && result.answers) {
-            // result.answers is now keyed by test_type from backend migration
-            setHasExistingResults(true);
-
-            // Merge into local profiles
-            setProfiles(prev => {
-              const next = [...prev];
-              const idx = next.findIndex(p => p.id === userProfileId);
-              if (idx !== -1) {
-                next[idx].answers = { ...next[idx].answers, ...result.answers };
-                next[idx].badges = result.badges;
-                next[idx].gemini_recommendations = result.gemini_recommendations;
-                next[idx].timeSpent = result.time_spent;
-                ProfileService.saveProfiles(next);
-              }
-              return next;
-            });
-
-            // Set current answers buffer
-            if (activeSurveyId && result.answers[activeSurveyId]) {
-              setAnswers(result.answers[activeSurveyId]);
-            }
-
-            if (result.gemini_recommendations) {
-              setBackendRecommendations(
-                typeof result.gemini_recommendations === 'string'
-                  ? { [result.test_type || 'unknown']: result.gemini_recommendations }
-                  : result.gemini_recommendations
-              );
-            }
-
-            // Sync credits and user metrics from backend
-            if (result.credits !== undefined) {
-              setUser(prev => prev ? { ...prev, credits: result.credits, referral_count: result.referral_count } : null);
-            }
-
-            if (result.time_spent) {
-              setElapsedSeconds(result.time_spent);
-            }
-          } else {
-            setHasExistingResults(false);
-          }
-        }).catch(err => {
-          console.error('[App] Failed to load results:', err);
-          initialLoadRef.current = false;
-        });
-      }
-    } else {
-      setHasExistingResults(false);
-      setBackendRecommendations({});
-      initialLoadRef.current = false;
-    }
-  }, [user]); // Removed activeSurveyId from deps to avoid multiple loads when it changes
-
-  // One-time cleanup: Deduplicate profiles by ID if they somehow got duplicated
-  useEffect(() => {
-    const currentProfiles = ProfileService.getProfiles();
-    const uniqueProfilesMap = new Map();
-    let hasDuplicates = false;
-
-    currentProfiles.forEach(p => {
-      if (uniqueProfilesMap.has(p.id)) {
-        hasDuplicates = true;
-      } else {
-        uniqueProfilesMap.set(p.id, p);
-      }
-    });
-
-    if (hasDuplicates) {
-      const uniqueProfiles = Array.from(uniqueProfilesMap.values());
-      ProfileService.saveProfiles(uniqueProfiles);
-      setProfiles(uniqueProfiles);
-    }
-  }, []);
 
   // Fetch Survey Data
   useEffect(() => {
@@ -492,11 +360,14 @@ const App: React.FC = () => {
 
     // If starting a DIFFERENT survey on the same profile, update the profile's primary survey ID
     if (activeProfileId && surveyIdToStart) {
-      const profile = profiles.find(p => p.id === activeProfileId);
-      if (profile && profile.surveyId !== surveyIdToStart) {
-        ProfileService.updateProfileSurveyId(activeProfileId, surveyIdToStart);
-        setProfiles(ProfileService.getProfiles());
-      }
+      setProfiles(prev => {
+        const next = [...prev];
+        const idx = next.findIndex(p => p.id === activeProfileId);
+        if (idx !== -1) {
+          next[idx].surveyId = surveyIdToStart;
+        }
+        return next;
+      });
     }
 
     SurveyService.getSurveyById(surveyIdToStart)
@@ -549,23 +420,8 @@ const App: React.FC = () => {
   }, [activeProfileId, activeSurveyId]);
 
   useEffect(() => {
-    // Background save for timer and tone. We must be careful not to overwrite
-    // survey-specific answers when survey transitions occur.
-    if (activeProfileId) {
-      const survey = AVAILABLE_SURVEYS.find(s => s.id === activeSurveyId);
-      const surveyQuestionIds = survey?.categories.flatMap(c => c.questions.map(q => q.id)) || [];
-      const isMatchingSurvey = Object.keys(answers).length > 0 && Object.keys(answers).every(qId => surveyQuestionIds.includes(qId));
-
-      if (isMatchingSurvey) {
-        ProfileService.updateProfile(activeProfileId, activeSurveyId, answers, undefined, tone, elapsedSeconds);
-      } else {
-        // Still update tone and timeSpent but use existing answers from the profile record to avoid wipe-out
-        const profile = profiles.find(p => p.id === activeProfileId);
-        const existingAnswers = profile?.answers[activeSurveyId] || {};
-        ProfileService.updateProfile(activeProfileId, activeSurveyId, existingAnswers, undefined, tone, elapsedSeconds);
-      }
-    }
-  }, [answers, activeProfileId, activeSurveyId, tone]); // Removed elapsedSeconds to avoid constant saving every second
+    // Background sync - profiles are now managed via state and backend
+  }, [answers, activeProfileId, activeSurveyId, tone]);
 
   useEffect(() => {
     // Warn on exit if in survey
@@ -708,24 +564,17 @@ const App: React.FC = () => {
 
   const handleAnswerChange = (questionId: string, value: string | number | null, note: string) => {
     setAnswers((prev) => {
-      // Strictly filter previous answers to only include those belonging to the current survey.
-      // This prevents data leaked from other surveys during transitions.
-      const currentSurveySpecs = AVAILABLE_SURVEYS.find(s => s.id === activeSurveyId);
-      const validQuestionIds = currentSurveySpecs?.categories.flatMap(c => c.questions.map(q => q.id)) || [];
-      
-      const filteredPrev = Object.fromEntries(
-        Object.entries(prev).filter(([id]) => validQuestionIds.includes(id))
-      );
-
       const newAnswers = {
-        ...filteredPrev,
+        ...prev,
         [questionId]: { questionId, value, note },
       };
 
-      // Update profile immediately
       if (activeProfileId) {
-        ProfileService.updateProfile(activeProfileId, activeSurveyId, newAnswers, undefined, tone, elapsedSeconds);
-        setProfiles(ProfileService.getProfiles());
+        setProfiles(prevProfiles => prevProfiles.map(p => 
+          p.id === activeProfileId 
+            ? { ...p, answers: { ...p.answers, [activeSurveyId]: newAnswers }, lastUpdated: new Date().toISOString() } 
+            : p
+        ));
       }
 
       return newAnswers;
@@ -733,18 +582,27 @@ const App: React.FC = () => {
   };
 
   const handleCreateProfile = (name: string) => {
-    const newProfile = ProfileService.createProfile(name, activeSurveyId);
-    setProfiles(ProfileService.getProfiles());
-    setActiveProfileId(newProfile.id);
+    const newId = 'p_' + Math.random().toString(36).substring(2, 11);
+    const newProfile: Profile = {
+      id: newId,
+      name,
+      answers: {},
+      timeSpent: {},
+      lastUpdated: new Date().toISOString(),
+      surveyId: activeSurveyId
+    };
+    setProfiles(prev => [...prev, newProfile]);
+    setActiveProfileId(newId);
   };
 
   const handleDeleteProfile = (id: string) => {
-    ProfileService.deleteProfile(id);
-    const updatedProfiles = ProfileService.getProfiles();
-    setProfiles(updatedProfiles);
-    if (activeProfileId === id) {
-      setActiveProfileId(updatedProfiles.length > 0 ? updatedProfiles[0].id : null);
-    }
+    setProfiles(prev => {
+      const filtered = prev.filter(p => p.id !== id);
+      if (activeProfileId === id) {
+        setActiveProfileId(filtered.length > 0 ? filtered[0].id : null);
+      }
+      return filtered;
+    });
   };
 
   const handleSelectProfile = (id: string) => {
@@ -756,8 +614,7 @@ const App: React.FC = () => {
   };
 
   const handleRenameProfile = (id: string, newName: string) => {
-    ProfileService.renameProfile(id, newName);
-    setProfiles(ProfileService.getProfiles());
+    setProfiles(prev => prev.map(p => p.id === id ? { ...p, name: newName, lastUpdated: new Date().toISOString() } : p));
   };
 
   const handleRetake = (profileId?: string) => {
@@ -766,9 +623,7 @@ const App: React.FC = () => {
       const baseName = targetProfile.name.split(' (Retake')[0];
       const retakes = profiles.filter(p => p.name.startsWith(baseName)).length;
       const newName = `${baseName} (Retake ${retakes})`;
-      const newProfile = ProfileService.createProfile(newName, targetProfile.surveyId || activeSurveyId);
-      setProfiles(ProfileService.getProfiles());
-      setActiveProfileId(newProfile.id);
+      handleCreateProfile(newName);
       setActiveSurveyId(targetProfile.surveyId || activeSurveyId);
       navigate('/');
     }
@@ -822,11 +677,8 @@ const App: React.FC = () => {
   const finalizeFinish = () => {
     setShowFinishConfirmation(false);
     
-    // Yield to let the modal close smoothly before potentially heavy navigation/results rendering
     setTimeout(() => {
       if (activeProfileId) {
-        ProfileService.updateProfile(activeProfileId, activeSurveyId, answers, undefined, tone, elapsedSeconds);
-        setProfiles(ProfileService.getProfiles());
         navigate(`/results/${activeProfileId}`);
       } else {
         navigate('/results');
@@ -838,20 +690,24 @@ const App: React.FC = () => {
     let targetId = profileId;
 
     if (!profileId) {
-      // Create new profile
-      const newProfile = ProfileService.createProfile(ui.importedProfile, activeSurveyId);
-      targetId = newProfile.id;
+      // Create new profile locally
+      const newId = 'p_' + Math.random().toString(36).substring(2, 11);
+      const newProfile: Profile = {
+        id: newId,
+        name: ui.importedProfile,
+        answers: {},
+        timeSpent: {},
+        lastUpdated: new Date().toISOString(),
+        surveyId: activeSurveyId
+      };
+      setProfiles(prev => [...prev, newProfile]);
+      targetId = newId;
     }
 
     if (targetId) {
-      ProfileService.updateProfile(targetId, activeSurveyId, loadedAnswers, undefined, tone, elapsedSeconds);
-      setProfiles(ProfileService.getProfiles());
-      if (targetId === activeProfileId) {
-        setAnswers(loadedAnswers);
-      } else {
-        setActiveProfileId(targetId);
-        setAnswers(loadedAnswers);
-      }
+      setProfiles(prev => prev.map(p => p.id === targetId ? { ...p, answers: { ...p.answers, [activeSurveyId]: loadedAnswers }, lastUpdated: new Date().toISOString() } : p));
+      setActiveProfileId(targetId);
+      setAnswers(loadedAnswers);
     }
 
     setImportingAnswers(null);
@@ -870,7 +726,7 @@ const App: React.FC = () => {
 
   const downloadProgress = () => {
     const profileName = activeProfile?.name || 'anonymous';
-    const typeLabel = ProfileService.getProfileTypeLabel(activeProfile?.type, language) || 'unknown';
+    const typeLabel = activeProfile?.type || 'unknown';
     const filename = `${profileName}_${typeLabel}_${activeSurveyId}_${new Date().toISOString().slice(0, 10)}.json`;
 
     const exportData = {
