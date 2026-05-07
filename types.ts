@@ -422,11 +422,43 @@ export interface UIStrings {
   earlyAccessSuccess: string;
   tryExpressFree: string;
   expressDiagnosticsCta: string;
+  earlyAccessF1Title: string;
+  earlyAccessF1Desc: string;
+  earlyAccessF2Title: string;
+  earlyAccessF2Desc: string;
+  earlyAccessF3Title: string;
+  earlyAccessF3Desc: string;
   musicMastery: string;
   musicMasteryDesc: string;
   aiPromptLabel: string;
   conflictTriggers: string;
   conflictTriggersDesc: string;
+  // B2B Page
+  b2bTitle: string;
+  b2bSubtitle: string;
+  b2bCta: string;
+  b2bSuccess: string;
+  b2bF1Title: string;
+  b2bF1Desc: string;
+  b2bF2Title: string;
+  b2bF2Desc: string;
+  b2bF3Title: string;
+  b2bF3Desc: string;
+  b2bDemoCta: string;
+  b2bDemoDesc: string;
+  // Compatibility Page
+  compatibilityTitle: string;
+  compatibilitySubtitle: string;
+  compatibilityCta: string;
+  compatibilitySuccess: string;
+  compatibilityF1Title: string;
+  compatibilityF1Desc: string;
+  compatibilityF2Title: string;
+  compatibilityF2Desc: string;
+  compatibilityF3Title: string;
+  compatibilityF3Desc: string;
+  compatibilityDemoCta: string;
+  compatibilityDemoDesc: string;
 }
 
 export enum ProfileType {

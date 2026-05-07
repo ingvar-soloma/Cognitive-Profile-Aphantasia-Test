@@ -99,7 +99,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
 
                 <div className="relative z-10 max-w-3xl mx-auto">
                     {/* Label */}
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-paper-accent/60 backdrop-blur-md border border-stone-line/50 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase text-stone-500 mb-8 shadow-sm">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-paper-accent/60 backdrop-blur-md rounded-full text-[10px] font-bold tracking-[0.2em] uppercase text-stone-500 mb-8 shadow-sm">
                         <Zap className="w-3 h-3 text-amber-500" />
                         {ui.cognitiveAssessment}
                     </div>
@@ -125,7 +125,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
                         </button>
                         <button
                             onClick={() => navigate('/about')}
-                            className="inline-flex items-center gap-2 px-6 py-4 bg-brand-paper-accent border border-stone-line rounded-2xl text-sm font-bold text-brand-graphite hover:border-brand-ink/30 hover:shadow-soft transition-all"
+                            className="inline-flex items-center gap-2 px-6 py-4 bg-brand-paper-accent rounded-2xl text-sm font-bold text-brand-graphite hover:shadow-soft transition-all"
                         >
                             {ui.landingLearnMore}
                             <ArrowRight className="w-4 h-4" />
@@ -153,9 +153,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
                         {profiles.map((p) => (
                             <div
                                 key={p.label}
-                                className="bg-brand-paper-accent border border-stone-line rounded-[1.5rem] p-6 text-center shadow-sm hover:shadow-soft transition-shadow"
+                                className="bg-brand-paper-accent rounded-[1.5rem] p-6 text-center shadow-sm hover:shadow-soft transition-shadow"
                             >
-                                <div className={`w-12 h-12 rounded-2xl ${p.chip} flex items-center justify-center mx-auto mb-4`}>
+                                <div className={`w-12 h-12 rounded-xl ${p.chip} flex items-center justify-center mx-auto mb-4`}>
                                     <p.icon className={`w-5 h-5 ${p.color}`} />
                                 </div>
                                 <div className="text-2xl font-serif font-bold text-brand-graphite mb-1">{p.pct}</div>
@@ -179,7 +179,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
                         {features.map((f) => (
                             <div
                                 key={f.title}
-                                className="bg-brand-paper-accent border border-stone-line rounded-[1.5rem] p-6 shadow-sm hover:shadow-soft transition-shadow flex flex-col gap-3"
+                                className="bg-brand-paper-accent rounded-[1.5rem] p-6 shadow-sm hover:shadow-soft transition-shadow flex flex-col gap-3"
                             >
                                 <div className={`w-10 h-10 rounded-xl ${f.bg} flex items-center justify-center`}>
                                     <f.icon className={`w-5 h-5 ${f.color}`} />
@@ -190,7 +190,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ ui, onStartSurvey }) =
                         ))}
                     </div>
 
-                    <div className="mt-16 text-left bg-white/5 dark:bg-black/5 rounded-[2.5rem] p-8 border border-stone-line/50">
+                    <div className="mt-16 text-left bg-white/5 dark:bg-black/5 rounded-[2.5rem] p-8">
                         <div className="grid md:grid-cols-2 gap-12">
                             <div className="space-y-4">
                                 <h3 className="text-xl font-serif font-bold text-brand-graphite">{ui.aboutWhatIsAphantasia}</h3>
